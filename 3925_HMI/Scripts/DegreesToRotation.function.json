@@ -1,0 +1,104 @@
+{
+  "function": {
+    "name": "DegreesToRotation",
+    "namespace": "",
+    "displayName": "DegreesToRotation",
+    "description": "",
+    "waitMode": "Synchronous",
+    "category": "Utilities",
+    "returnValue": {
+      "type": "tchmi:framework#/definitions/TransformList"
+    },
+    "visible": true,
+    "injectContextObject": false,
+    "arguments": [
+      {
+        "name": "Object",
+        "displayName": "Object",
+        "type": "tchmi:general#/definitions/Object",
+        "description": "",
+        "defaultValue": "{}",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Centric",
+        "displayName": "Centric",
+        "type": "tchmi:general#/definitions/BOOL",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "X",
+        "displayName": "X",
+        "type": "tchmi:general#/definitions/INT",
+        "description": "",
+        "defaultValue": "0",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Y",
+        "displayName": "Y",
+        "type": "tchmi:general#/definitions/INT",
+        "description": "",
+        "defaultValue": "0",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Z",
+        "displayName": "Z",
+        "type": "tchmi:general#/definitions/INT",
+        "description": "",
+        "defaultValue": "0",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Angle",
+        "displayName": "Angle",
+        "type": "tchmi:general#/definitions/INT",
+        "description": "",
+        "defaultValue": "0",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Incremental",
+        "displayName": "Incremental",
+        "type": "tchmi:general#/definitions/BOOL",
+        "description": "Inc rotation or absolute?",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json",
+  "apiVersion": 1,
+  "dependencyFiles": []
+}

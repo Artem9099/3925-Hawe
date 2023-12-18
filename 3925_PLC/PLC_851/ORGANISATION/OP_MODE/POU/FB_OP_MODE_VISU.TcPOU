@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_OP_MODE_VISU" Id="{4016009a-d644-4b21-a74c-739ba300e1f4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OP_MODE_VISU
+VAR
+	itfOpMode:  I_OP_MODE;
+	//Press 
+	bClick_Automatic				: BOOL;
+	bClick_Debug					: BOOL;
+	bClick_Manual					: BOOL;
+	bClick_Reset					: BOOL;
+	bClick_Start					: BOOL;
+	bClick_Stop						: BOOL;
+	bClickPause						: BOOL;
+	//State
+	b_Automatic						: BOOL;
+	b_Debug							: BOOL;
+	b_Manual						: BOOL;
+	b_Reset							: BOOL;
+	//temporay State
+	btemporay_Automatic				: BOOL;
+	btemporay_Debug					: BOOL;
+	btemporay_Manual				: BOOL;
+	btemporay_Reset					: BOOL;
+	iOPModeState					: INT;
+	
+	fbBlink							: FB_Blink;
+END_VAR
+VAR_IN_OUT
+
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//CLICK to OP-Mode
+IF bClick_Automatic		THEN
+	itfOpMode.M_AUTOMATIC();
+	 bClick_Automatic	:= FALSE;
+END_IF
+	
+IF bClick_Debug			THEN
+	itfOpMode.M_DEBUG();
+	bClick_Debug		:= FALSE;
+END_IF
+		
+IF bClick_Manual		THEN
+	itfOpMode.M_MANUAL();
+	bClick_Manual		:= FALSE;
+END_IF
+			
+IF bClick_Reset			THEN
+	itfOpMode.M_RESET();
+	bClick_Reset		:= FALSE;
+END_IF
+	
+		
+IF bClick_Start			THEN
+	itfOpMode.M_OP_MODE_ON();
+	bClick_Start		:= FALSE;
+END_IF
+		
+IF  bClick_Stop			THEN
+	itfOpMode.M_OP_MODE_OFF();
+	bClick_Stop			:= FALSE;
+END_IF
+//
+b_Automatic				:= FALSE;
+b_Debug					:= FALSE; 
+b_Manual				:= FALSE;
+b_Reset					:= FALSE;
+btemporay_Automatic		:= FALSE;
+btemporay_Debug			:= FALSE;
+btemporay_Manual		:= FALSE;
+btemporay_Reset			:= FALSE;
+
+//GET OP MODE STATE
+CASE itfOpMode.P_OP_MODE_STATE OF		
+	OP_MODE.AUTO: 				b_Automatic:= TRUE;
+ 	OP_MODE.DEBUG:				b_Debug:= TRUE;
+	OP_MODE.MANUAL:				b_Manual:= TRUE;
+	OP_MODE.INIT:				b_Reset:= TRUE;
+	OP_MODE.AUTO_TEMPORARY:		btemporay_Automatic:= TRUE;
+	OP_MODE.DEBUG_TEMPORARY:	btemporay_Debug:= TRUE;
+	OP_MODE.MANUAL_TEMPORARY:	btemporay_Manual:= TRUE;
+	OP_MODE.RESET_TEMPORARY:	btemporay_Reset:= TRUE;
+	OP_MODE.ACTIVATE_PAUSE: 	btemporay_Automatic:=fbBlink.P_2Hz;
+	OP_MODE.IN_PAUSE:			btemporay_Automatic:= TRUE;
+END_CASE
+iOPModeState:=itfOpMode.P_OP_MODE_STATE;
+]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{6c2458ff-a5a4-4e9f-96bd-86694b05c4cc}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:  I_OP_MODE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[this^.itfOpMode:= itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_OP_MODE_VISU">
+      <LineId Id="109" Count="51" />
+      <LineId Id="192" Count="1" />
+      <LineId Id="161" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_VISU.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

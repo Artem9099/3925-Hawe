@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_ENGINE" Id="{53c66e4b-2c24-4324-807a-99a6516a1556}">
+    <Declaration><![CDATA[INTERFACE I_ENGINE EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_Off" Id="{40151c6b-cb62-4d28-8a36-ca4eb85af945}">
+      <Declaration><![CDATA[METHOD M_Off : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_On" Id="{d8d76e68-4a2b-4d8c-927c-fd85975be334}">
+      <Declaration><![CDATA[METHOD M_On : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{4e8be09a-71bb-4020-a4b7-e7ef5050e1a1}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_Busy" Id="{e650d9c8-c935-46ba-b63f-6ce5291ee12f}">
+      <Declaration><![CDATA[PROPERTY P_Busy : BOOL]]></Declaration>
+      <Get Name="Get" Id="{4c865fd4-ffd1-4df1-9af0-d873a34b375c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{958edc02-5bcc-4813-991b-a6103afd8def}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{0b2ed8ba-cfde-4758-9655-c7e9f6ac6ca4}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_State" Id="{9368ce12-0804-41b4-abeb-930af80dc7f3}">
+      <Declaration><![CDATA[PROPERTY P_State : BOOL]]></Declaration>
+      <Get Name="Get" Id="{4cf1cb3a-87ab-4eb1-8f2e-80a02f0f3713}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

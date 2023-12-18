@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_CLOCK" Id="{c3a7b636-fbdd-479c-8812-9b48adba5e56}">
+    <Declaration><![CDATA[INTERFACE I_CLOCK EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_GetTimerET" Id="{bdd55b09-889d-49c4-b240-0f6b824a6790}">
+      <Declaration><![CDATA[METHOD M_GetTimerET : STRING
+VAR_INPUT
+  /// Default: hhh:mm:ss
+  bCustomFormat:      BOOL;
+  /// Timeformat: mm/ss or hh-mm-ss or dd/hh/mm/ss
+  sFormat:            STRING;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_PauseTimer" Id="{b447ee6a-b28b-45b4-aa47-7c6353fc9c57}">
+      <Declaration><![CDATA[METHOD M_PauseTimer : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_StartTimer" Id="{970809a9-24b9-4f42-8dd8-ce6ab5b701e5}">
+      <Declaration><![CDATA[METHOD M_StartTimer : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_StopTimer" Id="{ac9819e6-4605-4514-9cd9-4cb64faec52f}">
+      <Declaration><![CDATA[METHOD M_StopTimer : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_WaitForTimer" Id="{c8e5020d-e734-485a-be67-17016cb2aad0}">
+      <Declaration><![CDATA[METHOD M_WaitForTimer : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_SystemTime" Id="{b976e4d2-dbe0-4e4b-a355-ed705ba77c6e}">
+      <Declaration><![CDATA[PROPERTY P_SystemTime : STRING]]></Declaration>
+      <Get Name="Get" Id="{a848b9eb-c8d2-43bd-ab3d-4437a327d8a2}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

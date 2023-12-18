@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_GENERAL_HMI" Id="{e6e6d47a-315b-4b64-b343-cc34254abb1c}">
+    <Declaration><![CDATA[TYPE ST_GENERAL_HMI :
+STRUCT
+	strObjectName:  STRING;
+	strActiveState: STRING;
+	xErrorState:    WORD;
+	bEnableCtrl:    BOOL;
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

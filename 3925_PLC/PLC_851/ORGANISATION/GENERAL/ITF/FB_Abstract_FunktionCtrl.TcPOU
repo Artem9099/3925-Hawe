@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Abstract_FunktionCtrl" Id="{ff5f2b89-1b30-43c2-a00b-c8ec90b43ee8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK ABSTRACT FB_Abstract_FunktionCtrl IMPLEMENTS I_FunctionCtrl
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Busy" Id="{497c1c79-67ce-475a-a452-b4670b01db12}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY Busy : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{b8b4f636-0d4a-408d-97de-2e9401191a01}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Done" Id="{a0f4a82f-3362-40ab-90a0-0011c210bc70}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY Done : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{adae057c-2684-42b9-a198-2d01bde115a5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Error" Id="{4330901d-d320-480e-9eb4-59415bbc5581}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY Error : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{bcbe9b96-a283-4c08-8b70-63d7ce4a14ea}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="ErrorCode" Id="{0eb279b9-0427-4070-a0a0-71d3fda85eb2}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY ErrorCode : WORD
+]]></Declaration>
+      <Get Name="Get" Id="{6abf26f8-7f80-4879-bd81-1fe656a46730}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Execute" Id="{e0d3cf87-10e2-4494-88e5-b0c097c56d1b}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD Execute : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Ready" Id="{2840f109-1265-47cc-9854-00cdd2edf4b0}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY Ready : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{8598d7ce-0e7d-4f71-8bc4-31055f4d134d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{ed6deedd-244e-40eb-9e89-ef9e83a462d9}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Abstract_FunktionCtrl">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Busy.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Done.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.ErrorCode.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Execute">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Ready.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Abstract_FunktionCtrl.Reset">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

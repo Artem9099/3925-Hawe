@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <Itf Name="I_SIMU_ANALOG_IN" Id="{ece7f3e5-e7b4-4990-a583-9799e37e06f8}">
+    <Declaration><![CDATA[INTERFACE I_SIMU_ANALOG_IN EXTENDS I_ANALOG_IN
+]]></Declaration>
+    <Property Name="P_SETPOINT" Id="{83e10947-9fc3-4e3e-9dc3-9204cda7a7a2}">
+      <Declaration><![CDATA[PROPERTY P_SETPOINT : LREAL]]></Declaration>
+      <Set Name="Set" Id="{247ab943-9e04-4af4-a051-d109629ffa17}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

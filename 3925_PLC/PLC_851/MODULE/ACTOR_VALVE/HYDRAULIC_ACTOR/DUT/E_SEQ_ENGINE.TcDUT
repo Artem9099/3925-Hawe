@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SEQ_ENGINE" Id="{f9a8d696-78be-401f-9976-8b91deedc688}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SEQ_ENGINE :
+(
+	// GENERAL STEPS
+	BASE := 0,
+  INIT,
+  SETUP,
+  // Process
+  ON,
+  OFF,
+  OPEN,
+  CLOSE,
+  BYPASS,
+  
+  END,
+	ERROR_SEQ	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

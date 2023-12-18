@@ -1,0 +1,57 @@
+{
+  "function": {
+    "name": "ListRecipesAsReferenceArray",
+    "namespace": "",
+    "displayName": "ListRecipesAsReferenceArray",
+    "description": "Parses a recipe folder and returns a string array with the RecipeReferences",
+    "waitMode": "Asynchronous",
+    "category": "Recipe",
+    "returnValue": {
+      "type": "tchmi:general#/definitions/Array",
+      "description": ""
+    },
+    "visible": true,
+    "injectContextObject": true,
+    "arguments": [
+      {
+        "name": "ctx",
+        "displayName": "ctx",
+        "type": "tchmi:framework#/definitions/ContextReference",
+        "description": "Context Reference",
+        "defaultValue": "",
+        "required": true,
+        "bindable": false,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "recipeList",
+        "displayName": "recipeList",
+        "type": "tchmi:server#/definitions/folderRecipe",
+        "description": "Recipe symbol so the function is updated again when recipe list is changed",
+        "defaultValue": "%s%TcHmiRecipeManagement.Config::recipeList%/s%",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "filter",
+        "displayName": "filter",
+        "type": "tchmi:general#/definitions/String",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.742.5/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json",
+  "apiVersion": 1,
+  "dependencyFiles": []
+}

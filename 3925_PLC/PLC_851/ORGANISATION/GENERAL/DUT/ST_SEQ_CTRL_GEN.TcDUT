@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_SEQ_CTRL_GEN" Id="{f17ba38b-cd5e-404b-b6a0-8cbc790f7786}">
+    <Declaration><![CDATA[TYPE ST_SEQ_CTRL_GEN :
+STRUCT
+	strObject:												                      STRING;
+	strObjectPath:											                    STRING;
+	eActiveSeqState:                   						          E_SEQ_GENERAL;
+	eLastActiveSeqState:                   					        E_SEQ_GENERAL;
+	iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=-1;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;  
+  bExitSetReadyState:                                     BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,3178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_CYLINDER_DA_TESTDEV2_4" Id="{97ea8e37-52c6-4c5b-b9f6-4c7c70082a8f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CYLINDER_DA_TESTDEV2_4 IMPLEMENTS I_CYLINDER_DA_TESTDEV2_4
+VAR_INPUT
+  bDoableActing:                                          BOOL;
+  lrCurrentPosAbs:                                        LREAL;
+  rCurrentPressureInBar:                                  REAL;
+  rCurrentPressureInBarA:                                 REAL;
+  rCurrentPressureInBarB:                                 REAL;
+  /// Cylinder piston surface A
+  lrPistonSurfaceA:                                       LREAL;
+  /// Cylinder piston surface B
+  lrPistonSurfaceB:                                       LREAL;
+  // Speed regulation
+  rRegulationFactor:                                      REAL;
+  rRegulationTolerance:                                   REAL;
+END_VAR
+VAR //General
+	{attribute 'instance-path'} 
+  {attribute 'noinit'} 
+	strInstancePath:									                      STRING;
+	bInit: 												                          BOOL:=TRUE;
+	strFullObjectPath: 								                      STRING;
+	stEvent:											                          ST_EVENT;
+	bAck:												                            BOOL;
+END_VAR
+VAR   // From FB_init	
+	itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;
+  itfOpModeVisu:											                    I_OP_MODE_PAUSE_VISU;
+  itfValve_CylCtrl:                                       I_VALVE_X_3_PROP;
+  itfValve_LockA:                                         I_VALVE_X_2;
+  itfValve_LockB:                                         I_VALVE_X_2;
+  itfValve_PressureLimit:                                 I_PRV_PROP;
+  rEndPosTol:                                             REAL;
+  /// Volume flow in l/min or dm³/min
+  rPumpVolumeFlow:                                        REAL; // Volumenstrom
+  /// Pump efficiency factor (0,5-1)
+  rPumpEfficiencyFactor:                                  REAL; // Wirkungsgrad
+END_VAR                                      				
+VAR	// Step chain control                				
+  eSeq, eLastSeq, eNextSeq:					                      E_SEQ_CYLINDER; 
+                  				
+  //eActiveSeqState, eLastActiveSeqState:                 E_SEQ_GENERAL;
+	(*
+  iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=0;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+	i:														                          INT;
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
+*)
+i:														                            INT;
+ii:														                            INT;
+iii:														                          INT;
+stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;     	
+END_VAR                                             		
+VAR                                                 		
+	bMethodeFromExtStarted:									                BOOL;
+	bMethodeFromExtActive:									                BOOL;
+	bMethodeFromExtDone:									                  BOOL;
+	strTemp:												                        STRING;
+END_VAR   
+VAR
+  stHMI:                                                  ST_HMI_CYLINDER;
+  lrToSetPos:                                             LREAL;
+  rTargetPressureInBarA:                                  REAL;
+  rTargetPressureInBarB:                                  REAL;
+  rTargetPressureInForceA:                                REAL;
+  rTargetPressureInForceB:                                REAL;
+  rTargetPressureInPercentA:                              REAL;
+  rTargetPressureInPercentB:                              REAL;
+  iTargetPressureAsValueA:                                INT;
+  iTargetPressureAsValueB:                                INT;
+  rSpeedInPercentToSet:                                   REAL;
+  rSpeedInMmPerSToSet:                                    REAL;
+  rCurrentSpeedInMmPerS:                                  REAL;
+  bStrokeLengthInitialized:                               BOOL;
+  rStrokeLength:                                          REAL;
+  lrPos:                                                  LREAL;
+  lrPosZero:                                              LREAL;
+  lrPosMax:                                               LREAL;
+  bOpenChA:                                               BOOL;
+	bOpenChB:                                               BOOL;
+END_VAR
+VAR // Recording
+  stRecord:											                          ST_RECORD;	 
+	tonSaveInterval:											                  TON; 
+	iCntRecord:											                        INT;	
+	listGainRampData:									                      ARRAY[0..499] OF stMesswerte;
+	stCurrentRamp:										                      stRampAnalytic;
+	iCycleCntNormal:									                      INT;	
+	uiLinRegStart:										                      UINT:=0;
+  uiLinRegEnd:										                        UINT:=299; 
+  rGainLimit_EndPos:                                      REAL:=0.1;
+  lrLastPos:                                              LREAL;
+  bJogCtrlBusy:                                           BOOL;
+  bStartHPTrigger:                                        BOOL;
+  bStartWPTrigger:                                        BOOL;
+  bStopTrigger:                                           BOOL;
+  bStartCalibrationClicked:                               BOOL;
+  // Speed
+  listPosTable:                                           ARRAY[1..100] OF REAL;
+  lrTotalPath:                                            LREAL;
+  x:                                                      INT;
+  xx:                                                     INT;
+  iCorrectedSpeedValue:                                   INT;
+  rCorrectedSpeedPercent:                                 REAL;
+  bRegulation:                                            BOOL;
+  bRegulationTrigger:                                     BOOL;
+  uiRegulationSeq:                                        UINT := 0;
+  bCorrectionTrigger:                                     BOOL;
+  bRegulationBusy:                                        BOOL;
+  rCurrentForceInKN:                                      REAL;
+  rCurrentForceInN:                                       REAL;
+  rActiveForce:                                           REAL;
+  iCorrectedPressureAsValue:                              INT;
+  bPressureRegulationTrigger:                             BOOL;
+  bPressureRegulationBusy:                                BOOL;
+  rPressureRegulationTolerance:                           REAL := 100;
+  bPressureCorrectionTrigger:                             BOOL;
+  uiPressureRegulationSeq:                                UINT := 0;
+  rPressureRegulationFactor:                              REAL := 0.005;
+  bPressureRegulation:                                    BOOL;
+END_VAR                	
+VAR_TEMP                    	
+	iTemp:										                              INT;
+END_VAR
+VAR PERSISTENT
+	listCylCalibration:                                     ARRAY[1..2, 1..100] OF LREAL;
+  listCalibrationTable:                                   ARRAY[1..7] OF ST_CYL_CALIBRATION;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Set FBs and Interfaces ready after switch internal step
+IF stSeqCtrlGeneral.iInternalSeqStateCase <> stSeqCtrlGeneral.iLastInternalSeqStateCase AND NOT stSeqCtrlGeneral.bExitSetReadyState THEN
+  IF TRUE
+  AND itfValve_CylCtrl.M_SetReady()
+  AND itfValve_LockA.M_SetReady()
+  AND itfValve_LockB.M_SetReady()
+  AND itfValve_PressureLimit.M_SetReady()
+  THEN
+    stSeqCtrlGeneral.bExitSetReadyState := TRUE;
+  ELSE
+    RETURN;
+  END_IF
+END_IF
+
+stSeqCtrlGeneral.strObjectPath := strInstancePath;
+stSeqCtrlGeneral.strObject := F_CreateObjectName(strInstancePath);
+
+rCurrentForceInKN := P_CurrentForceInKN;
+rCurrentForceInN := P_CurrentForceInKN * 1000;
+
+// First method call
+_m_SequenceManager();
+//_m_SaveLastStep();
+_m_Recording();
+_m_SpeedRegulation();
+_m_PressureRegulation();
+_m_PressureCalibration();
+_m_HMI();
+
+CASE eSeq OF 
+  E_SEQ_CYLINDER.BASE:;
+  
+	E_SEQ_CYLINDER.INIT: _m_Seq_INIT();
+		IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+		
+	E_SEQ_CYLINDER.SETUP:;
+  
+	// Process
+  E_SEQ_CYLINDER.SET_MAX_POS: _m_Seq_SET_MAX_POS();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.SET_WORK_PRESSURE: _m_Seq_SET_WORK_PRESSURE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.SET_ZERO_POS: _m_Seq_SET_ZERO_POS();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.STOP: _m_Seq_STOP();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+    
+  E_SEQ_CYLINDER.STOP_AND_LOCK: _m_Seq_STOP_AND_LOCK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.TO_HP: _m_Seq_TO_HP();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.TO_SET_POS: _m_Seq_TO_SET_POS();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+  
+  E_SEQ_CYLINDER.TO_WP: _m_Seq_TO_WP();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+    
+  E_SEQ_CYLINDER.PRESSURE_CALIBRATION: _m_Seq_PRESSURE_CALIBRATION();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+    
+  E_SEQ_CYLINDER.OPEN_LOCK_VALVES: _m_Seq_OPEN_LOCK_VALVES();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_CYLINDER.BASE;
+		END_IF
+
+  // End
+	E_SEQ_CYLINDER.END:;
+	E_SEQ_CYLINDER.ERROR_SEQ:;	
+END_CASE
+
+strTemp:=TO_STRING(eSeq);
+]]></ST>
+    </Implementation>
+    <Folder Name="PRIVAT" Id="{8e2f15c2-a514-4057-96f5-a6a18a5d19c5}" />
+    <Folder Name="SEQUENCE" Id="{9e86da35-320f-4ee3-8510-8e6cc04be184}" />
+    <Method Name="_m_DebugManager" Id="{79d2b68c-22b0-4cdf-bd60-071c4851d8b7}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.stSeqCtrlGeneral.bDebugModeActive 
+AND NOT THIS^.stSeqCtrlGeneral.bActiveStep
+THEN
+
+
+THIS^.stSeqCtrlGeneral.bBreakpointActive:=FALSE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.stSeqCtrlGeneral.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.stSeqCtrlGeneral.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{856feeca-3e3a-4609-8b25-ce1f35e7bb13}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bDelayActive:=TRUE;
+THIS^.stSeqCtrlGeneral.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{b50d0c35-3f23-44d1-a808-5e1c1c35d80d}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			    	E_STEP_STATE_TYPE;
+	InfoTextID:					STRING(20);
+	EnableDebug:	   			BOOL;	
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	THIS^.stSeqCtrlGeneral.eStep_Type:=StepType;
+	THIS^.stSeqCtrlGeneral.strExtraInfo:= GenLib.F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='',strTxtLstName:=InfoTextID);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_HMI" Id="{1c279bcb-26eb-4900-8dde-ac5b0eb3a667}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_HMI : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stHMI.bInHP := THIS^.lrPos <= 1;
+THIS^.stHMI.bInWP := THIS^.lrPos >= rStrokeLength - 1;
+THIS^.stHMI.bPressureOk := THIS^.rCurrentPressureInBar > 25;
+THIS^.stHMI.lrCurrentPos := THIS^.lrPos;
+THIS^.stHMI.lrMaxPosVal := THIS^.lrPosMax;
+THIS^.stHMI.lrMinPosVal := THIS^.lrPosZero;
+THIS^.stHMI.sState := TO_STRING(THIS^.eSeq);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_ManualOperation" Id="{59d66084-9529-430f-8e53-6a67aff100f7}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_ManualOperation : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE 
+AND THIS^.itfOpMode.P_OP_MODE_STATE = OP_MODE.MANUAL 
+AND THIS^.itfOpModeVisu.P_HandSelected
+AND THIS^.stHMI.bToHPTriggered
+AND NOT THIS^.bJogCtrlBusy
+THEN
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+  THIS^.bStartHPTrigger := TRUE;
+  THIS^.bJogCtrlBusy := TRUE;
+ELSIF TRUE 
+AND THIS^.itfOpMode.P_OP_MODE_STATE = OP_MODE.MANUAL 
+AND THIS^.itfOpModeVisu.P_HandSelected
+AND THIS^.stHMI.bToWPTriggered
+AND NOT THIS^.bJogCtrlBusy
+THEN
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+  THIS^.bStartWPTrigger := TRUE;
+  THIS^.bJogCtrlBusy := TRUE; 
+ELSIF TRUE 
+AND THIS^.itfOpMode.P_OP_MODE_STATE = OP_MODE.MANUAL 
+AND THIS^.itfOpModeVisu.P_HandSelected
+AND THIS^.stHMI.bToSetPosTriggered
+AND NOT THIS^.bJogCtrlBusy
+THEN
+  //M_ToSetPos(lrToSetPos:= 500, rSpeedInPercent:= 100);
+  THIS^.bJogCtrlBusy := TRUE;
+ELSIF TRUE 
+AND THIS^.itfOpMode.P_OP_MODE_STATE = OP_MODE.MANUAL 
+AND THIS^.itfOpModeVisu.P_HandSelected
+AND NOT THIS^.stHMI.bToHPTriggered
+AND NOT THIS^.stHMI.bToWPTriggered
+AND NOT THIS^.stHMI.bToSetPosTriggered
+AND THIS^.bJogCtrlBusy
+THEN
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+  THIS^.bStopTrigger := TRUE;
+  THIS^.bStartHPTrigger := FALSE;
+  THIS^.bStartWPTrigger := FALSE;
+  THIS^.bJogCtrlBusy := FALSE;
+END_IF
+
+
+
+IF THIS^.bStartWPTrigger THEN
+  IF M_ToWP(ePressureType:= E_PRESSURE_TYPE.PERCENT, rWorkPressure:= 50, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100) THEN
+    THIS^.bStartWPTrigger := FALSE;
+	END_IF
+END_IF
+IF THIS^.bStartHPTrigger THEN
+  IF M_ToHP(ePressureType:= E_PRESSURE_TYPE.PERCENT, rWorkPressure:= 50, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100) THEN
+    THIS^.bStartHPTrigger := FALSE;
+	END_IF
+END_IF
+IF THIS^.bStopTrigger THEN
+  IF M_Stop() THEN
+    THIS^.bStopTrigger := FALSE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_PressureCalibration" Id="{a29df983-2563-417d-b988-6acbf555ea9d}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_PressureCalibration : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Calibration clicked
+IF TRUE
+AND THIS^.itfOpMode.P_OP_MODE_STATE = OP_MODE.MANUAL 
+AND THIS^.bStartCalibrationClicked 
+THEN
+  IF M_PressureCalibration() THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+    THIS^.bStartCalibrationClicked := FALSE;
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_PressureRegulation" Id="{c5939910-43d2-4b7a-9d0f-32050bbd5181}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[(******************Description****************)
+// This function allows variable pressure control
+(*********************************************)
+METHOD PRIVATE _m_PressureRegulation : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.rCurrentForceInN < THIS^.rActiveForce 
+AND THIS^.iCorrectedPressureAsValue < 32768
+AND THIS^.bPressureRegulationTrigger
+AND NOT THIS^.bPressureRegulationBusy
+THEN
+  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rPressureRegulationTolerance THEN
+    //THIS^.iCorrectedPressureAsValue := THIS^.iCorrectedPressureAsValue + 100;
+    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue + ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rPressureRegulationFactor));
+    THIS^.bPressureCorrectionTrigger := TRUE;
+  END_IF
+ELSIF TRUE
+AND THIS^.rCurrentForceInN > THIS^.rActiveForce 
+AND THIS^.iCorrectedPressureAsValue > 0
+AND THIS^.bPressureRegulationTrigger
+AND NOT THIS^.bPressureRegulationBusy
+THEN
+  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rPressureRegulationTolerance THEN
+    //THIS^.iCorrectedPressureAsValue := THIS^.iCorrectedPressureAsValue - 100;
+    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue - ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rPressureRegulationFactor));
+    THIS^.bPressureCorrectionTrigger := TRUE;
+  END_IF
+END_IF
+
+// Set Valve value correction
+IF THIS^.bPressureCorrectionTrigger THEN
+  THIS^.bPressureRegulationBusy:= TRUE;
+  CASE THIS^.uiPressureRegulationSeq OF
+    0:;
+      IF THIS^.itfValve_PressureLimit.M_SetReady() THEN
+        THIS^.uiPressureRegulationSeq := 1;
+	    END_IF
+    1:;
+      IF THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= iCorrectedPressureAsValue) THEN
+        THIS^.bPressureCorrectionTrigger := FALSE;
+        THIS^.bPressureRegulationBusy := FALSE;
+        THIS^.uiPressureRegulationSeq := 0;
+	    END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Recording" Id="{f191d7fb-3df2-400d-b56b-38bef0fcbe76}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Recording : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i:                      DINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Recording data for 5s
+tonSaveInterval(IN:= NOT tonSaveInterval.Q, pt:= T#100MS);
+
+IF iCntRecord > 499 OR iCntRecord < 0 THEN
+	iCntRecord := 0;
+END_IF
+
+IF THIS^.tonSaveInterval.Q THEN
+	FOR i := 299 TO 1 BY -1 DO
+		THIS^.stRecord.listRecordData[i].rPosition := THIS^.stRecord.listRecordData[i - 1].rPosition;	                                  		
+		THIS^.stRecord.listRecordData[i].rPressureInBar := THIS^.stRecord.listRecordData[i - 1].rPressureInBar;
+	END_FOR		
+
+	// Messergebnisse in Array eintragen	
+	THIS^.stRecord.listRecordData[i].rPosition :=	THIS^.lrPos;
+	THIS^.stRecord.listRecordData[i].rPressureInBar := THIS^.rCurrentPressureInBar;
+END_IF
+
+// Calibration table
+FOR THIS^.iii := 1 TO 7 BY 1 DO
+  THIS^.listCylCalibration[2, THIS^.iii] := TO_LREAL(THIS^.listCalibrationTable[THIS^.iii].uiValue);
+  THIS^.listCylCalibration[1, THIS^.iii] := TO_LREAL(THIS^.listCalibrationTable[THIS^.iii].uiPressure);
+END_FOR
+
+// Position
+THIS^.lrPos := -(THIS^.lrCurrentPosAbs / 1000 - THIS^.lrPosZero);
+THIS^.rStrokeLength := -(THIS^.lrPosMax - THIS^.lrPosZero);
+
+// Speed
+IF THIS^.x < 1 OR THIS^.x > 100 THEN
+  THIS^.x := 1;
+END_IF
+THIS^.listPosTable[THIS^.x] := THIS^.lrPos - THIS^.lrLastPos;
+THIS^.lrTotalPath := 0;
+FOR THIS^.xx := 1 TO 100 BY 1 DO
+  THIS^.lrTotalPath := THIS^.lrTotalPath + THIS^.listPosTable[THIS^.xx];
+END_FOR
+THIS^.rCurrentSpeedInMmPerS := THIS^.lrTotalPath;
+THIS^.x := THIS^.x + 1;
+THIS^.lrLastPos := THIS^.lrPos;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{5cf31f0f-e3bf-48fa-9ae6-48ef078b02e3}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			stSeqCtrlGeneral.listLastSteps[i].strStepName:=stSeqCtrlGeneral.listLastSteps[i-1].strStepName;
+			stSeqCtrlGeneral.listLastSteps[i].tStepTime:=stSeqCtrlGeneral.listLastSteps[i-1].tStepTime;
+			stSeqCtrlGeneral.listLastSteps[i].tDelayTime:=stSeqCtrlGeneral.listLastSteps[i-1].tDelayTime;
+	END_FOR
+	stSeqCtrlGeneral.listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;
+ELSE
+	stSeqCtrlGeneral.listLastSteps[0].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[0].tDelayTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_INIT" Id="{0dbbe223-f4f7-4907-a129-a8f58878da9e}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_INIT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	i:         INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Reset valves
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_Reset()
+      AND THIS^.itfValve_LockA.M_ToHP(tDelay:= T#10MS)
+      AND THIS^.itfValve_LockB.M_ToHP(tDelay:= T#10MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_OPEN_LOCK_VALVES" Id="{fba68cf5-e454-4578-97e5-2876b03c4464}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_OPEN_LOCK_VALVES : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:	// Check if open A
+      IF TRUE
+			THEN 
+        IF THIS^.bOpenChA THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        END_IF
+			END_IF
+
+    10:	// Open A
+      IF TRUE 
+      AND THIS^.itfValve_LockA.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+			END_IF
+      
+		20:	// Close A
+      IF TRUE
+      AND THIS^.itfValve_LockA.M_ToHP(tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+			END_IF
+      
+    30:	// Check if open B
+      IF TRUE
+			THEN 
+        IF THIS^.bOpenChB THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50;
+        END_IF
+			END_IF
+
+    40:	// Open B
+      IF TRUE
+      AND THIS^.itfValve_LockB.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+		50:	// Close B
+      IF TRUE
+      AND THIS^.itfValve_LockB.M_ToHP(tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_PRESSURE_CALIBRATION" Id="{66fdb8d7-8ea4-434e-934c-e1d9b08d5d90}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_PRESSURE_CALIBRATION : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq:  STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.ii := 1;
+    FOR THIS^.ii := 1 TO 7 BY 1 DO
+      THIS^.listCalibrationTable[THIS^.ii].uiValue := 0;
+      THIS^.listCalibrationTable[THIS^.ii].uiPressure := 0;
+      THIS^.listCalibrationTable[THIS^.ii].uiState := 0;
+		END_FOR
+    THIS^.ii := 1;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set work pressure value to XXXX
+      IF TRUE
+      AND THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= 1000 * THIS^.ii)
+			THEN 
+        THIS^.listCalibrationTable[THIS^.ii].uiValue := TO_UINT(1000 * THIS^.ii);
+        THIS^.listCalibrationTable[THIS^.ii].uiState := 1;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+    10:	// Open A channel
+      IF TRUE
+      AND THIS^.itfValve_LockA.M_ToWP1(tDelay:= T#10MS)
+			THEN 
+        IF THIS^.bDoableActing THEN
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+        END_IF
+			END_IF
+      
+    20:	// Open B channel
+      IF TRUE
+      AND THIS^.itfValve_LockB.M_ToWP1(tDelay:= T#10MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+			END_IF
+      
+    30: // Move cylinder to WP
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= 100, tDelay:= T#10MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40;
+			END_IF
+      
+    40: // Choice step
+      IF TRUE
+      THEN
+        IF THIS^.ii = 1 THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
+				END_IF
+			END_IF
+      
+    50: // Delay step (wait for cylinder end position)
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#30S)
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
+			END_IF
+      
+    60: // Delay step (cylinder under load)
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#5S)
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
+			END_IF
+      
+    70: // Save pressure
+      IF TRUE
+      THEN
+        THIS^.listCalibrationTable[THIS^.ii].uiPressure := TO_UINT(THIS^.rCurrentPressureInBar);
+        THIS^.listCalibrationTable[THIS^.ii].uiState := 2;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
+			END_IF
+      
+    80: // Decide step
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#1S)
+      THEN
+        IF THIS^.ii >= 7 OR THIS^.ii < 1 THEN
+          THIS^.ii := 1;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+        ELSE
+          THIS^.ii := THIS^.ii + 1;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+				END_IF
+			END_IF
+      
+    1000: // Stop and exit
+      IF TRUE
+      AND THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= 0)
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= 0, tDelay:= T#10MS)
+      AND THIS^.itfValve_LockA.M_ToHP(tDelay:= T#10MS)
+      AND THIS^.itfValve_LockB.M_ToHP(tDelay:= T#10MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_SET_MAX_POS" Id="{1c313491-53e4-4cb6-b8c4-19c72d5e0c3f}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_SET_MAX_POS : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set max position
+      IF TRUE 
+			THEN 
+        THIS^.lrPosMax := THIS^.lrCurrentPosAbs / 1000;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_SET_WORK_PRESSURE" Id="{5bd8dfdc-3e09-42da-9a69-5d1f7166ee39}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_SET_WORK_PRESSURE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set work pressure
+      IF TRUE
+      AND THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= TO_REAL(THIS^.iTargetPressureAsValueA))
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_SET_ZERO_POS" Id="{a68ba7e8-2e89-436b-979d-7848b42749a0}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_SET_ZERO_POS : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set zero position
+      IF TRUE 
+			THEN 
+        THIS^.lrPosZero := THIS^.lrCurrentPosAbs / 1000;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_STOP" Id="{3f4cb39c-87c8-45d7-83f9-d788327f0fda}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_STOP : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+    THIS^.bRegulationTrigger := FALSE;
+    THIS^.bPressureRegulationTrigger := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0: // Switch off valves
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= 0, tDelay:= T#0MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_STOP_AND_LOCK" Id="{e676dac5-cdf7-4008-b679-850265bd659a}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_STOP_AND_LOCK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+    THIS^.bRegulationTrigger := FALSE;
+    THIS^.bPressureRegulationTrigger := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0: // Switch off valves
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= 0, tDelay:= T#0MS)
+      AND THIS^.itfValve_LockA.M_ToHP(tDelay:= T#0MS)
+      AND THIS^.itfValve_LockB.M_ToHP(tDelay:= T#0MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_HP" Id="{277af6aa-4d66-4668-9815-97a21a93fcb2}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_HP : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+    THIS^.bRegulationTrigger := FALSE;
+    THIS^.bPressureRegulationTrigger := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set work pressure
+      IF TRUE
+      AND THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= TO_REAL(THIS^.iTargetPressureAsValueB))
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+    
+    10:	// Switch on lock A valve
+      IF TRUE
+      AND THIS^.itfValve_LockA.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+        IF THIS^.bDoableActing THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+        END_IF
+			END_IF
+      
+    20:	// Switch on lock B valve
+      IF TRUE
+      AND THIS^.itfValve_LockB.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+			END_IF
+      
+    30:	// Set valve control
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= THIS^.rSpeedInPercentToSet, tDelay:= T#0MS)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+  THIS^.bRegulationTrigger := THIS^.bRegulation;
+  THIS^.bPressureRegulationTrigger := THIS^.bPressureRegulation;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_SET_POS" Id="{089e07e1-50e6-4787-97f9-672766abf814}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_SET_POS : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Switch valves
+      IF TRUE
+      AND THIS^.itfValve_LockA.M_ToWP1(tDelay:= T#10MS)
+      AND THIS^.itfValve_LockB.M_ToWP1(tDelay:= T#10MS)
+			THEN 
+        IF bStrokeLengthInitialized 
+        AND THIS^.lrToSetPos <= THIS^.rStrokeLength 
+        AND THIS^.lrToSetPos >= 0.0 
+        THEN
+          // Set direction
+          IF THIS^.lrPos > THIS^.lrToSetPos THEN
+            THIS^.rSpeedInPercentToSet := -ABS(THIS^.rSpeedInPercentToSet);
+			    END_IF
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+        ELSE
+          THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+				END_IF
+			END_IF
+      
+    10: // Move cylinder to HP and wait for endposition
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= THIS^.rSpeedInPercentToSet, tDelay:= T#10MS)
+			THEN 
+        IF THIS^.lrPos < THIS^.rEndPosTol THEN
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        END_IF
+			END_IF
+      
+    20: // Switch off valves
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= 0, tDelay:= T#10MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_WP" Id="{8abb5d2e-1ad0-4a09-baa5-337f73174c94}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_WP : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+    THIS^.bRegulationTrigger := FALSE;
+    THIS^.bPressureRegulationTrigger := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Set work pressure
+      IF TRUE
+      AND THIS^.itfValve_PressureLimit.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.VALUE, rLimit:= TO_REAL(THIS^.iTargetPressureAsValueA))
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Switch on lock A valve
+      IF TRUE
+      AND THIS^.itfValve_LockA.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+        IF THIS^.bDoableActing THEN
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+        END_IF
+			END_IF
+      
+    20:	// Switch on lock B valve
+      IF TRUE
+      AND THIS^.itfValve_LockB.M_ToWP1(tDelay:= T#0MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+			END_IF
+      
+    30:	// Set valve control
+      IF TRUE
+      AND THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= THIS^.rSpeedInPercentToSet, tDelay:= T#0MS)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+  THIS^.bRegulationTrigger := THIS^.bRegulation;
+  THIS^.bPressureRegulationTrigger := THIS^.bPressureRegulation;
+  
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{e0143faa-af89-4598-bb90-50264b1e57a3}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FALSE
+//AND THIS^.eActiveSeqState=DONE 
+AND eLastSeq<>eSeq
+THEN
+	IF THIS^.stSeqCtrlGeneral.eActiveSeqState<>E_SEQ_GENERAL.EXECUTE THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.READY;
+	END_IF
+END_IF
+
+eSeq := eNextSeq;
+
+//DelayTimer und TimeOut Timer verwalten
+stSeqCtrlGeneral.bActiveStep:=	TRUE
+				AND eLastSeq					=	eSeq
+				AND stSeqCtrlGeneral.eLastActiveSeqState			=	stSeqCtrlGeneral.eActiveSeqState
+				AND	stSeqCtrlGeneral.iLastInternalSeqStateCase	=	stSeqCtrlGeneral.iInternalSeqStateCase
+				;
+			
+IF NOT stSeqCtrlGeneral.bActiveStep THEN
+	stSeqCtrlGeneral.bDelayActive:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveQuit:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveNoQuit:=FALSE;
+  THIS^.stSeqCtrlGeneral.strExtraInfo:='';
+END_IF
+
+_m_SaveLastStep();
+stSeqCtrlGeneral.tonDelay	(IN:=stSeqCtrlGeneral.bActiveStep AND stSeqCtrlGeneral.bDelayActive, 		PT:=stSeqCtrlGeneral.tDelay);
+stSeqCtrlGeneral.tonTimeOut	(IN:=stSeqCtrlGeneral.bActiveStep AND (stSeqCtrlGeneral.bTimeOutActiveNoQuit OR stSeqCtrlGeneral.bTimeOutActiveQuit), 	PT:=stSeqCtrlGeneral.tTimeOut);
+stSeqCtrlGeneral.tonStepTime	(IN:= stSeqCtrlGeneral.bActiveStep, PT:= T#24H);
+
+IF stSeqCtrlGeneral.tonTimeOut.Q  THEN
+	stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.TIME_OUT;
+END_IF
+
+IF stSeqCtrlGeneral.iError<>0 THEN
+	eSeq:=E_SEQ_CYLINDER.ERROR_SEQ;
+END_IF
+
+
+
+eLastSeq					:=	eSeq;
+stSeqCtrlGeneral.eLastActiveSeqState			:=	stSeqCtrlGeneral.eActiveSeqState;
+stSeqCtrlGeneral.iLastInternalSeqStateCase	:=	stSeqCtrlGeneral.iInternalSeqStateCase;
+
+// Reset set ready state
+IF THIS^.stSeqCtrlGeneral.bExitSetReadyState THEN
+  THIS^.stSeqCtrlGeneral.bExitSetReadyState := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SpeedRegulation" Id="{390b7281-9df3-484d-b044-f5b31eb72aa5}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[(******************Description****************)
+// This function allows variable speed control
+(*********************************************)
+METHOD PRIVATE _m_SpeedRegulation : BOOL
+VAR_INPUT
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.rCurrentSpeedInMmPerS < THIS^.rSpeedInMmPerSToSet 
+AND THIS^.rCorrectedSpeedPercent < 100
+AND THIS^.bRegulationTrigger
+AND NOT THIS^.bRegulationBusy
+THEN
+  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > 1 THEN
+    //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + 0.25;
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.bCorrectionTrigger := TRUE;
+  END_IF
+ELSIF TRUE
+AND THIS^.rCurrentSpeedInMmPerS > THIS^.rSpeedInMmPerSToSet 
+AND THIS^.rCorrectedSpeedPercent > -100
+AND THIS^.bRegulationTrigger
+AND NOT THIS^.bRegulationBusy
+THEN
+  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > 1 THEN
+    //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - 0.25;
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.bCorrectionTrigger := TRUE;
+  END_IF
+END_IF
+
+// Valve value correction
+IF THIS^.bCorrectionTrigger THEN
+  THIS^.bRegulationBusy:= TRUE;
+  CASE THIS^.uiRegulationSeq OF
+    0:;
+      IF THIS^.itfValve_CylCtrl.M_SetReady() THEN
+        THIS^.uiRegulationSeq := 1;
+	    END_IF
+    1:;
+      IF THIS^.itfValve_CylCtrl.M_ValveCtrl(rSpeedInPercent:= THIS^.rCorrectedSpeedPercent, tDelay:= T#0MS) THEN
+        THIS^.bCorrectionTrigger := FALSE;
+        THIS^.bRegulationBusy := FALSE;
+        THIS^.uiRegulationSeq := 0;
+	    END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_TimeOut" Id="{c67cd674-c2eb-411d-97f5-102e7d764c60}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_TimeOut : BOOL
+VAR_INPUT
+	bTimeoutActiveToQuit:	BOOL;
+	bTimeOutActiveNoQuit:	BOOL;
+	tTimeOut:				TIME;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit:=	bTimeoutActiveToQuit;
+THIS^.stSeqCtrlGeneral.bTimeOutActiveNoQuit:=	bTimeOutActiveNoQuit;
+THIS^.stSeqCtrlGeneral.tTimeOut:=			tTimeOut;
+_m_TimeOut:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonTimeOut.Q THEN
+	_m_TimeOut:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{2d7848a9-7666-4c1b-bdd6-8592fa49e770}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+  itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;
+  itfOpModeVisu:											                    I_OP_MODE_PAUSE_VISU;
+  itfValve_CylCtrl:                                       I_VALVE_X_3_PROP;
+  itfValve_LockA:                                         I_VALVE_X_2;
+  itfValve_LockB:                                         I_VALVE_X_2;
+  itfValve_PressureLimit:                                 I_PRV_PROP; 
+  rEndPosTol:                                             REAL;
+  /// Volume flow in l/min or dm³/min
+  rPumpVolumeFlow:                                        REAL; // Volumenstrom
+  /// Pump efficiency factor (0,5-1)
+  rPumpEfficiencyFactor:                                  REAL; // Wirkungsgrad
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
+THIS^.itfOpMode := itfOpMode;
+THIS^.itfOpModeVisu := itfOpModeVisu;
+THIS^.itfValve_CylCtrl := itfValve_CylCtrl;
+THIS^.itfValve_LockA := itfValve_LockA;
+THIS^.itfValve_LockB := itfValve_LockB;
+THIS^.itfValve_PressureLimit := itfValve_PressureLimit;
+THIS^.rEndPosTol := rEndPosTol;
+THIS^.rPumpVolumeFlow := rPumpVolumeFlow;
+THIS^.rPumpEfficiencyFactor := rPumpEfficiencyFactor;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OpenLockValves" Id="{484cdb60-7628-41ea-9551-915c289f1d2c}">
+      <Declaration><![CDATA[METHOD M_OpenLockValves : BOOL
+VAR_INPUT
+	bOpenChA	: BOOL;
+	bOpenChB	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_OpenLockValves := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.bOpenChA := bOpenChA;
+THIS^.bOpenChB := bOpenChB;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.OPEN_LOCK_VALVES;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PressureCalibration" Id="{8539f8c3-9add-4de0-87fe-d2501e9b08af}">
+      <Declaration><![CDATA[METHOD M_PressureCalibration : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_PressureCalibration := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.PRESSURE_CALIBRATION;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{a2440b5a-844c-4787-8936-818037fdbc3a}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Reset := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.INIT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{bac08aef-62ee-42c7-be92-a71fb3d1a55d}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetMaxPos" Id="{3bb6a456-81e1-4ef7-af7b-aa7c5409cce1}">
+      <Declaration><![CDATA[METHOD M_SetMaxPos : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetMaxPos := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.SET_MAX_POS;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetReady" Id="{e041a2a1-c4ec-4a2c-a127-248b8d3b6def}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetWorkPressure" Id="{0d7061f5-c55e-4e7d-bdb4-23fde1282b6d}">
+      <Declaration><![CDATA[METHOD M_SetWorkPressure : BOOL
+VAR_INPUT
+  ePressureType:                   E_PRESSURE_TYPE;
+  rWorkPressure:                   REAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetWorkPressure := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+IF ePressureType = E_PRESSURE_TYPE.BAR THEN
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := rWorkPressure;
+  THIS^.rTargetPressureInForceA := rWorkPressure / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := rWorkPressure / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * rWorkPressure;
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := rWorkPressure , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.FORCE THEN
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInForceB := rWorkPressure;;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInForceA / THIS^.lrPistonSurfaceA * 10;
+  THIS^.rTargetPressureInBarB := THIS^.rTargetPressureInForceB / THIS^.lrPistonSurfaceB * 10;
+  THIS^.rTargetPressureInPercentA := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarA;
+  THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarB;
+  THIS^.iTargetPressureAsValueA := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.PERCENT THEN
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := rWorkPressure;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := THIS^.itfValve_PressureLimit.P_MaxLimitInBar / 100 * rWorkPressure;
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInBarA / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := THIS^.rTargetPressureInBarB / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.iTargetPressureAsValueA := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSE
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := TO_INT(rWorkPressure);
+END_IF
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.SET_WORK_PRESSURE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetZeroPos" Id="{48938c9a-b8d2-4664-b23c-c019e6c4eb56}">
+      <Declaration><![CDATA[METHOD M_SetZeroPos : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetZeroPos := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.SET_ZERO_POS;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stop" Id="{31fdab29-7478-4d54-8099-8513d5f1cbbc}">
+      <Declaration><![CDATA[METHOD M_Stop : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Stop := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.bRegulation := FALSE;
+THIS^.rSpeedInMmPerSToSet := 0;
+THIS^.rSpeedInPercentToSet := 0;
+THIS^.rCorrectedSpeedPercent := 0;
+THIS^.bPressureRegulation := FALSE;
+THIS^.rActiveForce := 0;
+THIS^.iCorrectedPressureAsValue := 0;
+THIS^.bPressureRegulationTrigger := FALSE;
+THIS^.bPressureRegulationBusy := FALSE;
+THIS^.bPressureCorrectionTrigger := FALSE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.STOP;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StopAndLock" Id="{d4415774-5ea1-415c-8baa-883958f9c000}">
+      <Declaration><![CDATA[METHOD M_StopAndLock : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_StopAndLock := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.bRegulation := FALSE;
+THIS^.rSpeedInMmPerSToSet := 0;
+THIS^.rSpeedInPercentToSet := 0;
+THIS^.rCorrectedSpeedPercent := 0;
+THIS^.bPressureRegulation := FALSE;
+THIS^.rActiveForce := 0;
+THIS^.iCorrectedPressureAsValue := 0;
+THIS^.bPressureRegulationTrigger := FALSE;
+THIS^.bPressureRegulationBusy := FALSE;
+THIS^.bPressureCorrectionTrigger := FALSE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.STOP_AND_LOCK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToHP" Id="{3c2757ed-86f0-4ed3-afbe-3e0746100c22}">
+      <Declaration><![CDATA[METHOD M_ToHP : BOOL
+VAR_INPUT
+  /// Bar | Force in N | Percent 0-100 | Value 0-32767
+  ePressureType:            E_PRESSURE_TYPE;
+  rWorkPressure:            REAL;
+  /// Just need for prop valve
+  eSpeedType:               E_SPEED_TYPE;
+  rSpeed:                   REAL;
+END_VAR
+VAR
+  
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToHP := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Der prozentualler Wert wurde pauschal um -15 verringert, da sonst die automatische Regullierung zuviel nachregeln muss (Toter Ventilbereich).
+// Hier mit weiteren Varianten testen, wie sich die Regelung verhällt, evtl parametrierbar.
+
+// Assign input
+IF eSpeedType = E_SPEED_TYPE.MM_PER_SECOND THEN
+  THIS^.bRegulation := TRUE;
+  THIS^.rSpeedInMmPerSToSet := -ABS(rSpeed);
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := -15(*-ABS((3 * THIS^.lrPistonSurfaceB * THIS^.rPumpEfficiencyFactor * rSpeed) / (500 * THIS^.rPumpVolumeFlow))*);
+ELSE
+  THIS^.bRegulation := FALSE;
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := -ABS(rSpeed);
+END_IF
+IF THIS^.rSpeedInPercentToSet < -100 THEN
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := -100;
+END_IF
+
+IF ePressureType = E_PRESSURE_TYPE.BAR THEN
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := rWorkPressure;
+  THIS^.rTargetPressureInForceA := rWorkPressure / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := rWorkPressure / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * rWorkPressure;
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := rWorkPressure , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.FORCE THEN
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInForceB := rWorkPressure;;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInForceA / THIS^.lrPistonSurfaceA * 10;
+  THIS^.rTargetPressureInBarB := THIS^.rTargetPressureInForceB / THIS^.lrPistonSurfaceB * 10;
+  THIS^.rTargetPressureInPercentA := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarA;
+  THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarB;
+  THIS^.iTargetPressureAsValueA := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.PERCENT THEN
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := rWorkPressure;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := THIS^.itfValve_PressureLimit.P_MaxLimitInBar / 100 * rWorkPressure;
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInBarA / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := THIS^.rTargetPressureInBarB / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.iTargetPressureAsValueA := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSE
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := THIS^.iCorrectedPressureAsValue := TO_INT(rWorkPressure);
+END_IF
+THIS^.bPressureRegulation := TRUE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.TO_HP;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToSetPos" Id="{de2ad4a3-4a87-462d-957e-dd66f58826a0}">
+      <Declaration><![CDATA[METHOD M_ToSetPos : BOOL
+VAR_INPUT
+  lrToSetPos:                 LREAL;
+  /// Just need for prop valve
+  eSpeedType:               E_SPEED_TYPE;
+  rSpeed:                   REAL; 
+END_VAR
+VAR
+  lrCylPistonSurface:       LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToSetPos := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.lrToSetPos := lrToSetPos;
+IF eSpeedType = E_SPEED_TYPE.MM_PER_SECOND THEN
+  THIS^.rSpeedInMmPerSToSet := rSpeed;
+  // Convert mm/s to percent
+  IF THIS^.lrPos < lrToSetPos THEN
+    lrCylPistonSurface := THIS^.lrPistonSurfaceA;
+  ELSE
+    lrCylPistonSurface := THIS^.lrPistonSurfaceB;
+  END_IF
+  THIS^.rSpeedInPercentToSet := ABS((3 * lrCylPistonSurface * THIS^.rPumpEfficiencyFactor * rSpeed) / (500 * THIS^.rPumpVolumeFlow));
+ELSE
+  THIS^.rSpeedInPercentToSet := ABS(rSpeed);
+END_IF
+IF THIS^.rSpeedInPercentToSet > 100 THEN
+  THIS^.rSpeedInPercentToSet := 100;
+END_IF
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.TO_SET_POS;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToWP" Id="{f20fedb6-d99d-406d-8512-39518e1da757}">
+      <Declaration><![CDATA[METHOD M_ToWP : BOOL
+VAR_INPUT
+  /// Bar | Force in N | Percent 0-100 | Value 0-32767
+  ePressureType:            E_PRESSURE_TYPE;
+  rWorkPressure:            REAL;
+  /// Just need for prop valve
+  eSpeedType:               E_SPEED_TYPE;
+  rSpeed:                   REAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToWP := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Der prozentualler Wert wurde pauschal um -5 verringert, da sonst die automatische Regullierung zuviel nachregeln muss (Toter Ventilbereich).
+// Hier mit weiteren Varianten testen, wie sich die Regelung verhällt, evtl parametrierbar.
+
+// Assign input
+IF eSpeedType = E_SPEED_TYPE.MM_PER_SECOND THEN
+  THIS^.bRegulation := TRUE;
+  THIS^.rSpeedInMmPerSToSet := ABS(rSpeed);
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := 15(*ABS((3 * THIS^.lrPistonSurfaceA * THIS^.rPumpEfficiencyFactor * rSpeed) / (500 * THIS^.rPumpVolumeFlow))*);
+ELSE
+  THIS^.bRegulation := FALSE;
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := ABS(rSpeed);
+END_IF
+IF THIS^.rSpeedInPercentToSet > 100 THEN
+  THIS^.rSpeedInPercentToSet := THIS^.rCorrectedSpeedPercent := 100;
+END_IF
+
+IF ePressureType = E_PRESSURE_TYPE.BAR THEN
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := rWorkPressure;
+  THIS^.rTargetPressureInForceA := rWorkPressure / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := rWorkPressure / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * rWorkPressure;
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := rWorkPressure , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.FORCE THEN
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInForceB := rWorkPressure;;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInForceA / THIS^.lrPistonSurfaceA * 10;
+  THIS^.rTargetPressureInBarB := THIS^.rTargetPressureInForceB / THIS^.lrPistonSurfaceB * 10;
+  THIS^.rTargetPressureInPercentA := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarA;
+  THIS^.rTargetPressureInPercentB := 100 / THIS^.itfValve_PressureLimit.P_MaxLimitInBar * THIS^.rTargetPressureInBarB;
+  THIS^.iTargetPressureAsValueA := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSIF ePressureType = E_PRESSURE_TYPE.PERCENT THEN
+  THIS^.rTargetPressureInPercentA := THIS^.rTargetPressureInPercentB := rWorkPressure;
+  THIS^.rTargetPressureInBarA := THIS^.rTargetPressureInBarB := THIS^.itfValve_PressureLimit.P_MaxLimitInBar / 100 * rWorkPressure;
+  THIS^.rTargetPressureInForceA := THIS^.rTargetPressureInBarA / 10 * THIS^.lrPistonSurfaceA;
+  THIS^.rTargetPressureInForceB := THIS^.rTargetPressureInBarB / 10 * THIS^.lrPistonSurfaceB;
+  THIS^.iTargetPressureAsValueA := THIS^.iCorrectedPressureAsValue := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarA , arrCalibrate:= listCylCalibration, iPts:= 7));
+  THIS^.iTargetPressureAsValueB := TO_INT(F_InterpolLinear(lrValueUnscale := THIS^.rTargetPressureInBarB , arrCalibrate:= listCylCalibration, iPts:= 7));
+ELSE
+  THIS^.iTargetPressureAsValueA := THIS^.iTargetPressureAsValueB := THIS^.iCorrectedPressureAsValue := TO_INT(rWorkPressure);
+END_IF
+THIS^.bPressureRegulation := TRUE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_CYLINDER.TO_WP;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CurrentForceInKN" Id="{1d02f2e1-3409-4c3a-aaab-7f8ea3fd07ce}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentForceInKN : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{3e702893-cedd-422c-a252-5d8c5eeab856}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF THIS^.rCorrectedSpeedPercent > 0 THEN
+  P_CurrentForceInKN := THIS^.rCurrentPressureInBar / 10000 * THIS^.lrPistonSurfaceA;
+  THIS^.rActiveForce := THIS^.rTargetPressureInForceA;
+ELSE
+  P_CurrentForceInKN := THIS^.rCurrentPressureInBar / 10000 * THIS^.lrPistonSurfaceB;
+  THIS^.rActiveForce := THIS^.rTargetPressureInForceB;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_DoubleActing" Id="{e5d046bb-75a7-45bc-83b1-07bc7309f718}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_DoubleActing : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{9ca19a63-b300-45f6-a6dd-9225e1394b17}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_DoubleActing := THIS^.bDoableActing;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{30513b81-8bc3-49ee-bc61-4bd225b5e5b4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{d4120ef9-cd8a-4717-919b-581a8982f3f6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{2dcf4109-207b-4e9d-bf86-a576c4f29ce1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{968a1f43-57d4-4dd9-9f8a-4b71bfefb580}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{aa86b76d-fc32-48e6-9bbd-e298cd9002a5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath := strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{02187ba3-5dc4-4e46-83f1-b8493e52ce49}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[strInstancePath := P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{d5149326-ed7b-4c18-8372-65df86598c2e}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{2113a43b-4ba7-4f6c-92d4-4175892496d8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{6c6a82ae-8186-4435-8723-296c67333df8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{b048aa7e-5965-469e-a6bd-3352eea42d6c}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{d0e44e42-c828-44e5-bbc6-145dce7a0e2e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_MaxPosVal" Id="{6f779c1b-174d-4e29-9797-b01d37391d84}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_MaxPosVal : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{ce6e330b-5388-4a2a-8628-aa5048131cee}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_MaxPosVal := THIS^.lrPosMax;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_MinPosVal" Id="{e8f350dc-ba59-42e4-bb87-e858560eb644}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_MinPosVal : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{6193b7c8-a22d-4db1-87bf-8632876684c7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_MinPosVal := THIS^.lrPosZero;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PistonSurfaceA" Id="{b27a0bf9-1668-4ed4-883e-62f9b4aaa0ec}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PistonSurfaceA : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{32b0d532-4f6b-42ad-a6eb-8fbdb5cd00ba}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PistonSurfaceA := THIS^.lrPistonSurfaceA;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PistonSurfaceB" Id="{0a1f2ad1-d0b0-4c2d-ab96-5ea58f2ad315}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PistonSurfaceB : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{57435720-e3ad-4686-b619-f1484e54ee8f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PistonSurfaceB := THIS^.lrPistonSurfaceB;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Position" Id="{ecd4dedd-0cb4-4147-ba0a-08c9d58cd630}">
+      <Declaration><![CDATA[PROPERTY P_Position : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{b618bc28-4b43-4b76-93ac-fcf905b068dd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Position := THIS^.lrPos;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PositionAbs" Id="{209e36f6-751f-4240-9cf5-b9fb16eebcc3}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PositionAbs : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{c03056e5-e9cc-4e15-ba7e-aefbdeb24221}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PositionAbs := THIS^.lrCurrentPosAbs / 1000;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PressureChA" Id="{471cd3ff-e656-456d-b21e-3fda36d5fa8a}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PressureChA : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{a6241634-cb35-43cf-b205-078f1f07d390}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PressureChA := THIS^.rCurrentPressureInBarA;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PressureChB" Id="{03707cd5-7bee-429d-8306-f3b3ddc5765c}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PressureChB : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{6d6380ef-f945-459d-b206-fb36e7cb3fc0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PressureChB := THIS^.rCurrentPressureInBarB;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PressureOk" Id="{6b913370-94a9-471c-812d-bd6855387ffa}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_PressureOk : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{681e8f43-a680-471f-b3c8-f3cecc9ece1c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//P_PRessureOk := ABS(rSetPressure - P_WorkPressure) < rEndPosTol;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{1fa808d5-8df8-4027-bce1-4448834f347f}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_ReadyState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{95333c44-72e4-4a9c-8f36-758f6a6c5354}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ReadyState := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedInMmPerSecond" Id="{7a045a39-f8cc-480e-bd59-c1f15e86d5cf}">
+      <Declaration><![CDATA[PROPERTY P_SpeedInMmPerSecond : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{5cadc9e3-17f8-4fa6-95c8-fb62f2fe3e10}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_SpeedInMmPerSecond := THIS^.rCurrentSpeedInMmPerS;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedInPercent" Id="{3fb7dbfa-2b1e-4209-a356-c8ba8ec22d25}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_SpeedInPercent : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{c65ef769-845a-4360-a7b0-4e0c6016f632}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_SpeedInPercent := THIS^.rSpeedInPercentToSet;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_StrokeLength" Id="{8393f4e5-9e08-40fd-bea9-bcf7de5fb770}">
+      <Declaration><![CDATA[PROPERTY P_StrokeLength : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{938b3200-55ce-46a1-89c0-542c0425c3cd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_StrokeLength := THIS^.rStrokeLength;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_StrokeLengthInitialized" Id="{9f06b182-b20c-4376-bcc5-f6911e48a611}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_StrokeLengthInitialized : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{02c02f9f-889f-4171-b3d9-7044a1afb128}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_StrokeLengthInitialized := THIS^.bStrokeLengthInitialized;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{14c6ee10-021d-49fd-a004-a11016f6c37d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bStrokeLengthInitialized := P_StrokeLengthInitialized;
+]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_WorkPressure" Id="{076c9341-f880-4950-b6b0-64ccc401116c}">
+      <Declaration><![CDATA[PROPERTY P_WorkPressure : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{e5ef4199-a585-48b5-ab0e-7eba9ef15b66}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_WorkPressure := THIS^.rCurrentPressureInBar;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4">
+      <LineId Id="3085" Count="17" />
+      <LineId Id="3472" Count="0" />
+      <LineId Id="3103" Count="5" />
+      <LineId Id="3461" Count="0" />
+      <LineId Id="3109" Count="77" />
+      <LineId Id="3324" Count="0" />
+      <LineId Id="3326" Count="4" />
+      <LineId Id="3325" Count="0" />
+      <LineId Id="3187" Count="6" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_GeneralStepSetting">
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_HMI">
+      <LineId Id="15" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_ManualOperation">
+      <LineId Id="6" Count="5" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="16" Count="5" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="26" Count="6" />
+      <LineId Id="34" Count="5" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="125" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="99" Count="1" />
+      <LineId Id="109" Count="2" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="118" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_PressureCalibration">
+      <LineId Id="24" Count="8" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_PressureRegulation">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="49" Count="3" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Recording">
+      <LineId Id="77" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="48" Count="6" />
+      <LineId Id="56" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="110" Count="8" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="97" Count="11" />
+      <LineId Id="96" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_INIT">
+      <LineId Id="45" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="193" Count="2" />
+      <LineId Id="225" Count="1" />
+      <LineId Id="196" Count="1" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="237" Count="3" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="14" Count="2" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_OPEN_LOCK_VALVES">
+      <LineId Id="221" Count="12" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="237" Count="5" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="531" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="451" Count="2" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="407" Count="3" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="318" Count="1" />
+      <LineId Id="475" Count="0" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="496" Count="11" />
+      <LineId Id="509" Count="0" />
+      <LineId Id="514" Count="5" />
+      <LineId Id="521" Count="0" />
+      <LineId Id="526" Count="1" />
+      <LineId Id="495" Count="0" />
+      <LineId Id="488" Count="0" />
+      <LineId Id="490" Count="3" />
+      <LineId Id="489" Count="0" />
+      <LineId Id="270" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_PRESSURE_CALIBRATION">
+      <LineId Id="331" Count="14" />
+      <LineId Id="547" Count="0" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="504" Count="0" />
+      <LineId Id="557" Count="1" />
+      <LineId Id="561" Count="1" />
+      <LineId Id="559" Count="1" />
+      <LineId Id="348" Count="4" />
+      <LineId Id="514" Count="4" />
+      <LineId Id="563" Count="0" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="565" Count="2" />
+      <LineId Id="569" Count="0" />
+      <LineId Id="596" Count="0" />
+      <LineId Id="570" Count="0" />
+      <LineId Id="598" Count="1" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="571" Count="0" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="590" Count="1" />
+      <LineId Id="593" Count="2" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="572" Count="5" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="549" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="533" Count="1" />
+      <LineId Id="536" Count="1" />
+      <LineId Id="535" Count="0" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="454" Count="0" />
+      <LineId Id="456" Count="1" />
+      <LineId Id="461" Count="2" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="466" Count="4" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="471" Count="0" />
+      <LineId Id="473" Count="1" />
+      <LineId Id="476" Count="0" />
+      <LineId Id="478" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="477" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="482" Count="1" />
+      <LineId Id="495" Count="0" />
+      <LineId Id="484" Count="0" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="503" Count="0" />
+      <LineId Id="498" Count="0" />
+      <LineId Id="500" Count="2" />
+      <LineId Id="499" Count="0" />
+      <LineId Id="524" Count="0" />
+      <LineId Id="505" Count="0" />
+      <LineId Id="507" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="582" Count="0" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="601" Count="0" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="542" Count="1" />
+      <LineId Id="506" Count="0" />
+      <LineId Id="359" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_SET_MAX_POS">
+      <LineId Id="331" Count="27" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="395" Count="3" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="359" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_SET_WORK_PRESSURE">
+      <LineId Id="221" Count="21" />
+      <LineId Id="338" Count="4" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="353" Count="3" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="270" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_SET_ZERO_POS">
+      <LineId Id="327" Count="27" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="391" Count="3" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="355" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_STOP">
+      <LineId Id="221" Count="9" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="231" Count="11" />
+      <LineId Id="318" Count="4" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="340" Count="0" />
+      <LineId Id="342" Count="3" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="270" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_STOP_AND_LOCK">
+      <LineId Id="221" Count="9" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="231" Count="2" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="235" Count="7" />
+      <LineId Id="326" Count="0" />
+      <LineId Id="333" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="371" Count="1" />
+      <LineId Id="329" Count="1" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="392" Count="3" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="270" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_TO_HP">
+      <LineId Id="221" Count="9" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="231" Count="2" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="237" Count="5" />
+      <LineId Id="422" Count="4" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="420" Count="1" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="465" Count="2" />
+      <LineId Id="325" Count="0" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="448" Count="1" />
+      <LineId Id="451" Count="0" />
+      <LineId Id="453" Count="1" />
+      <LineId Id="447" Count="0" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="460" Count="3" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="440" Count="0" />
+      <LineId Id="442" Count="3" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="270" Count="6" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="277" Count="18" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_TO_SET_POS">
+      <LineId Id="221" Count="12" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="235" Count="7" />
+      <LineId Id="318" Count="5" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="346" Count="1" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="324" Count="3" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="329" Count="7" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="351" Count="4" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="380" Count="3" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="270" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_Seq_TO_WP">
+      <LineId Id="221" Count="9" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="463" Count="0" />
+      <LineId Id="231" Count="4" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="237" Count="5" />
+      <LineId Id="404" Count="4" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="451" Count="0" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="452" Count="2" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="435" Count="1" />
+      <LineId Id="438" Count="0" />
+      <LineId Id="440" Count="1" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="444" Count="0" />
+      <LineId Id="447" Count="3" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="429" Count="3" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="270" Count="7" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="278" Count="17" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_SequenceManager">
+      <LineId Id="14" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="23" Count="11" />
+      <LineId Id="59" Count="4" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="79" Count="3" />
+      <LineId Id="78" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_SpeedRegulation">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="49" Count="3" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4._m_TimeOut">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.FB_init">
+      <LineId Id="11" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="44" Count="2" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="65" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_OpenLockValves">
+      <LineId Id="9" Count="9" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_PressureCalibration">
+      <LineId Id="7" Count="7" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_Reset">
+      <LineId Id="74" Count="2" />
+      <LineId Id="120" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetMaxPos">
+      <LineId Id="74" Count="2" />
+      <LineId Id="120" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetReady">
+      <LineId Id="26" Count="1" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetWorkPressure">
+      <LineId Id="74" Count="0" />
+      <LineId Id="122" Count="1" />
+      <LineId Id="137" Count="22" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="127" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetZeroPos">
+      <LineId Id="74" Count="2" />
+      <LineId Id="120" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_Stop">
+      <LineId Id="74" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="130" Count="4" />
+      <LineId Id="137" Count="4" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="123" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_StopAndLock">
+      <LineId Id="5" Count="1" />
+      <LineId Id="60" Count="4" />
+      <LineId Id="67" Count="4" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="53" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_ToHP">
+      <LineId Id="74" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="124" Count="1" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="144" Count="1" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="174" Count="23" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="236" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="156" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_ToSetPos">
+      <LineId Id="80" Count="0" />
+      <LineId Id="125" Count="1" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="144" Count="4" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="169" Count="2" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_ToWP">
+      <LineId Id="74" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="132" Count="1" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="134" Count="3" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="160" Count="23" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="145" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_CurrentForceInKN.Get">
+      <LineId Id="5" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_DoubleActing.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_MaxPosVal.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_MinPosVal.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PistonSurfaceA.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PistonSurfaceB.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_Position.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PositionAbs.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PressureChA.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PressureChB.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_PressureOk.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_ReadyState.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_SpeedInMmPerSecond.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_SpeedInPercent.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_StrokeLength.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_StrokeLengthInitialized.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_StrokeLengthInitialized.Set">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_WorkPressure.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

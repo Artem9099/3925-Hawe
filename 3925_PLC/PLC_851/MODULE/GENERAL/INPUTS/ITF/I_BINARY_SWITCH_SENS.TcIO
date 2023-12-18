@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <Itf Name="I_BINARY_SWITCH_SENS" Id="{b1dbad1d-3708-415c-b469-8ec427ec4d9f}">
+    <Declaration><![CDATA[INTERFACE I_BINARY_SWITCH_SENS EXTENDS I_BINARY_SWITCH
+]]></Declaration>
+    <Method Name="M_START_SENS" Id="{b2ba339f-8d1d-48a7-b231-24a35844b9c5}">
+      <Declaration><![CDATA[METHOD M_START_SENS : BOOL
+VAR_INPUT
+	bState: BOOL;
+	tDelay: TIME;
+	eEventType: ENUM_EVENT_TYPE;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_STOP_SENS" Id="{1eb73ef8-d947-4886-b3b8-03d6a0260319}">
+      <Declaration><![CDATA[METHOD M_STOP_SENS : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_STATE_SENS" Id="{ae4b5a92-877c-4476-9330-45d411ff13f4}">
+      <Declaration><![CDATA[PROPERTY P_STATE_SENS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{8fd3c4d2-13e8-4b0c-bab3-4198798b1d11}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

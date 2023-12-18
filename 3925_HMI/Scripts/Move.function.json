@@ -1,0 +1,80 @@
+{
+  "function": {
+    "name": "Move",
+    "namespace": "",
+    "displayName": "Move",
+    "description": "",
+    "waitMode": "Synchronous",
+    "category": "Utilities",
+    "returnValue": {
+      "type": "tchmi:framework#/definitions/TransformList"
+    },
+    "visible": true,
+    "injectContextObject": false,
+    "arguments": [
+      {
+        "name": "Object",
+        "displayName": "Object",
+        "type": "tchmi:general#/definitions/Object",
+        "description": "",
+        "defaultValue": "{}",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "Direction",
+        "displayName": "Direction",
+        "type": "tchmi:general#/definitions/String",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "MinValue",
+        "displayName": "MinValue",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "MaxValue",
+        "displayName": "MaxValue",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      },
+      {
+        "name": "CurrentValue",
+        "displayName": "CurrentValue",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json",
+  "apiVersion": 1,
+  "dependencyFiles": []
+}

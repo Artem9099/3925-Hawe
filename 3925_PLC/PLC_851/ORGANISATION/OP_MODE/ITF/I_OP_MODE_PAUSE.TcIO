@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_OP_MODE_PAUSE" Id="{e1031c58-91ef-4649-aafb-503a551faef1}">
+    <Declaration><![CDATA[INTERFACE I_OP_MODE_PAUSE EXTENDS I_OP_MODE
+]]></Declaration>
+    <Method Name="M_OP_MODE_TO_PAUSE" Id="{f4b2c60b-1b3b-49ea-8b18-dae969926c98}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_TO_PAUSE
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_PAUSE_ACTIVATE" Id="{4fed84c3-d24e-4583-aa85-6dd88b1dc324}">
+      <Declaration><![CDATA[PROPERTY P_PAUSE_ACTIVATE : BOOL]]></Declaration>
+      <Get Name="Get" Id="{cc78ba31-4264-4cf0-a39f-1b64704f502e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_GENERAL" Id="{c97d6e42-6c96-4c1c-a564-ea2119f54c99}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+FUNCTION_BLOCK ABSTRACT FB_GENERAL
+VAR //General
+  	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: 	STRING;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_CyclicRun" Id="{42bfa581-9cc4-4832-8e5c-44c71c72d56c}">
+      <Declaration><![CDATA[METHOD M_CyclicRun : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_ObjectID" Id="{c655d5f7-3de4-4711-85be-44f7c9e83db6}">
+      <Declaration><![CDATA[PROPERTY P_ObjectID : STRING]]></Declaration>
+      <Get Name="Get" Id="{6a3f64e5-0ca4-4354-bdc8-ca2da0767282}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ObjectID:='dfknhkljsfa';]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{bfee68a6-d97a-4a19-be18-ee462e215d8e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_GENERAL">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_GENERAL.M_CyclicRun">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_GENERAL.P_ObjectID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_GENERAL.P_ObjectID.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

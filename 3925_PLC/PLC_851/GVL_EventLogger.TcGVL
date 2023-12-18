@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_EventLogger" Id="{4615c704-9c4a-4c02-8e9c-b5b916c43fc9}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	fbPrevMsg:									TcEventEntry;
+	udiPrevMsgId:								UDINT;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

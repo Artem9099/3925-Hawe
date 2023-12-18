@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="FB_VISU_BUS_DIAG" Id="{d72a1f3d-c90f-41bb-b65f-f13a90bd4d60}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VISU_BUS_DIAG
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	itfMaster:I_Master;
+	xType: WORD; 		//16#00: Ethercat; 16#01Profinet; 
+	strType: STRING;
+	strName: STRING;
+	dwColor: DWORD;
+	dwColorFrame: DWORD;
+	strState: STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[strName:=concat('',itfMaster.P_FullObjectPath);
+
+CASE xType OF
+16#00://Ethercat
+	dwColorFrame:=color.dwYellow;
+	strType:='Ethercat Master';
+	CASE itfMaster.P_STATE OF
+	16#0001:  strState:= 'Link error'										;dwColor:=color.dwRed;
+	16#0002:  strState:= 'I/O locked after link error (I/O reset required)' ;dwColor:=color.dwRed;
+	16#0004:  strState:= 'Link error (redundancy adapter)'                  ;dwColor:=color.dwRed;
+	16#0008:  strState:= 'Missing one frame (redundancy mode)'              ;dwColor:=color.dwRed;
+	16#0010:  strState:= 'Out of send resources (I/O reset required)'       ;dwColor:=color.dwRed;
+	16#0020:  strState:= 'Watchdog triggered'                               ;dwColor:=color.dwRed;
+	16#0040:  strState:= 'Ethernet driver (miniport) not found'             ;dwColor:=color.dwRed;
+	16#0080:  strState:= 'I/O reset active'                                 ;dwColor:=color.dwRed;
+	16#0100:  strState:= 'At least one device in "INIT" state'              ;dwColor:=color.dwRed;
+	16#0200:  strState:= 'At least one device in "PRE-OP" state'            ;dwColor:=color.dwRed;
+	16#0400:  strState:= 'At least one device in "SAFE-OP" state'           ;dwColor:=color.dwRed;
+	16#0800:  strState:= 'At least one device indicates an error state'     ;dwColor:=color.dwRed;
+	16#1000:  strState:= 'DC not in sync'                                   ;dwColor:=color.dwRed;
+	ELSE	  strState:= 'OK'                                 				;dwColor:=color.dwGreen;
+	END_CASE
+	;
+16#01:;//Profinet	
+	dwColorFrame:=color.dwGreen;
+	strType:='Profinet Master';
+	CASE itfMaster.P_STATE OF
+	//16#0001:  strState:= 'No link AT port 1'								;dwColorFrame:=color.dwRed;
+	//16#0002:  strState:= 'No link AT port 2'                              ;dwColorFrame:=color.dwRed;
+	16#0010:  strState:= 'Out of send resources (I/O reset required)'       ;dwColor:=color.dwRed;
+	16#0080:  strState:= 'I/O reset active'                                 ;dwColor:=color.dwRed;
+	ELSE	  strState:= 'OK'                                 				;dwColor:=color.dwGreen;
+	END_CASE
+END_CASE]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{0b8b7fba-e76b-4e47-809d-dc2b2ef0ba61}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfMaster:I_Master;
+	xType: WORD; 		//16#00: Ethercat; 16#01Profinet; 
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfMaster:=itfMaster;
+this^.xType:=xType;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_VISU_BUS_DIAG">
+      <LineId Id="65" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="49" Count="11" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VISU_BUS_DIAG.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

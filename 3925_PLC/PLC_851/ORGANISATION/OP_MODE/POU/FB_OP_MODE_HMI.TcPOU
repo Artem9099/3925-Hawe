@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_OP_MODE_HMI" Id="{f51e3441-7f47-4cc8-b64b-3e87b9320d78}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OP_MODE_HMI
+VAR
+	itfOpMode:  I_OP_MODE;
+	
+//Press 
+	bClick_Reset					: BOOL;
+	bClick_Start					: BOOL;
+	bClick_Stop						: BOOL;
+	bClickPause						: BOOL;
+	
+
+//State
+	bStateStart						: BOOL;
+	bStateStop						: BOOL;
+	bStatePause						: BOOL;
+	bStateReset						: BOOL;
+	
+
+//Enable
+	bEnableStart					: BOOL:=TRUE;
+	bEnableStop						: BOOL:=TRUE;
+	bEnablePause					: BOOL:=TRUE;
+	bEnableReset					: BOOL:=TRUE;
+	
+//Options
+	bEnableCalibration				: BOOL;
+	bOptionCalibration				: BOOL;
+	
+	bEnableStepByStep				: BOOL;
+	bOptionStepByStep				: BOOL;
+	
+	bEnableEmptyRun					: BOOL;
+	bOptionEmptyRun					: BOOL;
+	
+	
+//TextlistID
+	nTexlistID						: INT;
+	
+	fbBlink							: FB_Blink;
+END_VAR
+VAR_IN_OUT
+
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bClick_Start THEN
+	bClick_Start:=FALSE;
+	nTexlistID:=nTexlistID+1;
+	IF NOT bStateStart THEN
+		bStateStart:=TRUE;
+		bStateStop:=FALSE;
+		bStatePause:=FALSE;
+	ELSE
+		bStateStart:=FALSE;
+	END_IF
+END_IF
+
+IF bClick_Stop THEN
+	bClick_Stop:=FALSE;
+	nTexlistID:=nTexlistID-1;
+	IF NOT bStateStop THEN
+		bStateStop:=TRUE;
+		bStateStart:=FALSE;
+		bStatePause:=FALSE;
+	ELSE
+		bStateStop:=FALSE;
+	END_IF
+END_IF
+
+IF bClickPause THEN
+	bClickPause:=FALSE;
+	nTexlistID:=nTexlistID+1;
+	IF NOT bStateStop THEN
+		bStatePause:=TRUE;
+		bStateStop:=FALSE;
+		bStateStart:=FALSE;
+	ELSE
+		bStatePause:=FALSE;
+	END_IF
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{e2ba2658-016e-42ca-a314-bd82a8b399a2}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:  I_OP_MODE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[this^.itfOpMode:= itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_OP_MODE_HMI">
+      <LineId Id="2" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="286" Count="0" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="301" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="288" Count="1" />
+      <LineId Id="287" Count="0" />
+      <LineId Id="283" Count="0" />
+      <LineId Id="291" Count="5" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="297" Count="2" />
+      <LineId Id="290" Count="0" />
+      <LineId Id="303" Count="6" />
+      <LineId Id="315" Count="0" />
+      <LineId Id="310" Count="2" />
+      <LineId Id="302" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_HMI.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

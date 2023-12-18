@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_CYLINDER_DA_TESTDEV2_4" Id="{f16afa1c-8799-4f08-84e4-e0140353dd92}">
+    <Declaration><![CDATA[INTERFACE I_CYLINDER_DA_TESTDEV2_4 EXTENDS I_CYLINDER_DA_GENERAL
+]]></Declaration>
+    <Method Name="M_OpenLockValves" Id="{2ca67dfe-0591-43a4-916c-384fb6af2657}">
+      <Declaration><![CDATA[METHOD M_OpenLockValves : BOOL
+VAR_INPUT
+  bOpenChA:        BOOL;
+  bOpenChB:        BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetMaxPos" Id="{cea0ae47-e9bb-4f2e-bf7a-25e90d2d2955}">
+      <Declaration><![CDATA[METHOD M_SetMaxPos : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetZeroPos" Id="{1ff466f2-f842-4159-9085-0bb5641ce510}">
+      <Declaration><![CDATA[METHOD M_SetZeroPos : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_StopAndLock" Id="{74dc6512-611b-4bfe-84ef-8556535a1373}">
+      <Declaration><![CDATA[METHOD M_StopAndLock : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToSetPos" Id="{eded9da4-c374-40ff-b3c6-8b8ba669878d}">
+      <Declaration><![CDATA[METHOD M_ToSetPos : BOOL
+VAR_INPUT
+  lrToSetPos:                 LREAL;
+  /// Just need for prop valve
+  eSpeedType:               E_SPEED_TYPE;
+  rSpeed:                   REAL; 
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_DoubleActing" Id="{0b663a7c-7295-406b-b3e0-b046aa79acea}">
+      <Declaration><![CDATA[PROPERTY P_DoubleActing : BOOL]]></Declaration>
+      <Get Name="Get" Id="{0442e461-205b-437a-97a8-3262d3e89e69}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_MaxPosVal" Id="{75a29253-6f02-46db-8689-66b7709c9063}">
+      <Declaration><![CDATA[PROPERTY P_MaxPosVal : LREAL]]></Declaration>
+      <Get Name="Get" Id="{6d0277d3-aec1-4872-bee2-316417e4554c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_MinPosVal" Id="{3cce7030-0547-4c39-b29b-8a63b3db8061}">
+      <Declaration><![CDATA[PROPERTY P_MinPosVal : LREAL]]></Declaration>
+      <Get Name="Get" Id="{818e9e8a-8ae0-49f1-8183-fb4253be33f4}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Position" Id="{aaf5d39b-950b-4fb4-9969-98f49b20be8b}">
+      <Declaration><![CDATA[PROPERTY P_Position : LREAL]]></Declaration>
+      <Get Name="Get" Id="{bc82b54e-7ae4-4eab-8dd7-d6d38816469b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_PositionAbs" Id="{f5abc2d3-dc80-4dfb-9117-b9d4052ca3d4}">
+      <Declaration><![CDATA[PROPERTY P_PositionAbs : LREAL]]></Declaration>
+      <Get Name="Get" Id="{22655590-92c2-4505-b7f6-7ba414aa1e6f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_PressureChA" Id="{2242dd50-d555-4854-9001-94346a7ea495}">
+      <Declaration><![CDATA[PROPERTY P_PressureChA : REAL]]></Declaration>
+      <Get Name="Get" Id="{d7db13fa-f335-4081-9451-916fb814abc8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_PressureChB" Id="{07153e8d-795a-4709-a869-eb2aab084c16}">
+      <Declaration><![CDATA[PROPERTY P_PressureChB : REAL]]></Declaration>
+      <Get Name="Get" Id="{b46329d2-2879-4ff8-8746-84792769ab21}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedInMmPerSecond" Id="{301360ce-5962-4404-8936-dc0bc0f21f8a}">
+      <Declaration><![CDATA[PROPERTY P_SpeedInMmPerSecond : REAL]]></Declaration>
+      <Get Name="Get" Id="{9aeeef22-6037-4fbc-a70b-fc7a5fde3f85}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedInPercent" Id="{a43fe268-c050-44b5-b0ec-529ff97cf970}">
+      <Declaration><![CDATA[PROPERTY P_SpeedInPercent : LREAL]]></Declaration>
+      <Get Name="Get" Id="{1f066ded-0642-49b7-b50d-d9964f3cc570}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_StrokeLength" Id="{55396f07-f6d7-4a30-97cd-1a505cf271ab}">
+      <Declaration><![CDATA[PROPERTY P_StrokeLength : REAL]]></Declaration>
+      <Get Name="Get" Id="{aecf620f-1882-4a23-ba5a-28bd14c0e87d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_StrokeLengthInitialized" Id="{d8f1c6b4-6813-4db6-b2e8-5b1f6496a57f}">
+      <Declaration><![CDATA[PROPERTY P_StrokeLengthInitialized : BOOL]]></Declaration>
+      <Get Name="Get" Id="{d8b23269-4ff5-4d93-b1b0-b56d480e0402}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{cdd192de-50b7-4b7f-be38-9356e9346f5a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

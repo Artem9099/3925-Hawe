@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="FB_SIMU_ANALOG_IN" Id="{203b32a2-5a1f-4e14-9475-ff6a9c54f81e}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+FUNCTION_BLOCK FB_SIMU_ANALOG_IN IMPLEMENTS  I_SIMU_ANALOG_IN
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	lrSetPoint: LREAL;
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_Run" Id="{11960541-3cd2-4b75-aa82-669517f529f5}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.strFullObjectPath:= F_CreateIdString(THIS^);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{029bdcc1-4770-4bee-a835-580dc7f7b3d2}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{97c4fc19-142a-4a60-be1f-a2af5befd982}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ffd44593-4c7e-4722-aa59-d2e8cf50379a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{026e4f93-6d8e-423f-b54b-62de81f9d788}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{8e281fc1-8b6f-4718-8015-e5fdcbe9a022}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{7c680bd0-836f-4fc4-88d8-46930001cb1d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{53f5c846-2123-4a0d-8c12-e752973f89eb}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{27a8a851-5c40-4dce-b660-9488c255396f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{66bc012d-db88-443f-95fb-59f6828d7357}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{08051ea6-52cb-48d5-835d-8ba29672a01d}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{c509b828-2fbe-4b86-a974-f00ad369f026}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_SETPOINT" Id="{91174af4-035d-4abe-8cae-eab0768a27e4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_SETPOINT : LREAL
+]]></Declaration>
+      <Set Name="Set" Id="{78432c50-752e-49d4-b0f8-26a624052ab2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrSetPoint:=P_SETPOINT;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_VALUE" Id="{1cd1089f-e3c1-420f-871e-0ea71786878e}">
+      <Declaration><![CDATA[
+PROPERTY P_VALUE : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{c89c368b-4b9c-40e3-8f10-057b9b823ce5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_VALUE:=lrSetPoint;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_SIMU_ANALOG_IN">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_SETPOINT.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SIMU_ANALOG_IN.P_VALUE.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,1340 @@
+{
+  "$schema": "./../../3925_PLC/Packages/Beckhoff.TwinCAT.HMI.Framework.12.760.44/runtimes/native1.12-tchmi/Schema/TchmiConfig.Schema.json",
+  "basePath": "./framework",
+  "scaleMode": "None",
+  "startupView": "Desktop.view",
+  "loginPage": "/Pages/LoginPage.html",
+  "tcHmiServer": {
+    "websocketIntervalTime": 500,
+    "websocketTimeout": 20000,
+    "websocketSystemTimeout": 60000,
+    "websocketSubscriptionMode": "Change"
+  },
+  "activeTheme": "Base",
+  "themes": {
+    "Base-Dark": {
+      "resources": [
+        {
+          "name": "Themes/Base-Dark/Base-DarkStyle.css",
+          "description": "",
+          "type": "Stylesheet"
+        },
+        {
+          "name": "Themes/Base-Dark/Base-Dark.theme",
+          "description": "",
+          "type": "ThemedValues"
+        }
+      ],
+      "replacesThemeForControls": [],
+      "replacesThemeForPackageComponents": []
+    },
+    "Base": {
+      "resources": [
+        {
+          "name": "Themes/Base/Base.theme",
+          "description": "",
+          "type": "ThemedValues"
+        },
+        {
+          "name": "Themes/Base/BaseStyle.css",
+          "description": "",
+          "type": "Stylesheet"
+        }
+      ],
+      "replacesThemeForControls": [],
+      "replacesThemeForPackageComponents": []
+    }
+  },
+  "dependencyFiles": [
+    {
+      "name": "Fonts/Fonts.css",
+      "description": "",
+      "type": "Stylesheet"
+    },
+    {
+      "name": "Functions/Animation/AnimationLin.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Animation/AnimationLin3.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/ConvertDatagridToRecipe.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/ConvertRecipeToDatagrid.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/DeleteRecipe.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/DownloadRecipe.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/UpdateDatagridFromTarget.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/UploadRecipe.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Popup/PopupCloseThis.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Popup/PopupOpen.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Examples/External3dLib/WebGL.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Examples/External3dLib/STLLoader.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Examples/External3dLib/Example_External3dLib.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/TcHmiExampleCollection.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/ReadUrlParameter.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/DisableContextMenu.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/CheckResolution.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/TcHmiExampleCollection.Utilities.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Examples/External3dLib/three.min.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Examples/External3dLib/stats.min.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/TcHmiExampleCollection.Utilities.AutoKeyboard.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/Animate.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/BooleanToVisibility.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/DecimalFormatter.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/DegreesToRotation.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/DegreesToRotationWithValveEnable.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/GetLoggedSystemEvents.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/GetSymbolFromArrayIndex.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/OpenLinkInNewTab.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/ResolveSymbol.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/ValueToColorFade.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/ValueToColorFadeWithMotorEnable.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/WriteToSymbolProperty.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/BooleanToColor.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Scripts/Move.js",
+      "description": "",
+      "type": "JavaScript"
+    },
+    {
+      "name": "Functions/Recipe/ListRecipesAsReferenceArray.js",
+      "description": "",
+      "type": "JavaScript"
+    }
+  ],
+  "userControls": [],
+  "content": [
+    {
+      "url": "Pages/StartPageContent/OPModeOverview.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Examples/Examples.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Examples/Examples_Main.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Examples/Example_External3dLib.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Examples/Example_PlcArrayManagement.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/Control.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_BreakTest.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_EnduranceRun.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_Hand.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_Jog.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_LeakTest1.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_LeakTest2.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Controls/OPModes/OPMode_Reset.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Events.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Settings.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Settings/CylinderCalibration/CylinderCalibration.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/Settings/RecipeManagement.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPage.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_Actors.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_BreakPressureDet.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_Debug.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_EnduranceRun.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_Info.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_LeakTest2.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_LeakTest.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_Manual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest1/Cylindernest1_Visual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_Actors.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_Debug.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_EnduranceRun.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_Info.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_LeakTest.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_Manual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest2/Cylindernest2_Visual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_Actors.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_Debug.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_EnduranceRun.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_Info.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_LeakTest.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_Manual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest3/Cylindernest3_Visual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_Actors.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_Debug.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_EnduranceRun.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_Info.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_LeakTest.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_Manual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Cylindernest4/Cylindernest4_Visual.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Info.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    },
+    {
+      "url": "Pages/StartPageContent/Parameter.content",
+      "preload": false,
+      "keepAlive": false,
+      "loadSync": false,
+      "preloadBindings": false
+    }
+  ],
+  "views": [
+    {
+      "url": "Desktop.view",
+      "preload": false,
+      "keepAlive": false,
+      "preloadBindings": false
+    }
+  ],
+  "userFunctions": [
+    {
+      "url": "Functions/Animation/AnimationLin.js"
+    },
+    {
+      "url": "Functions/Animation/AnimationLin3.js"
+    },
+    {
+      "url": "Functions/Popup/PopupCloseThis.js"
+    },
+    {
+      "url": "Functions/Popup/PopupOpen.js"
+    },
+    {
+      "url": "Functions/Recipe/ConvertDatagridToRecipe.js"
+    },
+    {
+      "url": "Functions/Recipe/ConvertRecipeToDatagrid.js"
+    },
+    {
+      "url": "Functions/Recipe/DeleteRecipe.js"
+    },
+    {
+      "url": "Functions/Recipe/DownloadRecipe.js"
+    },
+    {
+      "url": "Functions/Recipe/ListRecipesAsReferenceArray.js"
+    },
+    {
+      "url": "Functions/Recipe/UpdateDatagridFromTarget.js"
+    },
+    {
+      "url": "Functions/Recipe/UploadRecipe.js"
+    },
+    {
+      "url": "Scripts/Animate.js"
+    },
+    {
+      "url": "Scripts/BooleanToColor.js"
+    },
+    {
+      "url": "Scripts/BooleanToVisibility.js"
+    },
+    {
+      "url": "Scripts/DecimalFormatter.js"
+    },
+    {
+      "url": "Scripts/DegreesToRotation.js"
+    },
+    {
+      "url": "Scripts/DegreesToRotationWithValveEnable.js"
+    },
+    {
+      "url": "Scripts/GetLoggedSystemEvents.js"
+    },
+    {
+      "url": "Scripts/GetSymbolFromArrayIndex.js"
+    },
+    {
+      "url": "Scripts/Move.js"
+    },
+    {
+      "url": "Scripts/OpenLinkInNewTab.js"
+    },
+    {
+      "url": "Scripts/ResolveSymbol.js"
+    },
+    {
+      "url": "Scripts/ValueToColorFade.js"
+    },
+    {
+      "url": "Scripts/ValueToColorFadeWithMotorEnable.js"
+    },
+    {
+      "url": "Scripts/WriteToSymbolProperty.js"
+    }
+  ],
+  "symbols": {
+    "internal": {
+      "MediaQueryList": {
+        "value": [
+          {
+            "name": "Mobile",
+            "maxWidth": 800,
+            "minWidth": 0,
+            "controlBehaviourList": [
+              {
+                "controlType": "TcHmi.Controls.BaseTemplate.TcHmiNavigation",
+                "controlID": "Navigation_Left",
+                "displayOption": "burger_top"
+              }
+            ]
+          },
+          {
+            "name": "Tablet",
+            "maxWidth": 1280,
+            "minWidth": 800,
+            "controlBehaviourList": [
+              {
+                "controlType": "TcHmi.Controls.BaseTemplate.TcHmiNavigation",
+                "controlID": "Navigation_Left",
+                "displayOption": "icons"
+              }
+            ]
+          },
+          {
+            "name": "Desktop",
+            "maxWidth": 1920,
+            "minWidth": 1280,
+            "controlBehaviourList": [
+              {
+                "controlType": "TcHmi.Controls.BaseTemplate.TcHmiNavigation",
+                "controlID": "Navigation_Left",
+                "displayOption": "full"
+              }
+            ]
+          }
+        ],
+        "type": "tchmi:framework#/definitions/TcHmi.Functions.BaseTemplate.MediaQueryList",
+        "persist": true,
+        "readonly": true
+      },
+      "AffectedControls": {
+        "value": [
+          {
+            "controlID": "Navigation_Left",
+            "position": "Left",
+            "defaultHeight": null,
+            "defaultWidth": "320",
+            "defaultTop": "0",
+            "defaultBottom": "0",
+            "defaultLeft": "0",
+            "defaultRight": null
+          },
+          {
+            "controlID": "Header_Top",
+            "position": "Top",
+            "defaultHeight": "80",
+            "defaultWidth": null,
+            "defaultTop": "0",
+            "defaultBottom": null,
+            "defaultLeft": "%ctrl%Navigation_Left::Width%/ctrl%",
+            "defaultRight": "0"
+          },
+          {
+            "controlID": "Region_Center",
+            "position": "Center",
+            "defaultHeight": null,
+            "defaultWidth": null,
+            "defaultTop": "%ctrl%Header_Top::Height%/ctrl%",
+            "defaultBottom": "0",
+            "defaultLeft": "%ctrl%Navigation_Left::Width%/ctrl%",
+            "defaultRight": "0"
+          }
+        ],
+        "type": "tchmi:framework#/definitions/TcHmi.Functions.BaseTemplate.AffectedControlList",
+        "persist": true,
+        "readonly": true
+      },
+      "bStartClicked": {
+        "value": false,
+        "type": "tchmi:general#/definitions/Boolean",
+        "persist": false,
+        "readonly": false
+      },
+      "bSafetyClicked": {
+        "value": false,
+        "type": "tchmi:general#/definitions/Boolean",
+        "persist": false,
+        "readonly": false
+      },
+      "bManualClicked": {
+        "value": false,
+        "type": "tchmi:general#/definitions/Boolean",
+        "persist": false,
+        "readonly": false
+      },
+      "bJog": {
+        "value": false,
+        "type": "tchmi:general#/definitions/Boolean",
+        "persist": false,
+        "readonly": false
+      }
+    },
+    "themedResources": {
+      "TR_Icon_StartPage_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Start Page",
+        "values": {
+          "Base": "Themes/Base/Images/Placeholder/placeholder_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Placeholder/placeholder_normal.svg"
+        }
+      },
+      "TR_Icon_StartPage_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Start Page",
+        "values": {
+          "Base": "Themes/Base/Images/Placeholder/placeholder_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Placeholder/placeholder_pressed.svg"
+        }
+      },
+      "TR_Icon_StartPage_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Start Page",
+        "values": {
+          "Base": "Themes/Base/Images/Placeholder/placeholder_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Placeholder/placeholder_active.svg"
+        }
+      },
+      "TR_Icon_Events_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Events",
+        "values": {
+          "Base": "Themes/Base/Images/Events/message_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Events/message_normal.svg"
+        }
+      },
+      "TR_Icon_Events_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Events",
+        "values": {
+          "Base": "Themes/Base/Images/Events/message_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Events/message_pressed.svg"
+        }
+      },
+      "TR_Icon_Events_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Events",
+        "values": {
+          "Base": "Themes/Base/Images/Events/message_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Events/message_active.svg"
+        }
+      },
+      "TR_Icon_Settings_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Settings_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Settings_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_GeneralSettings_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: General Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_GeneralSettings_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: General Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_GeneralSettings_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: General Settings",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor1_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor1_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor1_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor2_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor2_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor2_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor1_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Cross Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor1_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Cross Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor1_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Cross Conveyor 1",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor3_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 3",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor3_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 3",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor3_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 3",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor4_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 4",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor4_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 4",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor4_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 4",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor2_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Cross Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor2_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Cross Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_CrossConveyor2_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Cross Conveyor 2",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor5_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 5",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor5_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 5",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor5_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 5",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor6_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 6",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor6_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 6",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor6_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 6",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor7_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 7",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor7_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 7",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor7_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 7",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Conveyor8_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Conveyor 8",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Conveyor8_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Conveyor 8",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Conveyor8_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Conveyor 8",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Scale_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Scale",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Scale_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Scale",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Scale_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Scale",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_VibrationFeeder_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Vibration Feeder",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_VibrationFeeder_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Vibration Feeder",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_VibrationFeeder_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Vibration Feeder",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_Seperator_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Seperator",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_Seperator_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Seperator",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_Seperator_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Seperator",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TR_Icon_VibrationBunker_normal": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Normal Icon of page: Vibration Bunker",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_normal.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_normal.svg"
+        }
+      },
+      "TR_Icon_VibrationBunker_pressed": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Pressed Icon of page: Vibration Bunker",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_pressed.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_pressed.svg"
+        }
+      },
+      "TR_Icon_VibrationBunker_active": {
+        "type": "tchmi:framework#/definitions/Path",
+        "description": "Active Icon of page: Vibration Bunker",
+        "values": {
+          "Base": "Themes/Base/Images/Settings/settings_active.svg",
+          "Base-Dark": "Themes/Base-Dark/Images/Settings/settings_active.svg"
+        }
+      },
+      "TestingCylinderChart": {
+        "type": "tchmi:framework#/definitions/Color",
+        "description": "",
+        "values": {
+          "Base": {
+            "color": "rgba(0, 146, 17, 1)"
+          },
+          "Base-Dark": {
+            "color": "rgba(0, 255, 30, 1)"
+          }
+        }
+      },
+      "CounterCylinderChart": {
+        "type": "tchmi:framework#/definitions/Color",
+        "description": "",
+        "values": {
+          "Base": {
+            "color": "rgba(255, 0, 0, 1)"
+          },
+          "Base-Dark": {
+            "color": "rgba(255, 0, 0, 1)"
+          }
+        }
+      }
+    }
+  },
+  "trigger": [],
+  "actionTemplates": [],
+  "languages": {
+    "de": "Localization/de.localization",
+    "en": "Localization/en.localization"
+  },
+  "languageFallback": "",
+  "disableLoadingOptimization": false,
+  "creatorSettings": {
+    "viewport": {
+      "defaultWidth": 1920,
+      "defaultHeight": 1080
+    }
+  },
+  "binding": {
+    "symbolError": "Ignore"
+  },
+  "packages": [
+    {
+      "name": "Beckhoff.TwinCAT.HMI.BaseTemplate",
+      "basePath": "/Beckhoff.TwinCAT.HMI.BaseTemplate"
+    },
+    {
+      "name": "Beckhoff.TwinCAT.HMI.Controls",
+      "basePath": "/Beckhoff.TwinCAT.HMI.Controls"
+    },
+    {
+      "name": "Beckhoff.TwinCAT.HMI.Framework",
+      "basePath": "/framework"
+    },
+    {
+      "name": "Beckhoff.TwinCAT.HMI.Functions",
+      "basePath": "/Beckhoff.TwinCAT.HMI.Functions"
+    },
+    {
+      "name": "Beckhoff.TwinCAT.HMI.PDFViewer",
+      "basePath": "/Beckhoff.TwinCAT.HMI.PDFViewer"
+    }
+  ],
+  "keyboardLayouts": [
+    {
+      "url": "KeyboardLayouts/Calculator.keyboard.json"
+    },
+    {
+      "url": "KeyboardLayouts/German - compact.keyboard.json"
+    },
+    {
+      "url": "KeyboardLayouts/Numpad (plusminus).keyboard.json"
+    },
+    {
+      "url": "KeyboardLayouts/Numpad - indirect.keyboard.json"
+    },
+    {
+      "url": "KeyboardLayouts/Numpad.keyboard.json"
+    },
+    {
+      "url": "KeyboardLayouts/US - compact.keyboard.json"
+    }
+  ],
+  "systemKeyboard": {
+    "providerName": "",
+    "projectKeyboardMapping": {
+      "de": {
+        "text": "",
+        "decimal": "",
+        "numeric": ""
+      },
+      "en": {
+        "text": "",
+        "decimal": "",
+        "numeric": ""
+      }
+    }
+  },
+  "systemPopups": {
+    "providerName": "Beckhoff.TcHmiPopups"
+  }
+}

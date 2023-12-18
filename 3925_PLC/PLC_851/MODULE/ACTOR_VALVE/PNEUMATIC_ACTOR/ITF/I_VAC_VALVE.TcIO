@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_VAC_VALVE" Id="{76d59826-a57e-43c3-89e5-d1003f6fbe78}">
+    <Declaration><![CDATA[INTERFACE I_VAC_VALVE EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_AllOff" Id="{2df9dd7f-e33a-4e1f-b150-a402239e38a4}">
+      <Declaration><![CDATA[METHOD M_AllOff
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Blow" Id="{7e18671d-e166-4de9-9330-df73a5938277}">
+      <Declaration><![CDATA[METHOD M_Blow
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Vac" Id="{c55c6810-760c-45a4-869b-7eafc81abbfc}">
+      <Declaration><![CDATA[METHOD M_Vac
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_STATE" Id="{9714c189-b385-412e-9324-91add64c3086}">
+      <Declaration><![CDATA[PROPERTY P_STATE : E_PNEU_VAC_VALVE]]></Declaration>
+      <Get Name="Get" Id="{aa3dd8e1-9497-49ac-924f-67802571667a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

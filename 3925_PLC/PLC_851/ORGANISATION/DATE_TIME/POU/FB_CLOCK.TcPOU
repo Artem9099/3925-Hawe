@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_CLOCK" Id="{a6e3d969-d9fc-42fb-ac82-e3876f61204e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_CLOCK IMPLEMENTS I_CLOCK
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+  fbFormat:                   FB_FormatString;
+  bError:                     BOOL;
+  nErrID:                     UDINT;
+  bStart:                     BOOL;
+  bPause:                     BOOL;
+  fbTimer:                    TON;
+  tTimerValue:                TIME;
+  fbTrigger:                  R_TRIG;
+  tTimeReturn1:               TIME;
+  tTimeReturn2:               TIME;
+  tPausedTime:                TIME;
+  tDifference:                TIME;
+  strDifference:              STRING(12);
+  uiHours:                    UINT;
+  udiMinutes:                 UDINT;
+  uliSeconds:                 ULINT;
+  uliTotalMilliseconds:       ULINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Timer
+fbTimer(IN := bStart, PT := tTimerValue);
+fbTrigger(CLK := fbTimer.IN);
+
+IF fbTrigger.Q THEN
+    tTimeReturn1  := TIME();
+END_IF
+
+IF bStart THEN
+  tTimeReturn2  := TIME();
+  tDifference   := tTimeReturn2 - tTimeReturn1;
+END_IF
+
+IF fbTimer.Q THEN
+    //bStart        := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="M_GetTimerET" Id="{f72405db-4c16-4e6b-9b86-df93e3422add}">
+      <Declaration><![CDATA[METHOD M_GetTimerET : STRING
+VAR_INPUT
+  /// Default: hhh:mm:ss
+  bCustomFormat:      BOOL;
+  /// Timeformat: mm/ss or hh-mm-ss or dd/hh/mm/ss
+  sFormat:            STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+// Rechne die Zeit in Millisekunden um
+THIS^.uliTotalMilliseconds := TIME_TO_ULINT(THIS^.tDifference);
+
+// Extrahiere Stunden, Minuten und Sekunden
+THIS^.uiHours := TO_UINT(THIS^.uliTotalMilliseconds / 3600000);
+THIS^.udiMinutes := TO_UDINT((THIS^.uliTotalMilliseconds MOD 3600000) / 60000);
+THIS^.uliSeconds := (THIS^.uliTotalMilliseconds MOD 60000) / 1000;
+
+THIS^.fbFormat(sFormat:= '%.3d:%.2d:%.2d', 
+               arg1 := F_UINT(THIS^.uiHours), 
+               arg2 := F_UDINT(THIS^.udiMinutes), 
+               arg3 := F_ULINT(THIS^.uliSeconds), 
+               sOut => M_GetTimerET, 
+               bError => THIS^.bError, 
+               nErrID => THIS^.nErrID);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PauseTimer" Id="{a90830cb-247f-425e-9c92-2302aa922bbc}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_PauseTimer : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{4c0fbfaa-6679-4aaf-8137-dd074ceed24a}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StartTimer" Id="{6dc3d56e-a097-46bd-a38d-6d677b6f8823}">
+      <Declaration><![CDATA[METHOD M_StartTimer : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_StartTimer := THIS^.tTimerValue = T#49D17H2M47S295MS AND THIS^.bStart = TRUE;
+
+THIS^.tTimerValue := T#49D17H2M47S295MS;
+THIS^.bStart := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StopTimer" Id="{7abfb740-1fce-401e-95f1-762346eed1ef}">
+      <Declaration><![CDATA[METHOD M_StopTimer : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_StopTimer := THIS^.tTimerValue = T#49D17H2M47S295MS AND THIS^.bStart = FALSE;
+
+THIS^.tTimerValue := T#49D17H2M47S295MS;
+THIS^.bStart := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_WaitForTimer" Id="{0c9df6c0-b10c-4409-80cf-3da52828db58}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_WaitForTimer : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{909226d0-e92c-402d-9880-1d10270ef928}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{9a27df79-cdbc-47d2-aa9e-9d589732e5a8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{bcc07a37-4c46-4282-a3ca-d3b3a8a7e6fe}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{e3d979ec-1185-45b3-b1cb-e183844d1987}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{a036ffa4-3d33-4a9b-bbf8-65c5f625f5b0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{935b9cb9-a4bb-4644-8975-2cde3c815a13}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{a27338f3-a8c7-422d-960f-4eff5d77a8d0}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{1c79efb8-0845-4ec8-b434-8aa75c6f6c02}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{53001189-6912-41bc-9755-b684d373a9c5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{9af76a35-6027-4e48-8b34-769b74054669}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{58a54868-4a44-4dca-a00c-41a3babd45c0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_SystemTime" Id="{b05b256c-f52e-49d0-8758-255772e07abb}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_SystemTime : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{20c4a15e-f34c-4a49-9bd6-67db4655b322}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_CLOCK">
+      <LineId Id="10" Count="6" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="60" Count="2" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_GetTimerET">
+      <LineId Id="17" Count="1" />
+      <LineId Id="20" Count="5" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="10" Count="6" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_PauseTimer">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_StartTimer">
+      <LineId Id="6" Count="1" />
+      <LineId Id="4" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_StopTimer">
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.M_WaitForTimer">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CLOCK.P_SystemTime.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

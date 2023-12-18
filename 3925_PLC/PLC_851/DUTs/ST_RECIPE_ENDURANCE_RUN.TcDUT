@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_ENDURANCE_RUN" Id="{38d02181-2744-4d4a-b532-f99b9fe2ed45}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_ENDURANCE_RUN :
+STRUCT
+  // Enables
+  bEnableVentCylinder:            BOOL;
+  bEnableEnduranceRun:            BOOL;
+  bEnableLeakTest1:               BOOL;
+  // Vent cylinder
+  uiVentCycles:                   UINT;
+  // Profiles - Endurance run
+  rSpeedA:                        REAL;         // Speed A
+  rSpeedB:                        REAL;         // Speed B
+  rWorkPressureA:                 REAL;         // Work pressure testing cylinder A
+  rWorkPressureB:                 REAL;         // Work pressure testing cylinder B
+  rWorkForceA:                    REAL;         // Work force testing cylinder A
+  rWorkForceB:                    REAL;         // Work force testing cylinder B
+  udiCycles:                      UDINT;        // Count of cycles
+  rLoadPressureA:                 REAL;         // Load pressure A (counterload)
+  rLoadPressureB:                 REAL;         // Load pressure B (counterload)
+  rLoadForceA:                    REAL;         // Load force A (counterload)
+  rLoadForceB:                    REAL;         // Load force B (counterload)
+  rTurningPointHP:                REAL;         // Cylinder turning point in HP
+  rTurningPointWP:                REAL;         // Cylinder turning point in WP
+  rDelay:                         REAL;         // Delay on turning point
+  // Quick leak test 1 parameter
+  udiLT1_Interval:                UDINT;        // Interval for quick leak test 1
+  stLT1_Params:                   ST_RECIPE_LEAK_TEST1;
+  //rLT1_RestDelay:                 REAL;         // Rest delay aufter test
+  //rLT1_LoadForceA:                REAL;         // Load force A (counterload)
+  //rLT1_LoadForceB:                REAL;         // Load force B (counterload)
+  //rLT1_LoadPressureA:             REAL;         // Testing pressure A for leak test 1
+  //rLT1_LoadPressureB:             REAL;         // Testing pressure B for leak test 1
+  //uiLT1_DurationPerTest:          UINT;         // Testing duration per test in min
+  //rLT1_DistanceBeforeEndPosHP:    REAL;         // Distance to the end position HP
+  //rLT1_DistanceBeforeEndPosWP:    REAL;         // Distance to the end position WP
+  //rLT1_NokLimit:                  REAL;         // Delta length limit to abort program
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

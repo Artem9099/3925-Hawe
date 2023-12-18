@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PrgOrg" Id="{f0764cae-b40a-4923-892b-4dcdfee12590}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'global_init_slot' := '40010'}
+//{warning 'Safety überarbeiten 170119'}
+PROGRAM PrgOrg
+VAR
+	fbLocalSysTime: 				                    FB_LOC_SYS_TIME;
+	fbEventHandler: 				                    FB_HANDLE_EVENTS_TXT(itfLocSysTime:=fbLocalSysTime, strPath:='C:\Event\Event.csv');
+	
+// Safety IO  
+// Input Sensors
+  // EL1918 - 8-chanel-digital-input (KF1.2.1)                 		
+  fbEStopLeft_Ch1: 						                FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbEStopLeft_Ch2: 						                FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbEStopRight_Ch1: 						              FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbSafetyDoorLeft_Ch1: 						          FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbSafetyDoorLeft_Ch2: 						          FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbSafetyDoorRight_Ch1: 						          FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbSafetyDoorRight_Ch2: 						          FB_BINARY_SWITCH(bInNC:=TRUE);
+  // EL1904 - 4-chanel-digital-input (KF1.2.2) 
+  fbEStopJog_Ch1: 						                FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbEStopJog_Ch2: 						                FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbJog_AckBtn_Ch1: 						              FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbJog_AckBtb_Ch2: 						              FB_BINARY_SWITCH(bInNC:=TRUE);
+  // EL1904 - 4-chanel-digital-input (KF1.2.3) 
+  fbJog_KeySwitch: 						                FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbEStop_FeedbackCircuit: 						        FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbSafetyDoor_FeedbackCircuit: 						  FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbJog_FeedbackCircuit: 						          FB_BINARY_SWITCH(bInNC:=TRUE);
+  // EL1904 - 4-chanel-digital-input (KF1.2.4) 
+  fbServiceDoorLeft_TestClock_Ch1: 						FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbServiceDoorLeft_TestClock_Ch2: 						FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbServiceDoorRight_TestClock_Ch1: 					FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbServiceDoorRight_TestClock_Ch2: 					FB_BINARY_SWITCH(bInNC:=TRUE);
+  // EL1904 - 4-chanel-digital-input (KF1.2.5) 
+  fbCounterCyl1_JogValvePos: 						      FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbCounterCyl2_JogValvePos: 						      FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbCounterCyl3_JogValvePos: 						      FB_BINARY_SWITCH(bInNC:=TRUE);
+  fbCounterCyl4_JogValvePos: 						      FB_BINARY_SWITCH(bInNC:=TRUE);
+  
+  /////////////////////////////////////////
+  // EL1018 - 8-chanel-digital-input (KF1.5.0)
+  fbPowerAdapter24V_Hydraulics_Ok:                FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbSelectivityModules_Ok:                        FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbCircuitBreaker_Ok:                            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbCabinetTemperature_Ok:                        FB_BINARY_SWITCH(bInNC:= FALSE);
+  // EL1018 - 8-chanel-digital-input (KF1.5.1)
+  fbUnitConnector1_Contacted:                     FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbUnitConnector2_Contacted:                     FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbUnitConnector3_Contacted:                     FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbUnitConnector4_Contacted:                     FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLiquiphant_TestBench_Triggered:               FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLiquiphant_ValveBlocks_Triggered:             FB_BINARY_SWITCH(bInNC:= FALSE);
+	
+  // Other                   			
+	fbOpMode:							                      FB_OP_MODE_PAUSE( itfHandleEvents:= fbEventHandler, 
+	                                                              itfPowerAdapter24V_Hydraulics_Ok:= fbPowerAdapter24V_Hydraulics_Ok, 
+	                                                              itfSelectivityModules_Ok:= fbSelectivityModules_Ok, 
+	                                                              itfCircuitBreaker_Ok:= fbCircuitBreaker_Ok, 
+	                                                              itfCabinetTemperature_Ok:= fbCabinetTemperature_Ok, 
+	                                                              itfUnitConnector1_Contacted:= fbUnitConnector1_Contacted, 
+	                                                              itfUnitConnector2_Contacted:= fbUnitConnector2_Contacted, 
+	                                                              itfUnitConnector3_Contacted:= fbUnitConnector3_Contacted, 
+	                                                              itfUnitConnector4_Contacted:= fbUnitConnector4_Contacted, 
+	                                                              itfLiquiphant_TestBench_Triggered:= fbLiquiphant_TestBench_Triggered, 
+	                                                              itfLiquiphant_ValveBlocks_Triggered:= fbLiquiphant_ValveBlocks_Triggered,
+                                                                itfFromSafety_EStop_Ok:= fbFromSafety_EStop_Ok,
+                                                                itfFromSafety_SafetyDoor_Ok:= fbFromSafety_SafetyDoor_Ok,
+                                                                itfFromSafety_KeySwitch_JogPos:= fbFromSafety_KeySwitch_JogPos,
+                                                                itfFromSafety_EStopLeft_Ok:= fbFromSafety_EStopLeft_Ok,
+                                                                itfFromSafety_EStopRight_Ok:= fbFromSafety_EStopRight_Ok,
+                                                                itfFromSafety_EStopJog_Ok:= fbFromSafety_EStopJog_Ok,
+                                                                itfFromSafety_SafetyDoorLeft_Ok:= fbFromSafety_SafetyDoorLeft_Ok,
+                                                                itfFromSafety_SafetyDoorRight_Ok:= fbFromSafety_SafetyDoorRight_Ok,
+                                                                itfFromSafety_ServiceDoorLeft_Ok:= fbFromSafety_ServiceDoorLeft_Ok,
+                                                                itfFromSafety_ServiceDoorRight_Ok:= fbFromSafety_ServiceDoorRight_Ok,
+                                                                itfFromSafety_JogAckBtn_Pressed:= fbFromSafety_JogAckBtn_Pressed,
+                                                                itfFromSafety_StateServiceValve1:= fbFromSafety_StateServiceValve1,
+                                                                itfFromSafety_StateServiceValve2:= fbFromSafety_StateServiceValve2,
+                                                                itfFromSafety_StateServiceValve3:= fbFromSafety_StateServiceValve3,
+                                                                itfFromSafety_StateServiceValve4:= fbFromSafety_StateServiceValve4,
+                                                                itfFromSafety_ServiceMode_Ok:= fbFromSafety_ServiceMode_Ok,
+                                                                itfFromSafety_ServiceValves_Ok:= fbFromSafety_ServiceValves_Ok);
+                            	
+	fbUserMng: 							                    FB_USER_MANAGER_OLD;
+
+	
+  // From Safety
+	bInit: 								                      BOOL:=TRUE;	
+	iCaseOpMode: 						                    INT:=1;
+	tonInitQuit:						                    TON;
+	
+	fbErrorACK: 						                    FB_BINARY_OUTPUT;
+	fbSafetyRun: 						                    FB_BINARY_OUTPUT;
+	fbSafetyRestart:										        FB_BINARY_OUTPUT;
+	fbLockDoor:												          FB_BINARY_OUTPUT;
+               					
+	fbComErr:							                      FB_BINARY_SWITCH(bInNC:= FALSE);
+	fbErr:								                      FB_BINARY_SWITCH(bInNC:= FALSE);
+	fbIn:								                        FB_BINARY_SWITCH(bInNC:= FALSE);
+	
+	tpErrAck:							                      TP;           	
+	tpQuit: 							                      TP;
+	fTrigAck:							                      F_TRIG;
+	tpTrigAck:							                    TP;
+  tonAck:                                     TON;
+  bAck:                                       BOOL;
+  uiAckSeq:                                   UINT := 0;
+  
+  // From safety
+  fbFromSafety_EStop_Ok:                      FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_SafetyDoor_Ok:                 FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_KeySwitch_JogPos:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_EStopLeft_Ok:                  FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_EStopRight_Ok:                 FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_EStopJog_Ok:                   FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_SafetyDoorLeft_Ok:             FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_SafetyDoorRight_Ok:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_ServiceDoorLeft_Ok:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_ServiceDoorRight_Ok:           FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_JogAckBtn_Pressed:             FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_StateServiceValve1:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_StateServiceValve2:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_StateServiceValve3:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_StateServiceValve4:            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_ServiceMode_Ok:                FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbFromSafety_ServiceValves_Ok:              FB_BINARY_SWITCH(bInNC:= FALSE);
+END_VAR
+VAR
+  bInitRestart:                               BOOL;
+  uiOpStep:                                   UINT;
+  bStop:                                      BOOL;
+  bResetModeSelectionTrigger:                 BOOL;
+  bInitOk:                                    BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbEventHandler();
+fbOpMode();
+fbUserMng();
+
+
+IF NOT fbSafetyRun.P_State THEN
+  fbSafetyRun.M_Set();
+END_IF
+
+IF fbOpMode.P_EMERGANCY_STOP OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR THEN
+  bInitOk := FALSE;
+  fbLockDoor.M_Reset();
+END_IF
+
+IF bAck THEN
+  CASE uiAckSeq OF
+    0:
+      fbErrorACK.M_Set();
+      uiAckSeq := 1;
+    1:
+      tonAck(IN:= NOT tonAck.Q, PT:= T#100MS);
+      IF tonAck.Q THEN
+        fbErrorACK.M_Reset();
+        uiAckSeq := 2;
+	    END_IF
+    2:
+      fbSafetyRestart.M_Set();
+      uiAckSeq := 3;
+    3:
+      tonAck(IN:= NOT tonAck.Q, PT:= T#1S);
+      IF tonAck.Q THEN
+        fbSafetyRestart.M_Reset();
+        uiAckSeq := 0;
+        bAck := FALSE;
+	    END_IF
+	END_CASE
+END_IF
+
+// Bypass and oil cooler control
+IF TRUE
+AND NOT PrgStation.fbOilCooler.P_State 
+THEN
+  PrgStation.fbOilCooler.M_On();
+END_IF
+IF TRUE
+AND NOT PrgStation.fbBypassPump.P_State
+THEN
+  PrgStation.fbBypassPump.M_On();
+END_IF
+
+// OP-Mode selection
+IF TRUE
+AND (fbOpMode.P_OP_MODE_STATE = OP_MODE.CONTROL_ON OR fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
+AND NOT PrgStation.fbMainProcess.P_ReadyState
+AND NOT bStop
+THEN
+  PrgStation.fbMainProcess.M_SetReady();
+  uiOpStep := 0;
+END_IF
+
+// Safety
+IF TRUE
+AND (fbOpMode.P_EMERGANCY_STOP 
+OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR) 
+THEN
+  CASE uiOpStep OF
+    0:;
+      IF PrgStation.fbMainProcess.M_SetReady() THEN
+        bInitOk := FALSE;
+        uiOpStep := 1;
+			END_IF
+    1:;
+      IF PrgStation.fbMainProcess.M_EStop() THEN
+        bResetModeSelectionTrigger := TRUE;
+        bStop := FALSE;
+        uiOpStep := 0;
+	    END_IF
+	END_CASE
+END_IF
+
+IF TRUE
+AND bInitRestart
+THEN
+  bInitRestart := FALSE;
+  bInitOk := FALSE;
+  fbOpMode.P_INIT_OK := FALSE;
+END_IF
+
+IF TRUE
+AND fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT
+AND NOT (fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
+AND NOT bStop
+THEN
+  IF PrgStation.fbMainProcess.M_Reset() THEN
+    bResetModeSelectionTrigger := TRUE;
+    bInitOk := TRUE;
+	END_IF
+ELSIF TRUE
+AND fbOpMode.P_OP_MODE_STATE = OP_MODE.AUTO
+AND NOT bStop
+THEN
+  IF PrgVisu.fbVisuOPMode.P_EnduranceRunSelected THEN
+    IF PrgStation.fbMainProcess.M_EnduranceRun(stEnduranceRunParams:= PrgStation.stRecipeParams.stRecipeEnduranceRun) THEN
+      bResetModeSelectionTrigger := TRUE;
+		END_IF
+  ELSIF PrgVisu.fbVisuOPMode.P_BreakPressureDetSelected THEN
+    IF PrgStation.fbMainProcess.M_BreakPressureDet(stBreakPressureParams:= PrgStation.stRecipeParams.stRecipeBreakPressure) THEN
+      bResetModeSelectionTrigger := TRUE;
+		END_IF
+  ELSIF PrgVisu.fbVisuOPMode.P_LeakTest1Selected THEN
+    IF PrgStation.fbMainProcess.M_LeakTest1(stLeakTest1Params:= PrgStation.stRecipeParams.stRecipeLeakTest1) THEN
+      bResetModeSelectionTrigger := TRUE;
+		END_IF
+  ELSIF PrgVisu.fbVisuOPMode.P_LeakTest2Selected THEN
+    IF PrgStation.fbMainProcess.M_LeakTest2(stLeakTest2Params:= PrgStation.stRecipeParams.stRecipeLeakTest2) THEN
+      bResetModeSelectionTrigger := TRUE;
+		END_IF
+	END_IF
+END_IF
+
+IF TRUE
+AND bStop
+THEN
+  CASE uiOpStep OF
+    0:;
+      IF PrgStation.fbMainProcess.M_SetReady() THEN
+        uiOpStep := 1;
+			END_IF
+    1:;
+      IF PrgStation.fbMainProcess.M_Stop() THEN
+        bStop := FALSE;
+        bInitOk := FALSE;
+        bResetModeSelectionTrigger := TRUE;
+        uiOpStep := 0;
+	    END_IF
+	END_CASE
+END_IF
+
+IF bResetModeSelectionTrigger THEN
+  fbOpMode.M_OP_MODE_OFF();
+  IF PrgVisu.fbVisuOPMode.M_ResetModeSelection() THEN
+    bResetModeSelectionTrigger := FALSE;
+    IF bInitOk THEN
+      fbOpMode.P_INIT_OK := TRUE;
+    ELSE
+      fbOpMode.P_INIT_OK := FALSE;
+		END_IF
+  END_IF
+END_IF
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PrgOrg">
+      <LineId Id="4743" Count="9" />
+      <LineId Id="5510" Count="0" />
+      <LineId Id="4753" Count="25" />
+      <LineId Id="4787" Count="13" />
+      <LineId Id="4919" Count="0" />
+      <LineId Id="4918" Count="0" />
+      <LineId Id="5236" Count="1" />
+      <LineId Id="4923" Count="0" />
+      <LineId Id="4921" Count="0" />
+      <LineId Id="5068" Count="0" />
+      <LineId Id="4920" Count="0" />
+      <LineId Id="5070" Count="8" />
+      <LineId Id="5509" Count="0" />
+      <LineId Id="5079" Count="3" />
+      <LineId Id="5101" Count="1" />
+      <LineId Id="5083" Count="2" />
+      <LineId Id="5069" Count="0" />
+      <LineId Id="4917" Count="0" />
+      <LineId Id="4801" Count="3" />
+      <LineId Id="5508" Count="0" />
+      <LineId Id="4805" Count="16" />
+      <LineId Id="4832" Count="0" />
+      <LineId Id="4897" Count="0" />
+      <LineId Id="4894" Count="0" />
+      <LineId Id="4898" Count="0" />
+      <LineId Id="4900" Count="0" />
+      <LineId Id="4902" Count="0" />
+      <LineId Id="4899" Count="0" />
+      <LineId Id="4904" Count="1" />
+      <LineId Id="4907" Count="0" />
+      <LineId Id="4903" Count="0" />
+      <LineId Id="4910" Count="1" />
+      <LineId Id="4913" Count="1" />
+      <LineId Id="4858" Count="5" />
+      <LineId Id="5091" Count="6" />
+      <LineId Id="5104" Count="0" />
+      <LineId Id="5513" Count="0" />
+      <LineId Id="5103" Count="0" />
+      <LineId Id="5099" Count="1" />
+      <LineId Id="4915" Count="0" />
+      <LineId Id="4881" Count="2" />
+      <LineId Id="5369" Count="0" />
+      <LineId Id="4884" Count="1" />
+      <LineId Id="5505" Count="1" />
+      <LineId Id="5511" Count="1" />
+      <LineId Id="5507" Count="0" />
+      <LineId Id="4886" Count="6" />
+      <LineId Id="4034" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

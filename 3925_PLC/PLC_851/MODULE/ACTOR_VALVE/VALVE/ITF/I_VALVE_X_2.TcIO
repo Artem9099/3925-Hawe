@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_VALVE_X_2" Id="{95d3140a-8ef3-4690-bde5-eb03a8663ed5}">
+    <Declaration><![CDATA[INTERFACE I_VALVE_X_2 EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_Reset" Id="{ed0240b6-97dc-4fc2-a204-e0f09b3128a0}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{bfba7bb7-f90b-44e0-8e8a-9945c57ecbe0}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToHP" Id="{28463096-b3ec-4640-bd11-66b414f64365}">
+      <Declaration><![CDATA[METHOD M_ToHP : BOOL
+VAR_INPUT
+  tDelay:         TIME;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToWP1" Id="{d3260089-8323-4826-b22f-4d30b0273baa}">
+      <Declaration><![CDATA[METHOD M_ToWP1 : BOOL
+VAR_INPUT
+  tDelay:         TIME;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_InHP" Id="{26ab67ca-cf32-4a36-93fa-ac3e32294732}">
+      <Declaration><![CDATA[PROPERTY P_InHP : BOOL]]></Declaration>
+      <Get Name="Get" Id="{9bb36e2f-4aa9-4c92-8240-fef8f669e4d0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_InWP1" Id="{02e9f2f6-fa6b-4b08-ad86-2388a092bd8d}">
+      <Declaration><![CDATA[PROPERTY P_InWP1 : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c0e21414-ecd8-4d7d-a19a-3fa2aa1585e9}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{6e8f358d-446e-460f-ab90-e5252cf4215e}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3283b8b4-3f80-4486-9000-ff886afcd970}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

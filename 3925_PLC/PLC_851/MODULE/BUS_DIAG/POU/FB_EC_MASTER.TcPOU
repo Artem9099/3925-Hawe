@@ -1,0 +1,359 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_EC_MASTER" Id="{d6c65fb4-b47e-42b8-ab27-727a51a8839d}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+{attribute 'no_explicit_call' := 'do not call this POU directly'} 
+FUNCTION_BLOCK FB_EC_MASTER IMPLEMENTS I_Master
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+	stEvent: ST_EVENT;
+	bAck: BOOL;
+	
+	uiDevState AT %I*: 	UINT;
+	uiLastDevState: 	UINT;
+	
+	itfLogEvents: 		I_HANDLE_EVENTS;
+	fbEventState: 		FB_CREATE_EVENT(itfLogEvents:= itfLogEvents, itfID:=THIS^);
+	bAnyEvent:			BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ ]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{e4092c80-6abe-4eed-b559-be5dfe723d25}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfLogEvents: 		I_HANDLE_EVENTS;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[this^.itfLogEvents:=itfLogEvents;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{04314c02-bc79-4d30-bf79-14244a1f5034}">
+      <Declaration><![CDATA[
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+VAR
+strTemp: STRING;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Get own Name
+THIS^.strFullObjectPath:= F_RET_TXTLIST_ENTRY(strPortNr:='851', strID:=THIS^.strInstancePath, strTxtLstName:='TXT_LIST_OBJECTS');
+bAnyEvent:=FALSE;
+
+//0x0001 = Link error
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Link error');
+IF THIS^.uiDevState = 16#0001 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0002 = I/O locked after link error (I/O reset required)
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'I/O locked after link error (I/O reset required)');
+IF THIS^.uiDevState = 16#0002 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0004 = Link error (redundancy adapter)
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Link error (redundancy adapter)');
+IF THIS^.uiDevState = 16#0004 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0008 = Missing one frame (redundancy mode)
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Missing one frame (redundancy mode)');
+IF THIS^.uiDevState = 16#0008 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0010 = Out of send resources (I/O reset required)
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Out of send resources (I/O reset required)');
+IF THIS^.uiDevState = 16#0010 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0020 = Watchdog triggered
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Watchdog triggered');
+IF THIS^.uiDevState = 16#0020 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0040 = Ethernet driver (miniport) not found
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'Ethernet driver (miniport) not found');
+IF THIS^.uiDevState = 16#0040 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0080 = I/O reset active
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'I/O reset active');
+IF THIS^.uiDevState = 16#0080 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0100 = At least one device in 'INIT' state
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'At least one device in "INIT" state');
+IF THIS^.uiDevState = 16#0100 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0200 = At least one device in 'PRE-OP' state
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'At least one device in "PRE-OP" state');
+IF THIS^.uiDevState = 16#0200 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0400 = At least one device in 'SAFE-OP' state
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'At least one device in "SAFE-OP" state');
+IF THIS^.uiDevState = 16#0400 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x0800 = At least one device indicates an error state
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'At least one device indicates an error stat');
+IF THIS^.uiDevState = 16#0800 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+//0x1000 = DC not in sync
+strTemp:= Tc2_Standard.CONCAT(THIS^.strFullObjectPath, ' -> ');
+strTemp:=Tc2_Standard.CONCAT(strTemp, 'DC not in sync');
+IF THIS^.uiDevState = 16#1000 THEN
+	THIS^.fbEventState.M_Log(strTemp,enum_event_type.Ye4_Stateinfo,THIS^.itfLogEvents);
+	bAnyEvent:=TRUE;
+END_IF
+
+
+
+
+IF THIS^.uiDevState <= 0 
+OR THIS^.bAck 
+OR NOT bAnyEvent 
+OR THIS^.uiLastDevState <>THIS^.uiDevState 
+THEN	
+	THIS^.fbEventState.M_Log('',enum_event_type.Gn0_None,THIS^.itfLogEvents);
+	THIS^.fbEventState.M_Quit();
+END_IF
+THIS^.uiLastDevState:=THIS^.uiDevState;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{618a0041-c8ba-48d8-ab57-77e3756dfda3}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{09d7528a-331a-481e-9382-679728d111b1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:= THIS^.stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{4f12f026-b7d8-42b2-9470-8385fc800f0a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.stEvent:=P_Event;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{9246022e-aa34-4db6-99c2-791948feebe9}">
+      <Declaration><![CDATA[(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{6326d28a-8327-4943-93db-d397a80ec55f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{9c1cb438-122b-4702-a3e1-0279a3f306b2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{68141b4e-2099-42bc-9df5-87cd8cf11a75}">
+      <Declaration><![CDATA[(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{7b90b0bb-df90-48d3-9736-4fe573172797}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:= bAck;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e37027f3-2910-4c67-a4e4-0975abba8433}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bAck:=P_Global_Ack;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{cdf44a49-8a1f-4c75-bf55-0d7881e24599}">
+      <Declaration><![CDATA[(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{1368ceed-0543-4886-9bcd-493a9a31e0af}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_STATE" Id="{b8c18c9e-fc22-4423-b5b1-fde46bc54c48}">
+      <Declaration><![CDATA[PROPERTY P_STATE : INT
+]]></Declaration>
+      <Get Name="Get" Id="{28e679a9-18de-4834-9547-634651727ae1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_STATE:=UINT_TO_INT(this^.uiDevState);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_EC_MASTER">
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.M_Run">
+      <LineId Id="8" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="105" Count="4" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="101" Count="3" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="97" Count="3" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="93" Count="3" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="89" Count="3" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="85" Count="3" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="81" Count="3" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="77" Count="3" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="73" Count="3" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="69" Count="3" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="65" Count="3" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="61" Count="3" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="44" Count="4" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="24" Count="2" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="125" Count="1" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="123" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EC_MASTER.P_STATE.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

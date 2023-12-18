@@ -1,0 +1,1015 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_VALVE_X_3" Id="{940e41f9-fb52-45b7-bba3-27941baa1799}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VALVE_X_3 IMPLEMENTS I_VALVE_X_3
+VAR //General
+	{attribute 'instance-path'} 
+  {attribute 'noinit'} 
+	strInstancePath:									                      STRING;
+	bInit: 												                          BOOL:=TRUE;
+	strFullObjectPath: 								                      STRING;
+	stEvent:											                          ST_EVENT;
+	bAck:												                            BOOL;
+	
+END_VAR
+VAR   // From FB_init	
+	itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;
+  itfSwitchToWP1:                                         I_BINARY_OUTPUT;
+  itfSwitchToWP2:                                         I_BINARY_OUTPUT;
+END_VAR                                      				
+VAR	// Step chain control                				
+  eSeq, eLastSeq, eNextSeq:					                      E_SEQ_VALVE; 
+                  				
+  //eActiveSeqState, eLastActiveSeqState:                 E_SEQ_GENERAL;
+	(*
+  iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=0;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+	i:														                          INT;
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
+*)
+i:														                            INT;
+stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;     	
+END_VAR                                             		
+VAR                                                 		
+	bMethodeFromExtStarted:									                BOOL;
+	bMethodeFromExtActive:									                BOOL;
+	bMethodeFromExtDone:									                  BOOL;
+	strTemp:												                        STRING;
+END_VAR   
+VAR
+  stHMI:                                                  ST_HMI_VALVE;
+  tDelay:                                                 TIME;
+END_VAR                  	
+VAR_TEMP                    	
+	iTemp:										                              INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Set FBs and Interfaces ready after switch internal step
+IF stSeqCtrlGeneral.iInternalSeqStateCase <> stSeqCtrlGeneral.iLastInternalSeqStateCase AND NOT stSeqCtrlGeneral.bExitSetReadyState THEN
+  IF TRUE
+  //AND ...
+  THEN
+    stSeqCtrlGeneral.bExitSetReadyState := TRUE;
+  ELSE
+    RETURN;
+  END_IF
+END_IF
+
+stSeqCtrlGeneral.strObject := F_CreateObjectName(strInstancePath);
+
+// First method call
+_m_SequenceManager();
+//_m_SaveLastStep();
+
+CASE eSeq OF 
+  E_SEQ_VALVE.BASE:;
+  
+	E_SEQ_VALVE.INIT: _m_Seq_INIT();
+		IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_VALVE.BASE;
+		END_IF
+		
+	E_SEQ_VALVE.SETUP:;
+  
+	// Process
+  E_SEQ_VALVE.SET_HP: _m_Seq_TO_HP();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_VALVE.BASE;
+		END_IF
+  
+	E_SEQ_VALVE.SET_WP1:  _m_Seq_TO_WP1();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_VALVE.BASE;
+		END_IF
+    
+  E_SEQ_VALVE.SET_WP2: _m_Seq_TO_WP2();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_VALVE.BASE;
+		END_IF
+
+  // End
+	E_SEQ_VALVE.END:;
+	E_SEQ_VALVE.ERROR_SEQ:;	
+END_CASE
+
+strTemp:=TO_STRING(eSeq);
+]]></ST>
+    </Implementation>
+    <Folder Name="PRIVAT" Id="{07679317-830b-4fae-ad66-4d9b6cf0f7eb}" />
+    <Folder Name="SEQUENCE" Id="{8c21682f-dbbb-42f9-9b00-a6c48281a19a}" />
+    <Method Name="_m_DebugManager" Id="{9aa4dd43-776d-46be-a035-d140ea76cacf}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.stSeqCtrlGeneral.bDebugModeActive 
+AND NOT THIS^.stSeqCtrlGeneral.bActiveStep
+THEN
+
+
+THIS^.stSeqCtrlGeneral.bBreakpointActive:=FALSE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.stSeqCtrlGeneral.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.stSeqCtrlGeneral.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{1814683f-6658-40ae-a535-6f9165e0fd05}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bDelayActive:=TRUE;
+THIS^.stSeqCtrlGeneral.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{2ebeacd1-241f-40c3-ba7e-fb1b0743f3b0}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			    	E_STEP_STATE_TYPE;
+	InfoTextID:					STRING(20);
+	EnableDebug:	   			BOOL;	
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	THIS^.stSeqCtrlGeneral.eStep_Type:=StepType;
+	THIS^.stSeqCtrlGeneral.strExtraInfo:= GenLib.F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='',strTxtLstName:=InfoTextID);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{966786db-28f3-43ca-ab9d-242e1eccbe04}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			stSeqCtrlGeneral.listLastSteps[i].strStepName:=stSeqCtrlGeneral.listLastSteps[i-1].strStepName;
+			stSeqCtrlGeneral.listLastSteps[i].tStepTime:=stSeqCtrlGeneral.listLastSteps[i-1].tStepTime;
+			stSeqCtrlGeneral.listLastSteps[i].tDelayTime:=stSeqCtrlGeneral.listLastSteps[i-1].tDelayTime;
+	END_FOR
+	stSeqCtrlGeneral.listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;
+ELSE
+	stSeqCtrlGeneral.listLastSteps[0].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[0].tDelayTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_INIT" Id="{2552b0c9-6c38-4ba4-aaac-41b35f97da5e}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_INIT : BOOL
+VAR
+  ActiveSeq: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Reset valve
+      IF TRUE
+			THEN 
+        itfSwitchToWP1.M_Reset();
+        itfSwitchToWP2.M_Reset();
+        IF _m_Delay(T#1S) THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+				END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_HP" Id="{9e1d847a-5b19-43bb-b012-32900f17d41e}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_HP : BOOL
+VAR
+  ActiveSeq: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Reset valve
+      IF TRUE 
+			THEN 
+        itfSwitchToWP1.M_Reset();
+        itfSwitchToWP2.M_Reset();
+        IF _m_Delay(tDelay) THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+				END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_WP1" Id="{e2f0470e-1b0b-4949-a226-485641fa9764}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_WP1 : BOOL
+VAR
+  ActiveSeq: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Reset valve
+      IF TRUE 
+			THEN 
+        itfSwitchToWP1.M_Set();
+        itfSwitchToWP2.M_Reset();
+        IF _m_Delay(tDelay) THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+				END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TO_WP2" Id="{785cebd5-4e6c-48b8-a14e-dc1eb68673dd}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TO_WP2 : BOOL
+VAR
+  ActiveSeq: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Reset valve
+      IF TRUE
+			THEN 
+        itfSwitchToWP1.M_Reset();
+        itfSwitchToWP2.M_Set();
+        IF _m_Delay(tDelay) THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+				END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{c7425f1a-46bd-4bf9-882f-8ecba54bffdb}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FALSE
+//AND THIS^.eActiveSeqState=DONE 
+AND eLastSeq<>eSeq
+THEN
+	IF THIS^.stSeqCtrlGeneral.eActiveSeqState<>E_SEQ_GENERAL.EXECUTE THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.READY;
+	END_IF
+END_IF
+
+eSeq := eNextSeq;
+
+//DelayTimer und TimeOut Timer verwalten
+stSeqCtrlGeneral.bActiveStep:=	TRUE
+				AND eLastSeq					=	eSeq
+				AND stSeqCtrlGeneral.eLastActiveSeqState			=	stSeqCtrlGeneral.eActiveSeqState
+				AND	stSeqCtrlGeneral.iLastInternalSeqStateCase	=	stSeqCtrlGeneral.iInternalSeqStateCase
+				;
+			
+IF NOT stSeqCtrlGeneral.bActiveStep THEN
+	stSeqCtrlGeneral.bDelayActive:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveQuit:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveNoQuit:=FALSE;
+  THIS^.stSeqCtrlGeneral.strExtraInfo:='';
+END_IF
+
+_m_SaveLastStep();
+stSeqCtrlGeneral.tonDelay	(IN:=stSeqCtrlGeneral.bActiveStep AND stSeqCtrlGeneral.bDelayActive, 		PT:=stSeqCtrlGeneral.tDelay);
+stSeqCtrlGeneral.tonTimeOut	(IN:=stSeqCtrlGeneral.bActiveStep AND (stSeqCtrlGeneral.bTimeOutActiveNoQuit OR stSeqCtrlGeneral.bTimeOutActiveQuit), 	PT:=stSeqCtrlGeneral.tTimeOut);
+stSeqCtrlGeneral.tonStepTime	(IN:= stSeqCtrlGeneral.bActiveStep, PT:= T#24H);
+
+IF stSeqCtrlGeneral.tonTimeOut.Q  THEN
+	stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.TIME_OUT;
+END_IF
+
+IF stSeqCtrlGeneral.iError<>0 THEN
+	eSeq:=E_SEQ_VALVE.ERROR_SEQ;
+END_IF
+
+
+
+eLastSeq					:=	eSeq;
+stSeqCtrlGeneral.eLastActiveSeqState			:=	stSeqCtrlGeneral.eActiveSeqState;
+stSeqCtrlGeneral.iLastInternalSeqStateCase	:=	stSeqCtrlGeneral.iInternalSeqStateCase;
+
+// Reset set ready state
+IF THIS^.stSeqCtrlGeneral.bExitSetReadyState THEN
+  THIS^.stSeqCtrlGeneral.bExitSetReadyState := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_TimeOut" Id="{15277ccb-8cf2-4051-9eeb-a17863084925}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_TimeOut : BOOL
+VAR_INPUT
+	bTimeoutActiveToQuit:	BOOL;
+	bTimeOutActiveNoQuit:	BOOL;
+	tTimeOut:				TIME;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit:=	bTimeoutActiveToQuit;
+THIS^.stSeqCtrlGeneral.bTimeOutActiveNoQuit:=	bTimeOutActiveNoQuit;
+THIS^.stSeqCtrlGeneral.tTimeOut:=			tTimeOut;
+_m_TimeOut:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonTimeOut.Q THEN
+	_m_TimeOut:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{513a7d78-5f87-4771-bd0d-80e1674f33e8}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+  itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;
+  itfSwitchToWP1:                                         I_BINARY_OUTPUT;
+  itfSwitchToWP2:                                         I_BINARY_OUTPUT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
+THIS^.itfOpMode := itfOpMode;
+THIS^.itfSwitchToWP1 := itfSwitchToWP1;
+THIS^.itfSwitchToWP2 := itfSwitchToWP2;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{877d0a6b-4e01-4641-b67a-529ed25e080f}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Reset := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_VALVE.INIT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{f7d6ac6b-fbe3-4252-9416-976669e21389}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetReady" Id="{e0eff366-5d12-4796-951b-40a818b51b7d}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToHP" Id="{99de2437-6fcd-4be2-a117-f9e489986f13}">
+      <Declaration><![CDATA[METHOD M_ToHP : BOOL
+VAR_INPUT
+  tDelay:         TIME;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToHP := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.tDelay := tDelay;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_VALVE.SET_HP;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToWP1" Id="{6edea46b-f5b0-409c-8fc8-7fae51c5b025}">
+      <Declaration><![CDATA[METHOD M_ToWP1 : BOOL
+VAR_INPUT
+  tDelay:        TIME;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToWP1 := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.tDelay := tDelay;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_VALVE.SET_WP1;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToWP2" Id="{8627b08b-7cfe-40a2-86f9-40dae6d49536}">
+      <Declaration><![CDATA[METHOD M_ToWP2 : BOOL
+VAR_INPUT
+  tDelay:        TIME;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ToWP2 := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.tDelay := tDelay;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_VALVE.SET_WP2;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{c6a60d06-010a-42c8-bb5d-7b0449969434}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{e84119d5-4a54-45db-8c99-a755dc12bbad}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{1d1edcac-c117-45f6-9c6a-d8c5b1f2c97b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{67a2cc47-4447-482b-9127-08fe611d9624}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{b72c6073-4bef-41fc-866a-98cb70ad7e5f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{f29b5a31-ae0a-4937-aba2-62a243ce2db2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{0d5d94ad-9dfa-44a0-8bcc-fee04df45ca5}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{809e8024-fb3a-4ea4-9f60-6ef344d2c112}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{4968e72d-3aa8-4364-8d50-af0b1750ba04}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{c3a21283-ffd8-465e-892a-0ea77e967bea}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{cf156e43-7ace-49d0-8d12-390294b29f03}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_InHP" Id="{c3203ba6-f21a-4194-ae2d-ba50cdd53e3f}">
+      <Declaration><![CDATA[PROPERTY P_InHP : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{90facc61-4526-4626-9aab-a1b49b27b2f8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_InHP := NOT THIS^.itfSwitchToWP1.P_State AND NOT THIS^.itfSwitchToWP2.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_InWP1" Id="{90afe7cc-a792-4919-8284-e20acf8140a6}">
+      <Declaration><![CDATA[PROPERTY P_InWP1 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{07861148-b0cc-4634-a20d-09f3f8b73928}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_InWP1 := THIS^.itfSwitchToWP1.P_State AND NOT THIS^.itfSwitchToWP2.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_InWP2" Id="{a74743a1-7993-4793-bdc8-ff14d524b066}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_InWP2 : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{2a008916-5edc-45a5-a7e4-99099a6bf257}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_InWP2 := NOT THIS^.itfSwitchToWP1.P_State AND THIS^.itfSwitchToWP2.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{1bd8f7d8-5f5f-49c9-a90e-bd2087b95a5d}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_ReadyState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{86696b33-b64d-4193-bb73-0290a158acf6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ReadyState := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_VALVE_X_3">
+      <LineId Id="505" Count="8" />
+      <LineId Id="503" Count="1" />
+      <LineId Id="203" Count="31" />
+      <LineId Id="440" Count="0" />
+      <LineId Id="442" Count="4" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="319" Count="6" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_GeneralStepSetting">
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_Seq_INIT">
+      <LineId Id="7" Count="23" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="38" Count="28" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_Seq_TO_HP">
+      <LineId Id="6" Count="23" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="112" Count="1" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="80" Count="27" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_Seq_TO_WP1">
+      <LineId Id="7" Count="23" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="38" Count="28" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_Seq_TO_WP2">
+      <LineId Id="7" Count="23" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="38" Count="28" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_SequenceManager">
+      <LineId Id="14" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="23" Count="11" />
+      <LineId Id="59" Count="4" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="79" Count="3" />
+      <LineId Id="78" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3._m_TimeOut">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_Reset">
+      <LineId Id="6" Count="0" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="52" Count="2" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_SetReady">
+      <LineId Id="26" Count="1" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_ToHP">
+      <LineId Id="6" Count="2" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="53" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_ToWP1">
+      <LineId Id="51" Count="5" />
+      <LineId Id="94" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.M_ToWP2">
+      <LineId Id="7" Count="5" />
+      <LineId Id="50" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_InHP.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_InWP1.Get">
+      <LineId Id="6" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_InWP2.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VALVE_X_3.P_ReadyState.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_HMI_CTRL" Id="{84ed1d31-ec6e-446e-8e24-50dbc46d1b4c}">
+    <Declaration><![CDATA[INTERFACE I_HMI_CTRL EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_Close" Id="{aef3f71d-6673-4005-8e39-0cffd8a89926}">
+      <Declaration><![CDATA[METHOD M_Close : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_PCReboot" Id="{e3dc9442-0e87-4626-83fa-9d1afcc1c4a4}">
+      <Declaration><![CDATA[METHOD M_PCReboot : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_PCShutdown" Id="{c42ee3de-aff2-4f86-b917-31b6f111b349}">
+      <Declaration><![CDATA[METHOD M_PCShutdown : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ShowWinKeyboard" Id="{d5e6b4af-f9a5-4d1b-84b8-b7cd4f04f3c1}">
+      <Declaration><![CDATA[METHOD M_ShowWinKeyboard : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Start" Id="{18ef974c-a4b8-4155-a0d3-4f940e405a6c}">
+      <Declaration><![CDATA[METHOD M_Start : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

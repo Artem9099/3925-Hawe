@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="FB_WORD_TO_BYTES" Id="{6fb4d424-b85e-4656-9157-5c9d3697dbac}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WORD_TO_BYTES IMPLEMENTS I_WORD_TO_BYTES
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	uWordToBytes:				U_BytesToWord ;
+//Für Input
+	bBytesOut1					AT %Q* :BYTE;
+	bBytesOut2					AT %Q* :BYTE;
+	lrWordIn:					LREAL;	
+	
+	lrUnscaledIn:				LREAL;
+	lrScaledIn:					LREAL;
+	temp_gain:					LREAL;
+	temp_offset:				LREAL;
+	lrX_Max:					LREAL	:=1;
+	lrX_Min:					LREAL;
+	lrY_Max:					LREAL	:=1;
+	lrY_Min:					LREAL;	
+	i:							INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{6e4fef96-38dc-4d12-b309-39071f70273c}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : 				BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : 				BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{be110074-6538-4c16-8154-8fbd357f8f5a}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+
+VAR
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[i:=i+1;
+
+uWordToBytes.uintOut:=LREAL_TO_WORD(lrWordIn);
+bBytesOut2:=uWordToBytes.arByteIn[0];
+bBytesOut1:=uWordToBytes.arByteIn[1];
+
+IF lrY_Max = 0 THEN
+	lrY_Max:=1;
+END_IF
+IF lrX_Max =0 THEN
+	lrX_Max:=1;
+END_IF
+
+// Ausgang Scallieren
+temp_gain := (lrY_Max - lrY_Min) / (lrX_Max - lrX_Min);
+temp_offset := lrY_Min - lrX_Min * temp_gain;
+lrWordIn := lrUnscaledIn * temp_gain + temp_offset;
+
+IF lrUnscaledIn > lrX_Max THEN
+    lrWordIn := REAL_TO_INT(lrY_Max);
+ELSIF lrUnscaledIn < lrX_Min THEN
+    lrWordIn := REAL_TO_INT(lrY_Min);
+END_IF;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{959872e2-20d3-415a-8d51-094ea9d87d14}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{1c52330a-4e00-4ed9-8165-c783c7a42453}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{d8c6f6ad-d9a1-44c4-989c-5178b7481474}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{50020da1-24cb-458e-a809-1d59001dab7f}">
+      <Declaration><![CDATA[(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{a69ef8e5-3486-4247-aa57-c9370be7d699}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{bc4ef5d5-821f-448a-9b96-67b0901d975b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{a01ef1b9-1066-46bb-b48e-01067b863964}">
+      <Declaration><![CDATA[(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{ba7a612a-1978-4f61-92a4-46b9f550a528}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e8d821d6-a558-4994-937f-7d921034c2e5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{0d4d9fb4-25bd-4d5b-849e-a2c682484e3d}">
+      <Declaration><![CDATA[(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{dd8482fd-3005-401f-b045-b5e3e91d50c5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_VALUE" Id="{b5800c6d-741d-44a2-b8f5-1a9e597f0e0d}">
+      <Declaration><![CDATA[PROPERTY P_VALUE : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{1cd53712-ad47-413d-ad19-d3c3e15265a6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_VALUE:=lrUnscaledIn;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{93e3b863-ae6b-4d75-bf0a-0c2441f0a531}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrUnscaledIn:=P_VALUE;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_X_MAX" Id="{4f57cb83-22c2-4303-a2ff-383e0e6fe3d2}">
+      <Declaration><![CDATA[PROPERTY P_X_MAX : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{49cb7143-8cd3-4379-8db2-37a5511fdf17}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_X_MAX:=lrX_Max;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{0b8044bd-ec70-4732-8428-8d5fe4e191bc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrX_Max:=P_X_MAX;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_X_MIN" Id="{4d01d0e0-1f3c-4c18-8727-5630bd256924}">
+      <Declaration><![CDATA[PROPERTY P_X_MIN : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{17dceb25-8964-40d3-ae76-bea13d0c9888}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_X_MIN:=lrX_Min;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{4e26a83d-efaa-4612-a74b-4dfba0c486ea}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrX_Min:=P_X_MIN;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Y_MAX" Id="{13609b42-00be-45a4-83f2-21a01cda2bef}">
+      <Declaration><![CDATA[PROPERTY P_Y_MAX : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{af0c1340-2e2d-440a-933c-ba03d70adc78}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Y_MAX:=lrY_Max;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{9eb9331b-b39c-4acf-8d28-7ed29ec260d7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrY_Max:=P_Y_MAX;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Y_MIN" Id="{01234699-7865-4fb1-8c63-45a83674e0a9}">
+      <Declaration><![CDATA[PROPERTY P_Y_MIN : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{c2e9b16e-6ff6-40c1-b3a3-10e914db1239}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Y_MIN:=lrY_Min;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{c56ad86c-2a3d-4cee-92af-9ea339f77116}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[lrY_Min:=P_Y_MIN;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_WORD_TO_BYTES">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.M_Run">
+      <LineId Id="8" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="38" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="21" Count="9" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_VALUE.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_VALUE.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_X_MAX.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_X_MAX.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_X_MIN.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_X_MIN.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Y_MAX.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Y_MAX.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Y_MIN.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_WORD_TO_BYTES.P_Y_MIN.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

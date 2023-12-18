@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="FB_BYTES_TO_WORD" Id="{5bb1aca9-4260-4cc4-bfce-292e68355659}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BYTES_TO_WORD IMPLEMENTS I_ANALOG_IN
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+
+
+uBytestoWord:					U_BytesToWord;
+//Für Input
+	bBytesIn1					AT %I* :BYTE;
+	bBytesIn2					AT %I* :BYTE;
+	wWordOut:					WORD;		
+
+	i:							INT;
+	
+
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+
+]]></ST>
+    </Implementation>
+    <Method Name="M_Run" Id="{0ae44c7d-0cae-448f-8102-9d4c635d6dba}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[i:=i+1;
+//Eingangsdaten Wandeln
+uBytestoWord.arByteIn[0]:=bBytesIn2;
+uBytestoWord.arByteIn[1]:=bBytesIn1;
+wWordOut:=uBytestoWord.uintOut;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{304b956e-717a-40a9-a3df-d893f67966cd}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{65013db4-496b-4f50-bb48-da9bb470289a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e3183730-8a89-41e4-b3b0-428fabf55546}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{1623d8ee-43f4-4644-9142-7b93a5be4e8c}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{908989ec-c154-4447-978c-f83c13c5c461}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{f8c038ea-6161-47e4-9c68-141e2ffca4be}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{bff62d2b-0ae9-4614-980c-dc894786bda6}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{2978b369-de06-42a3-b775-43d5a2b984be}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{10abb94c-595e-4f44-8566-503c66394a41}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{5e54ab42-f253-48a9-87e8-2d9c45c825a0}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{327e09e3-a5bd-4e29-a514-d3966a87bebc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Value" Id="{6b648b3b-dae1-47d0-bb39-3be4bf10846b}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_Value : LREAL
+]]></Declaration>
+      <Get Name="Get" Id="{8888e5f4-2c39-4854-8b5a-09170ab16789}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_VALUE:= WORD_TO_LREAL(THIS^.wWordOut);]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_BYTES_TO_WORD">
+      <LineId Id="28" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.M_Run">
+      <LineId Id="8" Count="3" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BYTES_TO_WORD.P_Value.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

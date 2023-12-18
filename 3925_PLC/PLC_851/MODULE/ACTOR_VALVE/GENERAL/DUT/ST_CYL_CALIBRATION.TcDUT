@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_CYL_CALIBRATION" Id="{b11631be-5f45-46b0-bebd-dee5f47a635a}">
+    <Declaration><![CDATA[TYPE ST_CYL_CALIBRATION :
+STRUCT
+  uiValue:          UINT;
+  uiPressure:       UINT;
+  uiState:          UINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

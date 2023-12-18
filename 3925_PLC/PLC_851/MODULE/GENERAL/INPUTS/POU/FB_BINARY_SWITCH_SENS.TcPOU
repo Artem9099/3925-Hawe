@@ -1,0 +1,315 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_BINARY_SWITCH_SENS" Id="{a6e1280c-511a-4b66-8a42-e759c894cb17}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BINARY_SWITCH_SENS IMPLEMENTS  I_BINARY_SWITCH_SENS
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+		
+	itfOpMode:										I_OP_MODE;
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath:								STRING;
+	strFullObjectPath:								STRING;
+	stEvent:										ST_EVENT;
+	bAck:											BOOL;
+	
+	bSwitch 										AT %I*: BOOL;
+	bNC:											BOOL;
+	fbEventLogger:									FB_TcEventLogger;
+	                                				
+	strSymName:										STRING;
+	iStepCase:										INT;
+	strMessage:										STRING;
+	bSensingON:										BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[strFullObjectPath:=F_CreateIdString(THIS^);
+
+
+stEvent.bEventActive:=FALSE;
+IF THIS^.bSensingON AND P_Active THEN
+	fbEventLogger.GetAlarm(eventClass:= TC_EVENT_CLASSES.TcSystemEventClass,
+							nEventID:=1,
+							ipSourceInfo:=TRUE,
+							fbAlarm:=TRUE);
+END_IF
+
+
+
+//Überwachung Eingang
+CASE iStepCase OF
+	
+	0://SENSING Deaktiviert
+	
+	
+	1://SENSING Aktiviert
+		
+		
+	
+	
+	re
+END_CASE]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{612c5594-60d2-4cb6-ad38-deb99a021cb6}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:			I_OP_MODE;
+	bInNC: 				BOOL;///NC:=true; NO:= false
+	strMessage:			STRING;
+	bSensingON:			BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode:=	itfOpMode;
+THIS^.bNC:=			bInNC;
+THIS^.strMessage:=	strMessage;
+THIS^.bSensingON:=	bSensingON;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{dbfa0a1d-8709-477b-a87a-771fd441aa29}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_START_SENS" Id="{c67b2c3b-ff44-4f79-8aa2-87e9ad17816b}">
+      <Declaration><![CDATA[METHOD M_START_SENS : BOOL
+VAR_INPUT
+	bState	: BOOL;
+	tDelay	: TIME;
+	eEventType	: GenLib.ENUM_EVENT_TYPE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.iStepCase=0 THEN
+	THIS^.iStepCase:=1;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_STOP_SENS" Id="{1d7a551c-f96b-46ea-a4d4-92b6e76e4cc0}">
+      <Declaration><![CDATA[METHOD M_STOP_SENS : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Active" Id="{a021e4ad-1a58-49c3-b16c-28454108738c}">
+      <Declaration><![CDATA[PROPERTY P_Active : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{c40f50bd-8865-4e24-b443-d1f919e081ab}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF bNC THEN
+	P_ACTIVE:= NOT bSwitch;
+ELSE
+	P_ACTIVE:= bSwitch;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{9a927b0f-ca3a-490c-a56f-436b387c1189}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{63f12604-7ba2-4aab-bf7c-d68b2012bcd4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:=stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{08ab960d-81bd-47bb-949e-2fd6768e993f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stEvent:=P_Event;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{1e100d33-612b-4f55-9fa3-af1b40d98813}">
+      <Declaration><![CDATA[(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{211439c7-68ed-4cbc-b681-b0ee6558f078}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{190220e9-b6e4-479e-a673-4b203898fa96}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{8d4bf222-219f-4041-abbe-1b72a2d51931}">
+      <Declaration><![CDATA[(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{a4e86b95-d3e7-4615-a8e4-73141355307a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:=THIS^.bAck;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{112b517a-163e-4922-9fa8-e9137764a4df}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bAck:=P_Global_Ack;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{c57749aa-b2d3-4aab-8473-150967d2c379}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{96096b9d-3fba-46f1-aa7a-2b14654d007e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_No_Nc" Id="{81e8d3b9-46ac-4b83-9d73-d7de80949cba}">
+      <Declaration><![CDATA[PROPERTY P_No_Nc : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{56b72e5a-df32-4626-bab0-fa73d42af897}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_No_Nc:= not THIS^.bNC;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_On" Id="{dc8596ac-a35e-4a8f-83aa-e539b0b3da8f}">
+      <Declaration><![CDATA[PROPERTY P_On : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{d75cb3a6-0374-4fe2-a480-e8d5d92c8f58}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_ON:= bSwitch;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_STATE_SENS" Id="{95e03ebd-e4c3-4c60-b996-477980271428}">
+      <Declaration><![CDATA[PROPERTY P_STATE_SENS : BOOL]]></Declaration>
+      <Get Name="Get" Id="{25a60d37-381d-49c2-9721-ccf49babf667}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_BINARY_SWITCH_SENS">
+      <LineId Id="9" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="58" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="99" Count="2" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="63" Count="2" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="49" Count="2" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="45" Count="3" />
+      <LineId Id="43" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.FB_init">
+      <LineId Id="10" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.M_START_SENS">
+      <LineId Id="9" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.M_STOP_SENS">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_Active.Get">
+      <LineId Id="5" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_No_Nc.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_On.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_BINARY_SWITCH_SENS.P_STATE_SENS.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,7 @@
+<div id="Cylindernest1_Info_7" data-tchmi-type="TcHmi.Controls.System.TcHmiContent" data-tchmi-top="0" data-tchmi-left="0" data-tchmi-width="400" data-tchmi-height="620">
+
+<div id="TcHmiTextblock_201" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Zylindernest 3 - Info" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="380" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-font-size="20" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-font-weight="Bold">
+</div>
+<div id="TcHmiTextblock_202" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="564" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Gegenhaltezylinder 1 (5.31): Pregler, D50/35-400, NH30-1-FD-50/35X 400-G-(TN)" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="380" data-tchmi-width-unit="px" data-tchmi-word-wrap="true">
+</div>
+</div>

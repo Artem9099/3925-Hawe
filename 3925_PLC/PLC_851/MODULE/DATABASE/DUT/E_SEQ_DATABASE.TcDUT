@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SEQ_DATABASE" Id="{2bf2d5f3-658c-4875-acfb-4d89f4756478}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+{attribute 'to_string'}
+TYPE E_SEQ_DATABASE :
+(
+	// GENERAL STEPS
+	BASE := 0,
+  INIT,
+  WAIT_FOR_AUTOMATIC_START,
+  SETUP,
+  // Process
+  CREATE_DATABASE,
+	CONNECT,
+  EXECUTE_SIMPLIFY_CMD,
+  EXECUTE_CMD,
+  CREATE_TABLE,
+  WRITE,
+  WRITE_STRUCT,
+  WRITE_BY_SYMBOL,
+  OVERWRITE,
+  READ,
+  READ_STRUCT,
+  CLEAR_TABLE,
+  DELETE_TABLE,
+  DISCONNECT,
+  
+  END,
+	ERROR_SEQ	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

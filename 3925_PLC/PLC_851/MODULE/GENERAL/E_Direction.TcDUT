@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <DUT Name="E_Direction" Id="{582053e6-5614-4702-8c4c-6b5f6acf3e97}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_Direction :
+(
+	Forward:=0,
+	Backward,
+	Clockwise,
+	Counterclockwise
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

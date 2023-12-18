@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_VISU_STOP_GATE" Id="{d2750194-f34b-4909-9964-9c58926728b0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VISU_STOP_GATE
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	iMoveCarrier: 		INT;
+	bStopGateOpen: 		BOOL;
+	bCarrierByStopGate: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_VISU_STOP_GATE">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

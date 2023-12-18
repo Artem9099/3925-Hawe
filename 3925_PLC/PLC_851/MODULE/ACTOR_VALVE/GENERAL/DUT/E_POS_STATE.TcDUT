@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_POS_STATE" Id="{6ac1e857-2e49-436f-8c04-fa6b7c8d5f24}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_POS_STATE :
+(
+	InBasePos,
+	InWorkPos,
+	InMidPos,
+	InBasePosValveOff,
+	InWorkPosValveOff,
+	NoDefPos,
+	MoveToBase,
+	MoveToWork,
+	TimeOutToWork,
+	TimeOutToBase,
+	MoveToBaseLock,
+	MoveToWorkLock
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

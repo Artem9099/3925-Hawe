@@ -1,0 +1,56 @@
+24.07.2023 09:06:30 9998_HMI: remove definitions
+-----------------------------------------------------------
+PLC1.ARRAY_1..100_OF-ST_SCALE_CALIBRATE_DATA,
+PLC1.ARRAY_1..10_OF-ST_SCALE_CALIBRATE_DATA,
+PLC1.ST_SCALE_CALIBRATE_DATA
+-----------------------------------------------------------
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.Tc2_Standard.TON" -> "<???>", Pos.(642, 5).
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.Tc2_Standard.R_TRIG" -> "<???>", Pos.(603, 5).
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.Tc2_Standard.F_TRIG" -> "<???>", Pos.(564, 5).
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.ST_LAST_STEPS" -> "<???>", Pos.(489, 5).
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.METHOD-RETURNING-BOOL" -> "<???>", Pos.(479, 5).
+24.07.2023 09:08:19 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.ENUM_EVENT_TYPE" -> "<???>", Pos.(447, 50).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.ST_EVENT" -> "<???>", Pos.(432, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.I_OP_MODE" -> "<???>", Pos.(428, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.I_BINARY_SWITCH" -> "<???>", Pos.(424, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.I_BINARY_OUTPUT" -> "<???>", Pos.(420, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.ENUM_EVENT_TYPE" -> "<???>", Pos.(366, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.E_STEP_STATE_TYPE" -> "<???>", Pos.(301, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.GenLib.I_BINARY_OUTPUT" -> "<???>", Pos.(142, 5).
+24.07.2023 09:08:20 9998_HMI: replace in file Properties\tchmi.project.Schema.json "PLC1.ST_TEST" -> "<???>", Pos.(12, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.Tc2_Standard.TON" -> "<???>", Pos.(642, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.Tc2_Standard.R_TRIG" -> "<???>", Pos.(603, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.Tc2_Standard.F_TRIG" -> "<???>", Pos.(564, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.ST_LAST_STEPS" -> "<???>", Pos.(489, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.METHOD-RETURNING-BOOL" -> "<???>", Pos.(479, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.ENUM_EVENT_TYPE" -> "<???>", Pos.(447, 50).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.ST_EVENT" -> "<???>", Pos.(432, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.I_OP_MODE" -> "<???>", Pos.(428, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.I_BINARY_SWITCH" -> "<???>", Pos.(424, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.I_BINARY_OUTPUT" -> "<???>", Pos.(420, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.ENUM_EVENT_TYPE" -> "<???>", Pos.(366, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.E_STEP_STATE_TYPE" -> "<???>", Pos.(301, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.GenLib.I_BINARY_OUTPUT" -> "<???>", Pos.(142, 5).
+24.07.2023 09:08:21 9998_HMI: replace in file Properties\tchmi.project.Schema.tpl.json "PLC1.ST_TEST" -> "<???>", Pos.(12, 5).
+24.07.2023 09:08:21 9998_HMI: remove definitions
+-----------------------------------------------------------
+PLC1.ARRAY_0..10_OF-INT,
+PLC1.ARRAY_0..49_OF-ST_LAST_STEPS,
+PLC1.E_STEP_STATE_TYPE,
+PLC1.FB_CONVEYOR,
+PLC1.GenLib.ENUM_EVENT_TYPE,
+PLC1.GenLib.I_BINARY_OUTPUT,
+PLC1.GenLib.I_BINARY_SWITCH,
+PLC1.GenLib.I_OP_MODE,
+PLC1.GenLib.ST_EVENT,
+PLC1.METHOD-RETURNING-BOOL,
+PLC1.ST_LAST_STEPS,
+PLC1.ST_TEST,
+PLC1.Tc2_Standard.F_TRIG,
+PLC1.Tc2_Standard.R_TRIG,
+PLC1.Tc2_Standard.TON
+-----------------------------------------------------------
+26.07.2023 10:09:41 9998_HMI: remove definitions
+-----------------------------------------------------------
+PLC1.ST_HMI_PNEU_ACTOR
+-----------------------------------------------------------

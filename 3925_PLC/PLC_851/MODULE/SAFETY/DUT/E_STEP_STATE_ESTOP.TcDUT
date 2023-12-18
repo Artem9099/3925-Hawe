@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_STEP_STATE_ESTOP" Id="{74468b5b-5579-4afd-97e2-da858f55c899}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_STEP_STATE_ESTOP :
+(
+	//GENERAL STEPS
+	BASE := 0,
+	RESET,
+	START_INIT,
+	
+	INIT_BUSY,
+	INIT_TURN_OFF_CYLINDER,
+	INIT_DONE,
+	START_SEQ,
+	DEBUG_BREAK,
+	
+	ESTOP_OK,
+	ESTOP_PRESSED,
+	WAIT_QUIT_ESTOP,
+	SET_QUIT_ESTOP,
+	RESET_QUIT_ESTOP,
+	ESTOP_QUIT_OK,
+	
+	TIME_OUT,
+	TIME_OUT_TO_QUIT,
+	ERROR,
+	ERROR_TO_QUIT,
+	ERROR_RESTART,
+	IBN_DUMMY,
+	//SPECIFIC STEPS
+	START_LAST_TEST
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

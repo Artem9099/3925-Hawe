@@ -1,0 +1,893 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PrgStation" Id="{e229aefa-250b-4bea-a3eb-467b32bd7c51}" SpecialFunc="None">
+    <Declaration><![CDATA[ {attribute 'global_init_slot' := '40020'}
+PROGRAM PrgStation
+VAR
+		
+{region 'Step Sequence'}
+//Aufruf Hauptschrittkette Ablauf
+{endregion}	
+	iTestCnt: INT; 	 
+{region 'BUS-DIAG'}
+	fbPNMaster: 						                        FB_PN_MASTER(itfLogEvents:=PrgOrg.fbEventHandler);
+	fbPNSlaveCam1: 						                      FB_PN_SLAVE(itfLogEvents:=PrgOrg.fbEventHandler );
+	fbPNSlaveCam2: 						                      FB_PN_SLAVE(itfLogEvents:=PrgOrg.fbEventHandler );	
+	fbPNSlaveScan: 						                      FB_PN_SLAVE(itfLogEvents:=PrgOrg.fbEventHandler ); 
+	fbECMaster:							                        FB_EC_MASTER(itfLogEvents:=PrgOrg.fbEventHandler);
+  stEvent:                                        ST_EVENT; 
+  fbLogEvents:                                    FB_HANDLE_EVENTS;
+{endregion}
+	 
+{region 'States'}
+	uiPNMasterState						                      AT %I* : UINT;
+	fbSetSlaveState: 					                      Tc2_EtherCAT.FB_EcSetSlaveState;
+	wSlaveState:						                        WORD;
+	iStepCaseSlaveState:			                      INT;
+	bSetSlaveState:						                      BOOL;
+	tonSlaveState:						                      TON;
+{endregion}
+   
+{region 'HMI-CTRL'}
+  fbHMICtrl:                                      FB_HMI_CTRL;
+  fbTimerNest1:                                   FB_CLOCK;
+  fbTimerNest2:                                   FB_CLOCK;
+  fbTimerNest3:                                   FB_CLOCK;
+  fbTimerNest4:                                   FB_CLOCK;
+{endregion}
+   
+{region 'IO'}
+// Input Sensors
+  // EL1018 - 8-chanel-digital-input (KF1.2.0)
+  fbSafetyDoorLeft_Contacted:                     FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbSafetyDoorRight_Contacted:                    FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbJogBtnPos_Pressed:                            FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbJogBtnNeg_Pressed:                            FB_BINARY_SWITCH(bInNC:= FALSE); 
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF1.8.0)
+  diTestCyl1_Distance                             AT %I* : DINT;
+  diTestCyl2_Distance                             AT %I* : DINT;
+  diTestCyl3_Distance                             AT %I* : DINT;
+  diTestCyl4_Distance                             AT %I* : DINT;
+  // EL1018 - 8-chanel-digital-input (KF1.10.0)
+  fbMotorProtectionSwitch_Unit_Ok:                FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_EngineOilCooler:               FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_BypassPump:                    FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_LowPressurePump:               FB_BINARY_SWITCH(bInNC:= FALSE);     
+  // EL1018 - 8-chanel-digital-input (KF1.10.1)
+  fbLevelSwitch_AggregateTank1_Out1:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLevelSwitch_AggregateTank1_Out2:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbTemperatureSwitch_AggregateTank1_Out1:        FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbTemperatureSwitch_AggregateTank1_Out2:        FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLevelSwitch_AggregateTank2_Out1:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLevelSwitch_AggregateTank2_Out2:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbLevelSwitch_AggregateTank2_Out3:              FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbSwitch_AggregateFilter_Dirty:                 FB_BINARY_SWITCH(bInNC:= FALSE);     
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF1.13.0)
+  iPressureSensor_TestCyl1                        AT %I* : INT;
+  iPressureSensor_TestCyl1_A                      AT %I* : INT;
+  iPressureSensor_TestCyl1_B                      AT %I* : INT;
+  iPressureSensor_CounterCyl1                     AT %I* : INT;
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF1.13.1)
+  iPressureSensor_LowPressure                     AT %I* : INT;
+  iPressureSensor_TestCyl1_BreakPressure_A        AT %I* : INT;
+  iPressureSensor_TestCyl1_BreakPressure_B        AT %I* : INT;
+  iPressureSensor_TestCyl1_PressureReservoir      AT %I* : INT;
+  // EL1018 - 8-chanel-digital-input (KF1.14.0)
+  fbMotorProtectionSwitch_TestAxis1_Ok:           FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_TestCyl1Pump:                  FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_CounterCyl1Pump:               FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbShutOffValve_Closed:                          FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbShutOffValve_Opened:                          FB_BINARY_SWITCH(bInNC:= FALSE);
+  // EL3122 - 2-chanel-analog-input 16Bit (KF1.16.0)
+  iTestCyl1_BreakPressureTest_Distance            AT %I* : INT;
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF2.2.0)
+  iPressureSensor_TestCyl2                        AT %I* : INT;
+  iPressureSensor_TestCyl2_A                      AT %I* : INT;
+  iPressureSensor_TestCyl2_B                      AT %I* : INT;
+  iPressureSensor_CounterCyl2                     AT %I* : INT;
+  // EL1018 - 8-chanel-digital-input (KF2.3.0)
+  fbMotorProtectionSwitch_TestAxis2_Ok:           FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_TestCyl2Pump:                  FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_CounterCyl2Pump:               FB_BINARY_SWITCH(bInNC:= FALSE);
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF2.11.0)
+  iPressureSensor_TestCyl3                        AT %I* : INT;
+  iPressureSensor_TestCyl3_A                      AT %I* : INT;
+  iPressureSensor_TestCyl3_B                      AT %I* : INT;
+  iPressureSensor_CounterCyl3                     AT %I* : INT;
+  // EL1018 - 8-chanel-digital-input (KF2.12.0)
+  fbMotorProtectionSwitch_TestAxis3_Ok:           FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_TestCyl3Pump:                  FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_CounterCyl3Pump:               FB_BINARY_SWITCH(bInNC:= FALSE);
+  // EL6224 - 4-chanel-communication-interface IO-Link (KF2.20.0)
+  iPressureSensor_TestCyl4                        AT %I* : INT;
+  iPressureSensor_TestCyl4_A                      AT %I* : INT;
+  iPressureSensor_TestCyl4_B                      AT %I* : INT;
+  iPressureSensor_CounterCyl4                     AT %I* : INT;
+  // EL1018 - 8-chanel-digital-input (KF2.12.0)
+  fbMotorProtectionSwitch_TestAxis4_Ok:           FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_TestCyl4Pump:                  FB_BINARY_SWITCH(bInNC:= FALSE);
+  fbThermalContact_CounterCyl4Pump:               FB_BINARY_SWITCH(bInNC:= FALSE);
+   
+// Output switches
+  // EL2008 - 8-chanel-digital-output (KF1.6.0)
+  fbSelectivityModule1_Restart:                   FB_BINARY_OUTPUT;
+  fbSelectivityModule2_Restart:                   FB_BINARY_OUTPUT;
+  fbSelectivityModule3_Restart:                   FB_BINARY_OUTPUT;
+  fbSelectivityModule4_Restart:                   FB_BINARY_OUTPUT;
+  // EL2008 - 8-chanel-digital-output (KF1.6.1)
+  fbTrafficLight_Red:                             FB_BINARY_OUTPUT;
+  fbTrafficLight_Yellow:                          FB_BINARY_OUTPUT;
+  fbTrafficLight_Green:                           FB_BINARY_OUTPUT;
+  fbTrafficLight_Beep:                            FB_BINARY_OUTPUT;
+  // EL2652 - 2-chanel-relay-output (KF1.7.0)
+  fbMachineLight:                                 FB_BINARY_OUTPUT;
+  // EL2004 - 4-chanel-digital-output (KF1.11.0)
+  fbEngine_OilCooler_Start:                       FB_BINARY_OUTPUT; // Hydraulic plan: 02.10
+  fbEngine_BypassPump_Start:                      FB_BINARY_OUTPUT; // Hydraulic plan: 02.02
+  fbEngine_LowPressurePump_Start:                 FB_BINARY_OUTPUT; // Hydraulic plan: 03.02
+  // EL2024 - 4-chanel-digital-output (KF1.11.1)
+  fbValve42_LowPressureCircuit_Enable:            FB_BINARY_OUTPUT; // Hydraulic plan: 03.13
+  // EL2004 - 4-chanel-digital-output (KF1.15.0)
+  fbEngine_TestCyl1Pump_Start:                    FB_BINARY_OUTPUT; // Hydraulic plan: 04.02
+  fbEngine_CounterCyl1Pump_Start:                 FB_BINARY_OUTPUT; // Hydraulic plan: 05.02
+  // EL4102 - 2-chanel-analog-output (KF1.17.0) 16Bit
+  iTestCyl1_Pressure                              AT %Q* : INT;    // Hydraulic plan: 04.13
+  iCounterCyl1_Pressure                           AT %Q* : INT;    // Hydraulic plan: 05.43
+  // EL4102 - 2-chanel-analog-output (KF1.17.1) 16Bit
+  iTestCyl1_LowPressure                           AT %Q* : INT;    // Hydraulic plan: 04.30
+  // EL4132 - 2-chanel-analog-output (KF1.17.2) 16Bit
+  iValve43_TestCyl1                               AT %Q* : INT;    // Hydraulic plan: 04.48
+  // EL4004 - 4-chanel-analog-output (KF1.17.3) 12Bit
+  iBNCSocket_TestCyl1_A_Pressure                  AT %Q* : INT;    // Hydraulic plan: 04.58
+  iBNCSocket_TestCyl1_B_Pressure                  AT %Q* : INT;    // Hydraulic plan: 04.60
+  iBNCSocket_CounterCyl1_Pressure                 AT %Q* : INT;    // Hydraulic plan: 05.44
+  iBNCSocket_TestCyl1_Distance                    AT %Q* : INT;    
+  // EL4004 - 4-chanel-analog-output (KF1.17.4) 12Bit
+  iBNCSocket_TestCyl1_A_BreakPressure             AT %Q* : INT;    // Hydraulic plan: 04.84
+  iBNCSocket_TestCyl1_B_BreakPressure             AT %Q* : INT;    // Hydraulic plan: 04.87
+  iBNCSocket_TestingCyl1_PressureReservoir        AT %Q* : INT;    // Hydraulic plan: 04.75
+  // EL2828 - 8-chanel-digital-output (KF1.19.0)
+  fbValve22_TestCyl1_A_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 04.46
+  fbValve22_TestCyl1_B_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 04.46
+  fbValve42_CounterCyl1_LowPressureCircuit_Add:   FB_BINARY_OUTPUT; // Hydraulic plan: 03.22
+  fbShutOffValve_Close:                           FB_BINARY_OUTPUT; // Hydraulic plan: 04.26
+  fbShutOffValve_Open:                            FB_BINARY_OUTPUT; // Hydraulic plan: 04.26
+  // EL2828 - 8-chanel-digital-output (KF1.19.1)
+  fbValve22_Pump4_Add:                            FB_BINARY_OUTPUT; // Hydraulic plan: 04.50 (Left)
+  fbValve22_Pump3_Add:                            FB_BINARY_OUTPUT; // Hydraulic plan: 04.50 (Right)
+  fbValve22_Pump2_Add:                            FB_BINARY_OUTPUT; // Hydraulic plan: 04.53
+  fbValve22_PressureReservoir_A_Add:              FB_BINARY_OUTPUT; // Hydraulic plan: 04.72 (Left)
+  fbValve22_PressureReservoir_B_Add:              FB_BINARY_OUTPUT; // Hydraulic plan: 04.72 (Right)
+  fbValve32_SensorBreakPressure_A_Add:            FB_BINARY_OUTPUT; // Hydraulic plan: 04.83
+  fbValve32_SensorBreakPressure_B_Add:            FB_BINARY_OUTPUT; // Hydraulic plan: 04.86
+  // EL2828 - 8-chanel-digital-output (KF1.21.0)
+  fbValve42_CounterCyl1_Bypass_Add:               FB_BINARY_OUTPUT; // Hydraulic plan: 05.13
+  fbValve22_CounterCyl1_SinkBlock_Open:           FB_BINARY_OUTPUT; // Hydraulic plan: 05.43
+  fbValve22_CounterCyl1_JogMode_Off:              FB_BINARY_OUTPUT; // Hydraulic plan: 05.21
+  fbValve43_CounterCyl1_Extend:                   FB_BINARY_OUTPUT; // Hydraulic plan: 05.25
+  fbValve43_CounterCyl1_Retract:                  FB_BINARY_OUTPUT; // Hydraulic plan: 05.25
+  // EL2004 - 4-chanel-digital-output (KF2.4.0)
+  fbEngine_TestCyl2Pump_Start:                    FB_BINARY_OUTPUT; // Hydraulic plan: 06.02
+  fbEngine_CounterCyl2Pump_Start:                 FB_BINARY_OUTPUT; // Hydraulic plan: 07.02
+  // EL4102 - 2-chanel-analog-output (KF2.5.0) 16Bit
+  iTestCyl2_Pressure                              AT %Q* : INT;    // Hydraulic plan: 06.16
+  iCounterCyl2_Pressure                           AT %Q* : INT;    // Hydraulic plan: 07.43
+  // EL4132 - 2-chanel-analog-output (KF2.5.1) 16Bit
+  iValve43_TestCyl2                               AT %Q* : INT;    // Hydraulic plan: 06.38
+  // EL4004 - 4-chanel-analog-output (KF2.5.2) 12Bit
+  iBNCSocket_TestCyl2_A_Pressure                  AT %Q* : INT;    // Hydraulic plan: 06.42
+  iBNCSocket_TestCyl2_B_Pressure                  AT %Q* : INT;    // Hydraulic plan: 06.44
+  iBNCSocket_CounterCyl2_Pressure                 AT %Q* : INT;    // Hydraulic plan: 07.44
+  iBNCSocket_TestCyl2_Distance                    AT %Q* : INT;
+  // EL2828 - 8-chanel-digital-output (KF2.7.0)
+  fbValve22_TestCyl2_A_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 06.36 (Left)
+  fbValve22_TestCyl2_B_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 06.36 (Right)
+  fbValve42_CounterCyl2_LowPressureCircuit_Add:   FB_BINARY_OUTPUT; // Hydraulic plan: 03.25
+  // EL2828 - 8-chanel-digital-output (KF2.9.0)
+  fbValve42_CounterCyl2_Bypass_Add:               FB_BINARY_OUTPUT; // Hydraulic plan: 07.13
+  fbValve22_CounterCyl2_SinkBlock_Open:           FB_BINARY_OUTPUT; // Hydraulic plan: 07.43
+  fbValve22_CounterCyl2_JogMode_Off:              FB_BINARY_OUTPUT; // Hydraulic plan: 07.21
+  fbValve43_CounterCyl2_Extend:                   FB_BINARY_OUTPUT; // Hydraulic plan: 07.25
+  fbValve43_CounterCyl2_Retract:                  FB_BINARY_OUTPUT; // Hydraulic plan: 07.25
+  // EL2004 - 4-chanel-digital-output (KF2.13.0)
+  fbEngine_TestCyl3Pump_Start:                    FB_BINARY_OUTPUT; // Hydraulic plan: 08.02
+  fbEngine_CounterCyl3Pump_Start:                 FB_BINARY_OUTPUT; // Hydraulic plan: 09.02
+  // EL4102 - 2-chanel-analog-output (KF2.14.0) 16Bit
+  iTestCyl3_Pressure                              AT %Q* : INT;    // Hydraulic plan: 08.16
+  iCounterCyl3_Pressure                           AT %Q* : INT;    // Hydraulic plan: 09.43
+  // EL4132 - 2-chanel-analog-output (KF2.14.1) 16Bit
+  iValve43_TestCyl3                               AT %Q* : INT;    // Hydraulic plan: 08.38
+  // EL4004 - 4-chanel-analog-output (KF2.14.2) 12Bit
+  iBNCSocket_TestCyl3_A_Pressure                  AT %Q* : INT;    // Hydraulic plan: 08.42
+  iBNCSocket_TestCyl3_B_Pressure                  AT %Q* : INT;    // Hydraulic plan: 08.44
+  iBNCSocket_CounterCyl3_Pressure                 AT %Q* : INT;    // Hydraulic plan: 09.44
+  iBNCSocket_TestCyl3_Distance                    AT %Q* : INT;
+  // EL2828 - 8-chanel-digital-output (KF2.16.0)
+  fbValve22_TestCyl3_A_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 08.36 (Left)
+  fbValve22_TestCyl3_B_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 08.36 (Right)
+  fbValve42_CounterCyl3_LowPressureCircuit_Add:   FB_BINARY_OUTPUT; // Hydraulic plan: 03.28
+  // EL2828 - 8-chanel-digital-output (KF2.18.0)
+  fbValve42_CounterCyl3_Bypass_Add:               FB_BINARY_OUTPUT; // Hydraulic plan: 09.13
+  fbValve22_CounterCyl3_SinkBlock_Open:           FB_BINARY_OUTPUT; // Hydraulic plan: 09.43
+  fbValve22_CounterCyl3_JogMode_Off:              FB_BINARY_OUTPUT; // Hydraulic plan: 09.21
+  fbValve43_CounterCyl3_Extend:                   FB_BINARY_OUTPUT; // Hydraulic plan: 09.25
+  fbValve43_CounterCyl3_Retract:                  FB_BINARY_OUTPUT; // Hydraulic plan: 09.25
+  // EL2004 - 4-chanel-digital-output (KF2.22.0)
+  fbEngine_TestCyl4Pump_Start:                    FB_BINARY_OUTPUT; // Hydraulic plan: 10.02
+  fbEngine_CounterCyl4Pump_Start:                 FB_BINARY_OUTPUT; // Hydraulic plan: 11.02
+  // EL4102 - 2-chanel-analog-output (KF2.23.0) 16Bit
+  iTestCyl4_Pressure                              AT %Q* : INT;    // Hydraulic plan: 10.16
+  iCounterCyl4_Pressure                           AT %Q* : INT;    // Hydraulic plan: 11.43
+  // EL4132 - 2-chanel-analog-output (KF2.23.1) 16Bit
+  iValve43_TestCyl4                               AT %Q* : INT;    // Hydraulic plan: 10.38
+  // EL4004 - 4-chanel-analog-output (KF2.23.2) 12Bit
+  iBNCSocket_TestCyl4_A_Pressure                  AT %Q* : INT;    // Hydraulic plan: 10.42
+  iBNCSocket_TestCyl4_B_Pressure                  AT %Q* : INT;    // Hydraulic plan: 10.44
+  iBNCSocket_CounterCyl4_Pressure                 AT %Q* : INT;    // Hydraulic plan: 11.44
+  iBNCSocket_TestCyl4_Distance                    AT %Q* : INT;
+  // EL2828 - 8-chanel-digital-output (KF2.25.0)
+  fbValve22_TestCyl4_A_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 10.36 (Left)
+  fbValve22_TestCyl4_B_Open:                      FB_BINARY_OUTPUT; // Hydraulic plan: 10.36 (Right)
+  fbValve42_CounterCyl4_LowPressureCircuit_Add:   FB_BINARY_OUTPUT; // Hydraulic plan: 03.37
+  // EL2828 - 8-chanel-digital-output (KF2.27.0)
+  fbValve42_CounterCyl4_Bypass_Add:               FB_BINARY_OUTPUT; // Hydraulic plan: 11.13
+  fbValve22_CounterCyl4_SinkBlock_Open:           FB_BINARY_OUTPUT; // Hydraulic plan: 11.33
+  fbValve22_CounterCyl4_JogMode_Off:              FB_BINARY_OUTPUT; // Hydraulic plan: 11.21
+  fbValve43_CounterCyl4_Extend:                   FB_BINARY_OUTPUT; // Hydraulic plan: 11.25
+  fbValve43_CounterCyl4_Retract:                  FB_BINARY_OUTPUT; // Hydraulic plan: 11.25
+{endregion}
+{region 'Converted values'}
+  iPressureConverted_TestCyl1:                    INT;
+  iPressureConverted_TestCyl1_A:                  INT;
+  iPressureConverted_TestCyl1_B:                  INT;
+  iPressureConverted_CounterCyl1:                 INT;
+  iPressureConverted_LowPressure:                 INT;
+  iPressureConverted_TestCyl1_BreakPressure_A:    INT;
+  iPressureConverted_TestCyl1_BreakPressure_B:    INT;
+  iPressureConverted_TestCyl1_PressureReservoir:  INT;
+  iPressureConverted_TestCyl2:                    INT;
+  iPressureConverted_TestCyl2_A:                  INT;
+  iPressureConverted_TestCyl2_B:                  INT;
+  iPressureConverted_CounterCyl2:                 INT;
+  iPressureConverted_TestCyl3:                    INT;
+  iPressureConverted_TestCyl3_A:                  INT;
+  iPressureConverted_TestCyl3_B:                  INT;
+  iPressureConverted_CounterCyl3:                 INT;
+  iPressureConverted_TestCyl4:                    INT;
+  iPressureConverted_TestCyl4_A:                  INT;
+  iPressureConverted_TestCyl4_B:                  INT;
+  iPressureConverted_CounterCyl4:                 INT;
+{endregion}
+  
+{region 'Components'}
+// Pumps/Engines 
+  fbLowPressurePump:                              FB_PUMP_WITH_BYPASS( itfLogEvents:= fbLogEvents, 
+                                                                       itfOpMode:= PrgOrg.fbOpMode, 
+                                                                       itfOn:= fbEngine_LowPressurePump_Start,
+                                                                       itfBypassValve:= fbValve_LowPressureCircuit_Enable);
+  fbOilCooler:                                    FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode, 
+                                                          itfOn:= fbEngine_OilCooler_Start);
+  fbBypassPump:                                   FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode,
+                                                          itfOn:= fbEngine_BypassPump_Start);
+  fbCounterCyl1Pump:                              FB_PUMP_WITH_BYPASS( itfLogEvents:= fbLogEvents, 
+                                                                       itfOpMode:= PrgOrg.fbOpMode,
+                                                                       itfOn:= fbEngine_CounterCyl1Pump_Start,
+                                                                       itfBypassValve:= fbValve_CounterCyl1_Bypass);
+  fbCounterCyl2Pump:                              FB_PUMP_WITH_BYPASS( itfLogEvents:= fbLogEvents, 
+                                                                       itfOpMode:= PrgOrg.fbOpMode,
+                                                                       itfOn:= fbEngine_CounterCyl2Pump_Start,
+                                                                       itfBypassValve:= fbValve_CounterCyl2_Bypass);
+  fbCounterCyl3Pump:                              FB_PUMP_WITH_BYPASS( itfLogEvents:= fbLogEvents, 
+                                                                       itfOpMode:= PrgOrg.fbOpMode,
+                                                                       itfOn:= fbEngine_CounterCyl3Pump_Start,
+                                                                       itfBypassValve:= fbValve_CounterCyl3_Bypass);
+  fbCounterCyl4Pump:                              FB_PUMP_WITH_BYPASS( itfLogEvents:= fbLogEvents, 
+                                                                       itfOpMode:= PrgOrg.fbOpMode, 
+                                                                       itfOn:= fbEngine_CounterCyl4Pump_Start,
+                                                                       itfBypassValve:= fbValve_CounterCyl4_Bypass);
+  fbTestCyl1Pump:                                 FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode,
+                                                          itfOn:= fbEngine_TestCyl1Pump_Start);
+  fbTestCyl2Pump:                                 FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode,
+                                                          itfOn:= fbEngine_TestCyl2Pump_Start);
+  fbTestCyl3Pump:                                 FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode, 
+                                                          itfOn:= fbEngine_TestCyl3Pump_Start);
+  fbTestCyl4Pump:                                 FB_PUMP(itfLogEvents:= fbLogEvents, 
+                                                          itfOpMode:= PrgOrg.fbOpMode, 
+                                                          itfOn:= fbEngine_TestCyl4Pump_Start);
+      
+// Valves
+  fbShutOffValve_LowPressure:                     FB_SHUTOFF_VALVE(itfLogEvents:= fbLogEvents, 
+	                                                                  itfOpMode:= PrgOrg.fbOpMode, 
+	                                                                  itfOpen:= fbShutOffValve_Open, 
+	                                                                  itfClose:= fbShutOffValve_Close,
+                                                                    itfSensorOpened:= fbShutOffValve_Opened,
+                                                                    itfSensorClosed:= fbShutOffValve_Closed,
+                                                                    bNC:= TRUE);
+  fbValve_LowPressureCircuit_Enable:              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_LowPressureCircuit_Enable);
+  fbValve_CounterCyl1_LowPressureCircuit_Add:     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl1_LowPressureCircuit_Add);
+  fbValve_CounterCyl2_LowPressureCircuit_Add:     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl2_LowPressureCircuit_Add);
+  fbValve_CounterCyl3_LowPressureCircuit_Add:     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl3_LowPressureCircuit_Add);
+  fbValve_CounterCyl4_LowPressureCircuit_Add:     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl4_LowPressureCircuit_Add);
+  fbValve_CounterCyl1:                            FB_VALVE_X_3( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP1:= fbValve43_CounterCyl1_Extend, 
+	                                                              itfSwitchToWP2:= fbValve43_CounterCyl1_Retract);
+  fbValve_CounterCyl2:                            FB_VALVE_X_3( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP1:= fbValve43_CounterCyl2_Extend, 
+	                                                              itfSwitchToWP2:= fbValve43_CounterCyl2_Retract);
+  fbValve_CounterCyl3:                            FB_VALVE_X_3( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP1:= fbValve43_CounterCyl3_Extend, 
+	                                                              itfSwitchToWP2:= fbValve43_CounterCyl3_Retract);
+  fbValve_CounterCyl4:                            FB_VALVE_X_3( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP1:= fbValve43_CounterCyl4_Extend, 
+	                                                              itfSwitchToWP2:= fbValve43_CounterCyl4_Retract);
+  fbValve_CounterCyl1JogAutoMode:                 FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl1_JogMode_Off);
+  fbValve_CounterCyl2JogAutoMode:                 FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl2_JogMode_Off);
+  fbValve_CounterCyl3JogAutoMode:                 FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl3_JogMode_Off);
+  fbValve_CounterCyl4JogAutoMode:                 FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl4_JogMode_Off);
+  fbValve_CounterCyl1_SinkBlock:                  FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl1_SinkBlock_Open);
+  fbValve_CounterCyl2_SinkBlock:                  FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl2_SinkBlock_Open);
+  fbValve_CounterCyl3_SinkBlock:                  FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl3_SinkBlock_Open);
+  fbValve_CounterCyl4_SinkBlock:                  FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_CounterCyl4_SinkBlock_Open);
+  fbValve_CounterCyl1_WorkPressure:               FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_CounterCyl2_WorkPressure:               FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_CounterCyl3_WorkPressure:               FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_CounterCyl4_WorkPressure:               FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_CounterCyl1_Bypass:                     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl1_Bypass_Add);
+  fbValve_CounterCyl2_Bypass:                     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl2_Bypass_Add);
+  fbValve_CounterCyl3_Bypass:                     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl3_Bypass_Add);
+  fbValve_CounterCyl4_Bypass:                     FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve42_CounterCyl4_Bypass_Add);
+  fbValve_TestCyl1:                               FB_VALVE_X_3_PROP(itfLogEvents:= fbLogEvents, 
+                                                                    itfOpMode:= PrgOrg.fbOpMode);
+  fbValve_TestCyl2:                               FB_VALVE_X_3_PROP(itfLogEvents:= fbLogEvents, 
+                                                                    itfOpMode:= PrgOrg.fbOpMode);
+  fbValve_TestCyl3:                               FB_VALVE_X_3_PROP(itfLogEvents:= fbLogEvents, 
+                                                                    itfOpMode:= PrgOrg.fbOpMode);
+  fbValve_TestCyl4:                               FB_VALVE_X_3_PROP(itfLogEvents:= fbLogEvents, 
+                                                                    itfOpMode:= PrgOrg.fbOpMode);
+  fbValve_TestCyl1_A_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_TestCyl1_A_Open);
+  fbValve_TestCyl1_B_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_TestCyl1_B_Open);
+  fbValve_TestCyl2_A_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,   
+	                                                              itfSwitchToWP:= fbValve22_TestCyl2_A_Open);
+  fbValve_TestCyl2_B_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,  
+	                                                              itfSwitchToWP:= fbValve22_TestCyl2_B_Open);
+  fbValve_TestCyl3_A_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_TestCyl3_A_Open);
+  fbValve_TestCyl3_B_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_TestCyl3_B_Open);
+  fbValve_TestCyl4_A_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_TestCyl4_A_Open);
+  fbValve_TestCyl4_B_Unlock:                      FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_TestCyl4_B_Open);
+  fbValve_TestCyl1_WorkPressure:                  FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_TestCyl2_WorkPressure:                  FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_TestCyl3_WorkPressure:                  FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_TestCyl4_WorkPressure:                  FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 275.0);
+  fbValve_TestCyl1_LowPressure:                   FB_PRV_PROP(itfLogEvents:= fbLogEvents, 
+                                                              itfOpMode:= PrgOrg.fbOpMode,
+                                                              rMaxLimitInBar:= 25.0);
+  fbValve_Pump4_Add:                              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_Pump4_Add);
+  fbValve_Pump3_Add:                              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_Pump3_Add);
+  fbValve_Pump2_Add:                              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_Pump2_Add);
+  fbValve_PressureReservoir_A_Add:                FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode, 
+	                                                              itfSwitchToWP:= fbValve22_PressureReservoir_A_Add);
+  fbValve_PressureReservoir_B_Add:                FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve22_PressureReservoir_B_Add);
+  fbValve_SensorBreakPressure_A_Add:              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve32_SensorBreakPressure_A_Add);
+  fbValve_SensorBreakPressure_B_Add:              FB_VALVE_X_2( itfLogEvents:= fbLogEvents, 
+	                                                              itfOpMode:= PrgOrg.fbOpMode,
+	                                                              itfSwitchToWP:= fbValve32_SensorBreakPressure_B_Add);
+                                                  
+// Cylinders                                      
+  fbCounterCyl1:                                  FB_CYLINDER_DA_COUNTER( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode,
+                                                                          itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+                                                                          itfValve_CylCtrl:= fbValve_CounterCyl1,
+                                                                          itfValve_Bypass:= fbValve_CounterCyl1_Bypass,
+                                                                          itfValve_AutomaticEnable:= fbValve_CounterCyl1JogAutoMode,
+                                                                          itfValve_SinkBlock:= fbValve_CounterCyl1_SinkBlock,
+                                                                          itfValve_LowPressureCircuitAdd:= fbValve_CounterCyl1_LowPressureCircuit_Add,
+                                                                          itfValve_PressureLimit:= fbValve_CounterCyl1_WorkPressure,
+                                                                          itfJogBtnPos_Pressed:= fbJogBtnPos_Pressed,
+                                                                          itfJogBtnNeg_Pressed:= fbJogBtnNeg_Pressed,
+	                                                                        lrPistonSurfaceA:= 1963.495, 
+	                                                                        lrPistonSurfaceB:= 962.112, 
+	                                                                        rEndPosTol:= 1,
+                                                                          rPumpVolumeFlow:= 4.0,
+                                                                          rPumpEfficiencyFactor:= 0.85);
+  fbCounterCyl2:                                  FB_CYLINDER_DA_COUNTER( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode,
+                                                                          itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+                                                                          itfValve_CylCtrl:= fbValve_CounterCyl2,
+                                                                          itfValve_Bypass:= fbValve_CounterCyl2_Bypass,
+                                                                          itfValve_AutomaticEnable:= fbValve_CounterCyl2JogAutoMode,
+                                                                          itfValve_SinkBlock:= fbValve_CounterCyl2_SinkBlock,
+                                                                          itfValve_LowPressureCircuitAdd:= fbValve_CounterCyl2_LowPressureCircuit_Add,
+                                                                          itfValve_PressureLimit:= fbValve_CounterCyl2_WorkPressure,
+                                                                          itfJogBtnPos_Pressed:= fbJogBtnPos_Pressed,
+                                                                          itfJogBtnNeg_Pressed:= fbJogBtnNeg_Pressed,
+	                                                                        lrPistonSurfaceA:= 1963.495, 
+	                                                                        lrPistonSurfaceB:= 962.112, 
+	                                                                        rEndPosTol:= 1,
+                                                                          rPumpVolumeFlow:= 4.0,
+                                                                          rPumpEfficiencyFactor:= 0.85);
+  fbCounterCyl3:                                  FB_CYLINDER_DA_COUNTER( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode,
+                                                                          itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+                                                                          itfValve_CylCtrl:= fbValve_CounterCyl3,
+                                                                          itfValve_Bypass:= fbValve_CounterCyl3_Bypass,
+                                                                          itfValve_AutomaticEnable:= fbValve_CounterCyl3JogAutoMode,
+                                                                          itfValve_SinkBlock:= fbValve_CounterCyl3_SinkBlock,
+                                                                          itfValve_LowPressureCircuitAdd:= fbValve_CounterCyl3_LowPressureCircuit_Add,
+                                                                          itfValve_PressureLimit:= fbValve_CounterCyl3_WorkPressure,
+                                                                          itfJogBtnPos_Pressed:= fbJogBtnPos_Pressed,
+                                                                          itfJogBtnNeg_Pressed:= fbJogBtnNeg_Pressed,
+	                                                                        lrPistonSurfaceA:= 1963.495, 
+	                                                                        lrPistonSurfaceB:= 962.112, 
+	                                                                        rEndPosTol:= 1,
+                                                                          rPumpVolumeFlow:= 4.0,
+                                                                          rPumpEfficiencyFactor:= 0.85);
+  fbCounterCyl4:                                  FB_CYLINDER_DA_COUNTER( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode,
+                                                                          itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+                                                                          itfValve_CylCtrl:= fbValve_CounterCyl4,
+                                                                          itfValve_Bypass:= fbValve_CounterCyl4_Bypass,
+                                                                          itfValve_AutomaticEnable:= fbValve_CounterCyl4JogAutoMode,
+                                                                          itfValve_SinkBlock:= fbValve_CounterCyl4_SinkBlock,
+                                                                          itfValve_LowPressureCircuitAdd:= fbValve_CounterCyl4_LowPressureCircuit_Add,
+                                                                          itfValve_PressureLimit:= fbValve_CounterCyl4_WorkPressure,  
+                                                                          itfJogBtnPos_Pressed:= fbJogBtnPos_Pressed,
+                                                                          itfJogBtnNeg_Pressed:= fbJogBtnNeg_Pressed,
+	                                                                        lrPistonSurfaceA:= 1963.495, 
+	                                                                        lrPistonSurfaceB:= 962.112, 
+	                                                                        rEndPosTol:= 1,
+                                                                          rPumpVolumeFlow:= 4.0,
+                                                                          rPumpEfficiencyFactor:= 0.85);
+  fbTestCyl1:                                     FB_CYLINDER_DA_TESTDEV1(itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode, 
+                                                                          itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+	                                                                        itfValve_CylCtrl:= fbValve_TestCyl1, 
+	                                                                        itfValve_LockA:= fbValve_TestCyl1_A_Unlock, 
+	                                                                        itfValve_LockB:= fbValve_TestCyl1_B_Unlock, 
+	                                                                        itfValve_AddPump2:= fbValve_Pump2_Add, 
+	                                                                        itfValve_AddPump3:= fbValve_Pump3_Add, 
+	                                                                        itfValve_AddPump4:= fbValve_Pump4_Add, 
+	                                                                        itfValve_PressureReservoirAAdd:= fbValve_PressureReservoir_A_Add, 
+	                                                                        itfValve_PressureReservoirBAdd:= fbValve_PressureReservoir_B_Add, 
+	                                                                        itfValve_SensorBreakPressureAAdd:= fbValve_SensorBreakPressure_A_Add, 
+	                                                                        itfValve_SensorBreakPressureBAdd:= fbValve_SensorBreakPressure_B_Add, 
+	                                                                        fbShutOffValve_LowPressure:= fbShutOffValve_LowPressure, 
+	                                                                        itfValve_PressureLimit:= fbValve_TestCyl1_WorkPressure, 
+	                                                                        itfValve_LowPressureLimit:= fbValve_TestCyl1_LowPressure,
+                                                                          itfPumpMain:= fbTestCyl1Pump,
+                                                                          itfPump2:= fbTestCyl2Pump, 
+                                                                          itfPump3:= fbTestCyl3Pump, 
+                                                                          itfPump4:= fbTestCyl4Pump, 
+	                                                                        rEndPosTol:= 1,
+                                                                          rPumpVolumeFlow:= 3.0,
+                                                                          rPumpEfficiencyFactor:= 0.85);
+  fbTestCyl2:                                     FB_CYLINDER_DA_TESTDEV2_4(itfLogEvents:= fbLogEvents, 
+	                                                                          itfOpMode:= PrgOrg.fbOpMode,
+                                                                            itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+	                                                                          itfValve_CylCtrl:= fbValve_TestCyl2, 
+	                                                                          itfValve_LockA:= fbValve_TestCyl2_A_Unlock, 
+	                                                                          itfValve_LockB:= fbValve_TestCyl2_B_Unlock, 
+	                                                                          itfValve_PressureLimit:= fbValve_TestCyl2_WorkPressure,
+	                                                                          rEndPosTol:= 1,
+                                                                            rPumpVolumeFlow:= 3.0,
+                                                                            rPumpEfficiencyFactor:= 0.85);
+  fbTestCyl3:                                     FB_CYLINDER_DA_TESTDEV2_4(itfLogEvents:= fbLogEvents, 
+	                                                                          itfOpMode:= PrgOrg.fbOpMode, 
+                                                                            itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+	                                                                          itfValve_CylCtrl:= fbValve_TestCyl3, 
+	                                                                          itfValve_LockA:= fbValve_TestCyl3_A_Unlock, 
+	                                                                          itfValve_LockB:= fbValve_TestCyl3_B_Unlock, 
+	                                                                          itfValve_PressureLimit:= fbValve_TestCyl3_WorkPressure, 
+	                                                                          rEndPosTol:= 1,
+                                                                            rPumpVolumeFlow:= 3.0,
+                                                                            rPumpEfficiencyFactor:= 0.85);
+  fbTestCyl4:                                     FB_CYLINDER_DA_TESTDEV2_4(itfLogEvents:= fbLogEvents, 
+	                                                                          itfOpMode:= PrgOrg.fbOpMode,
+                                                                            itfOpModeVisu:= PrgVisu.fbVisuOPMode,
+	                                                                          itfValve_CylCtrl:= fbValve_TestCyl4, 
+	                                                                          itfValve_LockA:= fbValve_TestCyl4_A_Unlock, 
+	                                                                          itfValve_LockB:= fbValve_TestCyl4_B_Unlock, 
+	                                                                          itfValve_PressureLimit:= fbValve_TestCyl4_WorkPressure,
+	                                                                          rEndPosTol:= 1,
+                                                                            rPumpVolumeFlow:= 3.0,
+                                                                            rPumpEfficiencyFactor:= 0.85);
+{endregion}
+   
+{region 'Main process'}
+  fbNest1:                                        FB_SEQ_PROCESS_NEST1( itfLogEvents:= fbLogEvents, 
+	                                                                      itfOpMode:= PrgOrg.fbOpMode,
+                                                                        itfTimer:= fbTimerNest1, 
+	                                                                      itfCounterCyl:= fbCounterCyl1, 
+	                                                                      itfTestCyl:= fbTestCyl1, 
+	                                                                      itfCounterCylPump:= fbCounterCyl1Pump, 
+	                                                                      itfTestCylPump:= fbTestCyl1Pump,
+                                                                        itfPump2Pressure:= fbValve_TestCyl2_WorkPressure,
+                                                                        itfPump3Pressure:= fbValve_TestCyl3_WorkPressure,
+                                                                        itfPump4Pressure:= fbValve_TestCyl4_WorkPressure);
+  fbNest2:                                        FB_SEQ_PROCESS_NEST2_4( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode,
+                                                                          itfTimer:= fbTimerNest2, 
+	                                                                        itfCounterCyl:= fbCounterCyl2, 
+	                                                                        itfTestCyl:= fbTestCyl2, 
+	                                                                        itfCounterCylPump:= fbCounterCyl2Pump, 
+	                                                                        itfTestCylPump:= fbTestCyl2Pump);
+  fbNest3:                                        FB_SEQ_PROCESS_NEST2_4( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode, 
+                                                                          itfTimer:= fbTimerNest3,
+	                                                                        itfCounterCyl:= fbCounterCyl3, 
+	                                                                        itfTestCyl:= fbTestCyl3, 
+	                                                                        itfCounterCylPump:= fbCounterCyl3Pump, 
+	                                                                        itfTestCylPump:= fbTestCyl3Pump);
+  fbNest4:                                        FB_SEQ_PROCESS_NEST2_4( itfLogEvents:= fbLogEvents, 
+	                                                                        itfOpMode:= PrgOrg.fbOpMode, 
+                                                                          itfTimer:= fbTimerNest4,
+	                                                                        itfCounterCyl:= fbCounterCyl4, 
+	                                                                        itfTestCyl:= fbTestCyl4, 
+	                                                                        itfCounterCylPump:= fbCounterCyl4Pump, 
+	                                                                        itfTestCylPump:= fbTestCyl4Pump);
+  fbMainProcess:                                  FB_PROCESS_MAIN(itfLogEvents:= fbLogEvents, 
+	                                                                itfOpMode:= PrgOrg.fbOpMode, 
+                                                                  itfTimerNest1:= fbTimerNest1,
+                                                                  itfTimerNest2:= fbTimerNest2,
+                                                                  itfTimerNest3:= fbTimerNest3,
+                                                                  itfTimerNest4:= fbTimerNest4,
+	                                                                itfNest1:= fbNest1, 
+	                                                                itfNest2:= fbNest2, 
+	                                                                itfNest3:= fbNest3, 
+	                                                                itfNest4:= fbNest4, 
+	                                                                itfLowPressurePump:= fbLowPressurePump, 
+	                                                                itfOilCooler:= fbOilCooler, 
+	                                                                itfBypassPump:= fbBypassPump,
+                                                                  itfLevelSwitch_AggregateTank1_Out1:= fbLevelSwitch_AggregateTank1_Out1,
+                                                                  itfLevelSwitch_AggregateTank1_Out2:= fbLevelSwitch_AggregateTank1_Out2,
+                                                                  itfTemperatureSwitch_AggregateTank1_Out1:= fbTemperatureSwitch_AggregateTank1_Out1,
+                                                                  itfTemperatureSwitch_AggregateTank1_Out2:= fbTemperatureSwitch_AggregateTank1_Out2,
+                                                                  itfLevelSwitch_AggregateTank2_Out1:= fbLevelSwitch_AggregateTank2_Out1,
+                                                                  itfLevelSwitch_AggregateTank2_Out2:= fbLevelSwitch_AggregateTank2_Out2,
+                                                                  itfLevelSwitch_AggregateTank2_Out3:= fbLevelSwitch_AggregateTank2_Out3,
+                                                                  itfSwitch_AggregateFilter_Dirty:= fbSwitch_AggregateFilter_Dirty);
+{endregion}
+   
+{region 'Recipe'}
+  stRecipeParams:                                 ST_RECIPE_PARAMS;
+{endregion}
+END_VAR
+VAR
+  rMaxSpeedInMmPerSHP:                            REAL;
+  rMaxSpeedInMmPerSWP:                            REAL;
+END_VAR
+
+VAR PERSISTENT
+  stSettings:                                     ST_SETTINGS;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//FBs call
+  // - General
+fbHMICtrl();
+fbTimerNest1();
+fbTimerNest2();
+fbTimerNest3();
+fbTimerNest4();
+iPressureConverted_TestCyl1 := TO_INT(TO_REAL(iPressureSensor_TestCyl1) * 0.025);
+iPressureConverted_TestCyl1_A := TO_INT(TO_REAL(iPressureSensor_TestCyl1_A) * 0.025);
+iPressureConverted_TestCyl1_B := TO_INT(TO_REAL(iPressureSensor_TestCyl1_B) * 0.025);
+iPressureConverted_CounterCyl1 := TO_INT(TO_REAL(iPressureSensor_CounterCyl1) * 0.025);
+iPressureConverted_LowPressure := TO_INT(TO_REAL(iPressureSensor_LowPressure) * 0.001);
+iPressureConverted_TestCyl1_BreakPressure_A := TO_INT(TO_REAL(iPressureSensor_TestCyl1_BreakPressure_A) * 0.025);
+iPressureConverted_TestCyl1_BreakPressure_B := TO_INT(TO_REAL(iPressureSensor_TestCyl1_BreakPressure_B) * 0.025);
+iPressureConverted_TestCyl1_PressureReservoir := TO_INT(TO_REAL(iPressureSensor_TestCyl1_PressureReservoir) * 0.025);
+iPressureConverted_TestCyl2 := TO_INT(TO_REAL(iPressureSensor_TestCyl2) * 0.025);
+iPressureConverted_TestCyl2_A := TO_INT(TO_REAL(iPressureSensor_TestCyl2_A) * 0.025);
+iPressureConverted_TestCyl2_B := TO_INT(TO_REAL(iPressureSensor_TestCyl2_B) * 0.025);
+iPressureConverted_CounterCyl2 := TO_INT(TO_REAL(iPressureSensor_CounterCyl2) * 0.025);
+iPressureConverted_TestCyl3 := TO_INT(TO_REAL(iPressureSensor_TestCyl3) * 0.025);
+iPressureConverted_TestCyl3_A := TO_INT(TO_REAL(iPressureSensor_TestCyl3_A) * 0.025);
+iPressureConverted_TestCyl3_B := TO_INT(TO_REAL(iPressureSensor_TestCyl3_B) * 0.025);
+iPressureConverted_CounterCyl3 := TO_INT(TO_REAL(iPressureSensor_CounterCyl3) * 0.025);
+iPressureConverted_TestCyl4 := TO_INT(TO_REAL(iPressureSensor_TestCyl4) * 0.025);
+iPressureConverted_TestCyl4_A := TO_INT(TO_REAL(iPressureSensor_TestCyl4_A) * 0.025);
+iPressureConverted_TestCyl4_B := TO_INT(TO_REAL(iPressureSensor_TestCyl4_B) * 0.025);
+iPressureConverted_CounterCyl4 := TO_INT(TO_REAL(iPressureSensor_CounterCyl4) * 0.025);
+
+
+  // - Pmps/Engines
+fbLowPressurePump();
+fbOilCooler();
+fbBypassPump();
+fbCounterCyl1Pump();
+fbCounterCyl2Pump();
+fbCounterCyl3Pump();
+fbCounterCyl4Pump();
+fbTestCyl1Pump();
+fbTestCyl2Pump();
+fbTestCyl3Pump();
+fbTestCyl4Pump();
+fbShutOffValve_LowPressure();
+
+  // - Valves
+fbValve_LowPressureCircuit_Enable();
+fbValve_CounterCyl1_LowPressureCircuit_Add();
+fbValve_CounterCyl2_LowPressureCircuit_Add();
+fbValve_CounterCyl3_LowPressureCircuit_Add();
+fbValve_CounterCyl4_LowPressureCircuit_Add();
+fbValve_CounterCyl1();
+fbValve_CounterCyl2();
+fbValve_CounterCyl3();
+fbValve_CounterCyl4();
+fbValve_CounterCyl1JogAutoMode();
+fbValve_CounterCyl2JogAutoMode();
+fbValve_CounterCyl3JogAutoMode();
+fbValve_CounterCyl4JogAutoMode();
+fbValve_CounterCyl1_SinkBlock();
+fbValve_CounterCyl2_SinkBlock();
+fbValve_CounterCyl3_SinkBlock();
+fbValve_CounterCyl4_SinkBlock();
+fbValve_CounterCyl1_WorkPressure(iTargetVal=> iCounterCyl1_Pressure);
+fbValve_CounterCyl2_WorkPressure(iTargetVal=> iCounterCyl2_Pressure);
+fbValve_CounterCyl3_WorkPressure(iTargetVal=> iCounterCyl3_Pressure);
+fbValve_CounterCyl4_WorkPressure(iTargetVal=> iCounterCyl4_Pressure);
+fbValve_CounterCyl1_Bypass();
+fbValve_CounterCyl2_Bypass();
+fbValve_CounterCyl3_Bypass();
+fbValve_CounterCyl4_Bypass();
+fbValve_TestCyl1(iAnalogSwitch=> iValve43_TestCyl1);
+fbValve_TestCyl2(iAnalogSwitch=> iValve43_TestCyl2);
+fbValve_TestCyl3(iAnalogSwitch=> iValve43_TestCyl3);
+fbValve_TestCyl4(iAnalogSwitch=> iValve43_TestCyl4);
+fbValve_TestCyl1_A_Unlock();
+fbValve_TestCyl1_B_Unlock();
+fbValve_TestCyl2_A_Unlock();
+fbValve_TestCyl2_B_Unlock();
+fbValve_TestCyl3_A_Unlock();
+fbValve_TestCyl3_B_Unlock();
+fbValve_TestCyl4_A_Unlock();
+fbValve_TestCyl4_B_Unlock();
+fbValve_TestCyl1_WorkPressure(iTargetVal=> iTestCyl1_Pressure);
+fbValve_TestCyl2_WorkPressure(iTargetVal=> iTestCyl2_Pressure);
+fbValve_TestCyl3_WorkPressure(iTargetVal=> iTestCyl3_Pressure);
+fbValve_TestCyl4_WorkPressure(iTargetVal=> iTestCyl4_Pressure);
+fbValve_TestCyl1_LowPressure(iTargetVal=> iTestCyl1_LowPressure);
+fbValve_Pump4_Add();
+fbValve_Pump3_Add();
+fbValve_Pump2_Add();
+fbValve_PressureReservoir_A_Add();
+fbValve_PressureReservoir_B_Add();
+fbValve_SensorBreakPressure_A_Add();
+fbValve_SensorBreakPressure_B_Add();
+
+  // - Cylinders
+fbCounterCyl1(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl1), 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl1_Active);
+fbCounterCyl2(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl2), 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl2_Active);
+fbCounterCyl3(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl3), 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl3_Active);
+fbCounterCyl4(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl4), 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl4_Active);
+fbTestCyl1( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+            lrCurrentPosAbs:= TO_LREAL(diTestCyl1_Distance), 
+            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl1),
+            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl1_A),
+            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl1_B),
+            rCurrentLowPressureInBar:= TO_REAL(iPressureConverted_LowPressure),
+            rCurrentLowPressureInBarA:= TO_REAL(iPressureConverted_TestCyl1_BreakPressure_A),
+            rCurrentLowPressureInBarB:= TO_REAL(iPressureConverted_TestCyl1_BreakPressure_B),
+            rCurrentReservoirPressureInBar:= TO_REAL(iPressureConverted_TestCyl1_PressureReservoir),
+            lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
+            lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
+            rRegulationFactor:= stSettings.rRegulationFactor,
+            rRegulationTolerance:= stSettings.rRegulationTolerance);
+fbTestCyl2( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+            lrCurrentPosAbs:= TO_REAL(diTestCyl2_Distance), 
+            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl2),
+            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl2_A),
+            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl2_B),
+            lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
+            lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
+            rRegulationFactor:= stSettings.rRegulationFactor,
+            rRegulationTolerance:= stSettings.rRegulationTolerance);
+fbTestCyl3( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+            lrCurrentPosAbs:= TO_REAL(diTestCyl3_Distance), 
+            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl3),
+            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl3_A),
+            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl3_B),
+            lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
+            lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
+            rRegulationFactor:= stSettings.rRegulationFactor,
+            rRegulationTolerance:= stSettings.rRegulationTolerance);
+fbTestCyl4( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+            lrCurrentPosAbs:= TO_REAL(diTestCyl4_Distance), 
+            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl4),
+            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl4_A),
+            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl4_B),
+            lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
+            lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
+            rRegulationFactor:= stSettings.rRegulationFactor,
+            rRegulationTolerance:= stSettings.rRegulationTolerance);
+
+  // - Main process
+fbNest1(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+        rMaxSpeedInMmPerSHP=> rMaxSpeedInMmPerSHP,
+        rMaxSpeedInMmPerSWP=> rMaxSpeedInMmPerSWP,
+        rSpeedEfficiencyFactor:= stSettings.rSpeedEfficiencyFactor,
+        uiRecordDelay:= stSettings.uiRecordDelay);
+fbNest2(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+        rMaxSpeedInMmPerSHP:= rMaxSpeedInMmPerSHP,
+        rMaxSpeedInMmPerSWP:= rMaxSpeedInMmPerSWP,
+        rSpeedEfficiencyFactor:= stSettings.rSpeedEfficiencyFactor,
+        uiRecordDelay:= stSettings.uiRecordDelay);
+fbNest3(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+        rMaxSpeedInMmPerSHP:= rMaxSpeedInMmPerSHP,
+        rMaxSpeedInMmPerSWP:= rMaxSpeedInMmPerSWP,
+        rSpeedEfficiencyFactor:= stSettings.rSpeedEfficiencyFactor,
+        uiRecordDelay:= stSettings.uiRecordDelay);
+fbNest4(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
+        rMaxSpeedInMmPerSHP:= rMaxSpeedInMmPerSHP,
+        rMaxSpeedInMmPerSWP:= rMaxSpeedInMmPerSWP,
+        rSpeedEfficiencyFactor:= stSettings.rSpeedEfficiencyFactor,
+        uiRecordDelay:= stSettings.uiRecordDelay);
+fbMainProcess();
+
+// Fbs init
+fbCounterCyl1.P_FullObjectPath := 'PrgStation.fbCounterCyl1';
+fbCounterCyl2.P_FullObjectPath := 'PrgStation.fbCounterCyl2';
+fbCounterCyl3.P_FullObjectPath := 'PrgStation.fbCounterCyl3';
+fbCounterCyl4.P_FullObjectPath := 'PrgStation.fbCounterCyl4';
+fbTestCyl1.P_FullObjectPath := 'PrgStation.fbTestCyl1';
+fbTestCyl2.P_FullObjectPath := 'PrgStation.fbTestCyl2';
+fbTestCyl3.P_FullObjectPath := 'PrgStation.fbTestCyl3';
+fbTestCyl4.P_FullObjectPath := 'PrgStation.fbTestCyl4';
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PrgStation">
+      <LineId Id="38599" Count="1" />
+      <LineId Id="38605" Count="0" />
+      <LineId Id="47766" Count="3" />
+      <LineId Id="42606" Count="0" />
+      <LineId Id="42610" Count="6" />
+      <LineId Id="42618" Count="1" />
+      <LineId Id="42617" Count="0" />
+      <LineId Id="42609" Count="0" />
+      <LineId Id="42621" Count="2" />
+      <LineId Id="42620" Count="0" />
+      <LineId Id="42624" Count="2" />
+      <LineId Id="42608" Count="0" />
+      <LineId Id="42607" Count="0" />
+      <LineId Id="38606" Count="67" />
+      <LineId Id="43940" Count="0" />
+      <LineId Id="43942" Count="5" />
+      <LineId Id="38677" Count="0" />
+      <LineId Id="46492" Count="0" />
+      <LineId Id="38678" Count="0" />
+      <LineId Id="43272" Count="1" />
+      <LineId Id="43283" Count="0" />
+      <LineId Id="43274" Count="2" />
+      <LineId Id="38679" Count="1" />
+      <LineId Id="45847" Count="1" />
+      <LineId Id="38681" Count="0" />
+      <LineId Id="46493" Count="0" />
+      <LineId Id="43277" Count="1" />
+      <LineId Id="38682" Count="1" />
+      <LineId Id="45849" Count="1" />
+      <LineId Id="38684" Count="1" />
+      <LineId Id="46494" Count="0" />
+      <LineId Id="43279" Count="1" />
+      <LineId Id="38686" Count="1" />
+      <LineId Id="45851" Count="1" />
+      <LineId Id="38688" Count="1" />
+      <LineId Id="46495" Count="0" />
+      <LineId Id="43281" Count="1" />
+      <LineId Id="38690" Count="1" />
+      <LineId Id="45853" Count="1" />
+      <LineId Id="38692" Count="3" />
+      <LineId Id="45209" Count="0" />
+      <LineId Id="45856" Count="0" />
+      <LineId Id="45214" Count="0" />
+      <LineId Id="47128" Count="0" />
+      <LineId Id="38696" Count="0" />
+      <LineId Id="45210" Count="0" />
+      <LineId Id="45857" Count="0" />
+      <LineId Id="45215" Count="0" />
+      <LineId Id="47129" Count="0" />
+      <LineId Id="45858" Count="1" />
+      <LineId Id="38697" Count="0" />
+      <LineId Id="45216" Count="0" />
+      <LineId Id="47130" Count="0" />
+      <LineId Id="45860" Count="1" />
+      <LineId Id="38698" Count="0" />
+      <LineId Id="45217" Count="0" />
+      <LineId Id="47131" Count="0" />
+      <LineId Id="38699" Count="9" />
+      <LineId Id="40007" Count="0" />
+      <LineId Id="44574" Count="0" />
+      <LineId Id="44573" Count="0" />
+      <LineId Id="42580" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

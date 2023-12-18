@@ -1,0 +1,39 @@
+{
+  "function": {
+    "name": "DecimalFormatter",
+    "displayName": "DecimalFormatter",
+    "visible": true,
+    "category": "Formatters",
+    "waitMode": "Synchronous",
+    "injectContextObject": false,
+    "description": "",
+    "returnValue": {
+      "type": "tchmi:general#/definitions/Number"
+    },
+    "arguments": [
+      {
+        "name": "Value",
+        "displayName": "Value",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      },
+      {
+        "name": "Decimals",
+        "displayName": "Decimals",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json"
+}

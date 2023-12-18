@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PrgVisu" Id="{6d6a0d95-7605-459c-b72c-f4ca43ac5bf3}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'global_init_slot' := '40030'}
+PROGRAM PrgVisu
+VAR
+	fbVisuOPMode:						                        FB_OP_MODE_PAUSE_VISU(itfOpMode:= PrgOrg.fbOpMode);
+  tonHeartbeat:                                   TON;
+  
+  bInit : 									                      BOOL; 
+  bSend : 									                      BOOL; 
+  fbMsg : 									                      FB_TcMessage; 
+  fbEventLogger:                                  FB_TcEventLogger;
+  fbAlarm:                                        FB_TcAlarm;
+END_VAR
+VAR //HMI enables
+  bEnableAuto:                                    BOOL;
+  bEnableManual:                                  BOOL;
+  bEnableInit:                                    BOOL;
+END_VAR
+
+
+
+
+
+
+
+
+
+
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbVisuOPMode();
+
+tonHeartbeat(in:=NOT tonHeartbeat.Q, pt:=T#100MS);
+
+IF bInit THEN
+  bInit := FALSE; 
+  fbAlarm.CreateEx(TC_EVENTS.Errors.Test1, 1, 0); 
+END_IF
+
+IF bSend THEN 
+  bSend := FALSE; 
+  fbAlarm.ipArguments.Clear() .AddString('teststr') .AddInt(55);
+  fbAlarm.Raise(0);
+END_IF			   
+					
+// Enables
+bEnableAuto := TRUE
+               AND PrgOrg.fbOpMode.P_CONTROL_ON
+               AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
+               AND PrgOrg.bInitOk
+               AND PrgStation.fbBypassPump.P_State
+               AND PrgStation.fbCounterCyl1Pump.P_State
+               AND PrgStation.fbCounterCyl2Pump.P_State
+               AND PrgStation.fbCounterCyl3Pump.P_State
+               AND PrgStation.fbCounterCyl4Pump.P_State
+               AND PrgStation.fbLowPressurePump.P_State
+               AND PrgStation.fbOilCooler.P_State
+               AND PrgStation.fbTestCyl1Pump.P_State
+               AND PrgStation.fbTestCyl2Pump.P_State
+               AND PrgStation.fbTestCyl3Pump.P_State
+               AND PrgStation.fbTestCyl4Pump.P_State;
+               
+]]></ST>
+    </Implementation>
+    <LineIds Name="PrgVisu">
+      <LineId Id="30958" Count="0" />
+      <LineId Id="32739" Count="0" />
+      <LineId Id="32738" Count="0" />
+      <LineId Id="32767" Count="7" />
+      <LineId Id="32783" Count="0" />
+      <LineId Id="32777" Count="0" />
+      <LineId Id="30790" Count="1" />
+      <LineId Id="30793" Count="0" />
+      <LineId Id="30797" Count="0" />
+      <LineId Id="32828" Count="0" />
+      <LineId Id="32814" Count="12" />
+      <LineId Id="32866" Count="0" />
+      <LineId Id="32903" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

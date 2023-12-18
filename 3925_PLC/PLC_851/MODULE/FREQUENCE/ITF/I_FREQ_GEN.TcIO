@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_FREQ_GEN" Id="{5577f50f-75cb-4667-9173-3b42f861a128}">
+    <Declaration><![CDATA[INTERFACE I_FREQ_GEN EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_SetFrequence" Id="{53805b9a-c123-49cf-b720-9951ac3f826f}">
+      <Declaration><![CDATA[METHOD M_SetFrequence : bool
+VAR_INPUT
+	iFreqence: INT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_FTrig" Id="{783a0e9f-4e64-47ad-b880-d7345c7c7907}">
+      <Declaration><![CDATA[PROPERTY P_FTrig : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7e196938-0097-4b2c-8b89-293156a582d6}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_RTrig" Id="{84eb4340-1e90-47bc-a4a9-10fac0fad250}">
+      <Declaration><![CDATA[PROPERTY P_RTrig : BOOL]]></Declaration>
+      <Get Name="Get" Id="{5d62675f-dc16-466f-bc28-c7decf647d6c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_State" Id="{dad35a53-8995-46d6-be28-36d5be4a8120}">
+      <Declaration><![CDATA[PROPERTY P_State : BOOL]]></Declaration>
+      <Get Name="Get" Id="{25647814-807e-495c-bc76-eeed59e75c75}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

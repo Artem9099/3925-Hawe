@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_CYLINDER_DA_TESTDEV1" Id="{0198e8f2-4230-4629-be52-a2fb000ee511}">
+    <Declaration><![CDATA[INTERFACE I_CYLINDER_DA_TESTDEV1 EXTENDS I_CYLINDER_DA_TESTDEV2_4
+]]></Declaration>
+    <Method Name="M_LowPressureCalibration" Id="{2da68073-ce8a-43b2-a453-452850389d9c}">
+      <Declaration><![CDATA[METHOD M_LowPressureCalibration : BOOL
+]]></Declaration>
+    </Method>
+    <Method Name="M_LowPressureMode" Id="{43dea638-8c38-4ac4-b13e-1eb9b149f543}">
+      <Declaration><![CDATA[METHOD M_LowPressureMode : BOOL
+VAR_INPUT
+  bSet:                            BOOL;
+	ePressureType:                   E_PRESSURE_TYPE;
+  rWorkPressure:                   REAL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_OpenReservoir" Id="{b3c674f5-535d-4bbd-a699-05a8457d80ba}">
+      <Declaration><![CDATA[METHOD M_OpenReservoir : BOOL
+VAR_INPUT
+  bOpenA:       BOOL;
+  bOpenB:       BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Pump2Add" Id="{6f1abf68-27be-4148-ad29-c6754ccfebb7}">
+      <Declaration><![CDATA[METHOD M_Pump2Add : BOOL
+VAR_INPUT
+  bAdd:         BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Pump3Add" Id="{159a842f-9c46-475b-ae63-0d9a8d367968}">
+      <Declaration><![CDATA[METHOD M_Pump3Add : BOOL
+VAR_INPUT
+  bAdd:         BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Pump4Add" Id="{178ca3c9-b10a-4aa9-a456-3453723144fa}">
+      <Declaration><![CDATA[METHOD M_Pump4Add : BOOL
+VAR_INPUT
+  bAdd:         BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_ActiveVolumeFlow" Id="{fa4f44bf-e9ae-4762-95d1-9395ca058a3c}">
+      <Declaration><![CDATA[PROPERTY P_ActiveVolumeFlow : REAL]]></Declaration>
+      <Get Name="Get" Id="{22811cd3-2cf0-4de8-a67f-cdcbbd8409a2}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LowPressure" Id="{60eaa627-61b2-4dad-8819-5f6ffa137b5e}">
+      <Declaration><![CDATA[PROPERTY P_LowPressure : REAL]]></Declaration>
+      <Get Name="Get" Id="{3744e1d0-0b5e-4245-b4ac-dd2d21e7db05}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LowPressureChA" Id="{211fc384-59fc-4010-8712-d6217bb40880}">
+      <Declaration><![CDATA[PROPERTY P_LowPressureChA : REAL]]></Declaration>
+      <Get Name="Get" Id="{c98939e9-33d8-4957-8140-d1e185e6340c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LowPressureChB" Id="{6b79b5ad-707f-4a31-8f6c-6c9458a18b47}">
+      <Declaration><![CDATA[PROPERTY P_LowPressureChB : REAL]]></Declaration>
+      <Get Name="Get" Id="{6cd434ed-6506-4304-bc91-421be317b57c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LowPressureModeEnable" Id="{f59294a8-aee3-4792-9aca-6d780b5b9faf}">
+      <Declaration><![CDATA[PROPERTY P_LowPressureModeEnable : BOOL]]></Declaration>
+      <Get Name="Get" Id="{64b7a803-da23-42a2-a593-004810120e1a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Pump2Added" Id="{84cefa24-1313-4220-8466-c245a18911f4}">
+      <Declaration><![CDATA[PROPERTY P_Pump2Added : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c14ebfd1-1c9f-4d07-ab73-4ff8108c456d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Pump3Added" Id="{73e2da8e-1558-4655-82c6-e3053c4f85b2}">
+      <Declaration><![CDATA[PROPERTY P_Pump3Added : BOOL]]></Declaration>
+      <Get Name="Get" Id="{72e54fe6-c3b9-43f8-a69a-a272f6c101b3}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Pump4Added" Id="{26d15a5a-2ed8-4046-9331-dfc1fa11a485}">
+      <Declaration><![CDATA[PROPERTY P_Pump4Added : BOOL]]></Declaration>
+      <Get Name="Get" Id="{d1de188b-ac79-47bd-8c98-c42ed0b4be00}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReservoirAOpened" Id="{24f59d45-993d-4e13-baa0-effe55fb23ec}">
+      <Declaration><![CDATA[PROPERTY P_ReservoirAOpened : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e15e2fb5-15a9-446e-b2f2-1a16a5db45f0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReservoirBOpened" Id="{f2b72622-f3ae-4e41-9f63-46403b4329fa}">
+      <Declaration><![CDATA[PROPERTY P_ReservoirBOpened : BOOL]]></Declaration>
+      <Get Name="Get" Id="{cf24a253-5371-4aaa-9b91-42faeda0f6b0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReservoirPressure" Id="{158f0d06-f5ad-4362-bb47-dd438d93fe81}">
+      <Declaration><![CDATA[PROPERTY P_ReservoirPressure : REAL]]></Declaration>
+      <Get Name="Get" Id="{728aaab0-aee3-4fc4-b52f-73a16ab5e19c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

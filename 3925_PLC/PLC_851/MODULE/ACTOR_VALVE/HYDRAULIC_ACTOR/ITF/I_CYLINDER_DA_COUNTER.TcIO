@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_CYLINDER_DA_COUNTER" Id="{64b427af-6c7d-4c53-9186-6b6d216ce79c}">
+    <Declaration><![CDATA[INTERFACE I_CYLINDER_DA_COUNTER EXTENDS I_CYLINDER_DA_GENERAL
+]]></Declaration>
+    <Method Name="M_AutoMode" Id="{3ad9cc17-7327-4333-afbd-14412c9f43da}">
+      <Declaration><![CDATA[METHOD M_AutoMode : BOOL
+VAR_INPUT
+  bEnable:        BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_LowPressureCircuit" Id="{9a9104bc-2312-49fb-8ff8-7476762f2457}">
+      <Declaration><![CDATA[METHOD M_LowPressureCircuit : BOOL
+VAR_INPUT
+  bAdd:               BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

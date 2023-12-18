@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_HMI_CTRL" Id="{43f9cabb-9824-488d-b7b9-f1c551836752}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HMI_CTRL IMPLEMENTS I_HMI_CTRL
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+  strInstancePath:                STRING;
+	strFullObjectPath:              STRING;
+  strErrorMsg:                    STRING := '';
+  bInHP:                          BOOL;
+	stEvent:                        ST_EVENT;
+	bAck:                           BOOL;
+	itfOpMode:			                I_OP_MODE;
+  
+  //HMI Start
+	fbHmiStart:							  NT_StartProcess;
+	bHmiStart:							  BOOL;
+	//HMI Kill
+	fbTaskKill:							  NT_StartProcess;
+	bTaskKill:							  BOOL;
+	//Shutdown Windows
+	fbShutdown:							  NT_StartProcess;
+	bShutdown:							  BOOL;
+	//Reboot Windows
+	fbReboot:							    NT_StartProcess;
+	bReboot:							    BOOL;
+	//Windows Keyboard
+	fbWinKeyboard:						NT_StartProcess;
+	bWinKeyboard:						  BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbHmiStart(
+	NETID:= '', 
+	PATHSTR:= 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe', 
+	DIRNAME:= 'C:\Program Files (x86)\Microsoft\Edge\Application', 
+	COMNDLINE:= '--kiosk http://Administrator:1@127.0.0.1:1010 --edge-kiosk-type=fullscreen', 
+	START:= bHmiStart, 
+	TMOUT:= T#25S, 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+IF fbHmiStart.BUSY THEN
+	bHmiStart:=FALSE;
+END_IF
+
+fbTaskKill(
+	NETID:= '', 
+	PATHSTR:= 'C:\Scripts\CloseHMI.bat', 
+	DIRNAME:= 'C:\Scripts', 
+	COMNDLINE:= '', 
+	START:= bTaskKill, 
+	TMOUT:= T#5S, 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+IF fbTaskKill.BUSY THEN
+	bTaskKill:=FALSE;
+END_IF
+
+fbWinKeyboard(
+	NETID:= '', 
+	PATHSTR:= 'C:\Scripts\Keyboard.bat', 
+	DIRNAME:= 'C:\Scripts', 
+	COMNDLINE:= '', 
+	START:= bWinKeyboard, 
+	TMOUT:= T#5S, 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+IF fbWinKeyboard.BUSY THEN
+	bWinKeyboard:=FALSE;
+END_IF
+
+fbShutdown(
+	NETID:= '', 
+	PATHSTR:= 'C:\Scripts\Shutdown.bat', 
+	DIRNAME:= 'C:\Scripts', 
+	COMNDLINE:= '', 
+	START:= bShutdown, 
+	TMOUT:= T#30S, 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+IF fbShutdown.BUSY THEN
+	bShutdown:=FALSE;
+END_IF
+
+fbReboot(
+	NETID:= '', 
+	PATHSTR:= 'C:\Scripts\Reboot.bat', 
+	DIRNAME:= 'C:\Scripts', 
+	COMNDLINE:= '', 
+	START:= bReboot, 
+	TMOUT:= T#30S, 
+	BUSY=> , 
+	ERR=> , 
+	ERRID=> );
+IF fbReboot.BUSY THEN
+	bReboot:=FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{821b4190-5b06-48b1-9edc-ab9ab3f7a8dd}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Close" Id="{7102266d-653f-4f17-ba68-da41ff2669ec}">
+      <Declaration><![CDATA[METHOD M_Close : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bTaskKill := TRUE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PCReboot" Id="{7d3ea4fc-b9eb-4b2c-ade8-a62ccb595c6a}">
+      <Declaration><![CDATA[METHOD M_PCReboot : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bReboot := TRUE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PCShutdown" Id="{91b4dd63-1458-43bb-a479-36b359e2d246}">
+      <Declaration><![CDATA[METHOD M_PCShutdown : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bShutdown := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{4850c0a2-eb34-4d3b-a0fc-284be9325f3c}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ShowWinKeyboard" Id="{afbf6d6c-5609-49b6-b56f-e5c48380525a}">
+      <Declaration><![CDATA[METHOD M_ShowWinKeyboard : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bWinKeyboard := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Start" Id="{e8ec5381-c7ff-4b7c-bea6-65d50f538098}">
+      <Declaration><![CDATA[METHOD M_Start : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bHmiStart := TRUE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_ErrorMsg" Id="{fd6fd108-a36c-450e-a0e0-4f65ab73fe2d}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_ErrorMsg : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{6c5561d7-d86b-4f4e-98aa-0c8254c55c66}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{6ee83f3d-1e43-4ba2-8a6e-ba6cea21182e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Event" Id="{bae4fe4f-c824-416e-ba5d-0667053fdb36}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{00e35b9b-56fb-40f1-87ac-8105c1628a18}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ed836d28-0508-499c-a601-752bf7b4da3f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{6e92a379-aeb8-42a7-ada3-59c384ffbc31}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{16341ef0-9402-4570-8cb8-83b05f34c820}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{4ea7bab9-add7-4ec1-8ba3-a6767ab362a7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{186250b2-0665-4564-ac90-7fc21f21bdc5}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{a41b0f27-9aab-4658-babd-bfbe2c948e82}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{eed8c3e6-c648-415d-9b1c-73bcbe5aa576}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{daac52e0-ec04-4482-84f6-a0db5b3ee976}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{8fa1a860-0ed5-4c4d-81d2-d6e8fbb5d5b3}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_HMI_CTRL">
+      <LineId Id="132" Count="11" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="144" Count="11" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="181" Count="12" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="157" Count="11" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="169" Count="11" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_Close">
+      <LineId Id="4" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_PCReboot">
+      <LineId Id="4" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_PCShutdown">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_ShowWinKeyboard">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.M_Start">
+      <LineId Id="4" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_ErrorMsg.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_ErrorMsg.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

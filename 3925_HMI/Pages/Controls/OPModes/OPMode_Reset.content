@@ -1,0 +1,5 @@
+<div id="Reset_Popup" data-tchmi-type="TcHmi.Controls.System.TcHmiContent" data-tchmi-top="0" data-tchmi-left="0" data-tchmi-width="1600" data-tchmi-height="620">
+
+<div id="TcHmiTextblock_33" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="37" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Die Ventile werden in die Grunstellung gebracht und alle Antriebe werden neu gestartet." data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="380" data-tchmi-width-unit="px" data-tchmi-word-wrap="true">
+</div>
+</div>

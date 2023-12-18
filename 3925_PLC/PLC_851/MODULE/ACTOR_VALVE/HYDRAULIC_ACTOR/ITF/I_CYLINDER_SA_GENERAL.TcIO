@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_CYLINDER_SA_GENERAL" Id="{13805b17-5bfc-449b-bce9-c48e9afa8a30}">
+    <Declaration><![CDATA[INTERFACE I_CYLINDER_SA_GENERAL EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_PressureCalibration" Id="{3207f34c-227e-4e34-88d0-061c2a3c0606}">
+      <Declaration><![CDATA[METHOD M_PressureCalibration : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{63bd97a7-dbf3-4709-b6ed-12bdf42f2c1a}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{526e01c0-25c3-4f5d-9c5d-118de864d5ca}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetWorkPressure" Id="{27b87d49-3fa1-4e2b-87c0-4c8d66261cea}">
+      <Declaration><![CDATA[METHOD M_SetWorkPressure : BOOL
+VAR_INPUT
+  ePressureType:                   E_PRESSURE_TYPE;
+  rWorkPressure:                   REAL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Stop" Id="{5d16f8e8-c647-4b76-ab9b-0e37bc939372}">
+      <Declaration><![CDATA[METHOD M_Stop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToWP" Id="{9f93042e-6a04-4402-8079-5bcf67d76e66}">
+      <Declaration><![CDATA[METHOD M_ToWP : BOOL
+VAR_INPUT
+  /// Bar | Force in N | Percent 0-100 | Value 0-32767
+  ePressureType:            E_PRESSURE_TYPE;
+  rWorkPressure:            REAL;
+  /// Just need for prop valve
+  eSpeedType:               E_SPEED_TYPE;
+  rSpeed:                   REAL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_CurrentForceInKN" Id="{38779810-f63e-40d5-ad5a-d486b1bf9973}">
+      <Declaration><![CDATA[PROPERTY P_CurrentForceInKN : REAL]]></Declaration>
+      <Get Name="Get" Id="{1202eba7-fd5e-4b0f-bead-b2451cba5f27}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_PistonSurfaceA" Id="{cb7a7031-d80b-4299-86ba-083abc5221df}">
+      <Declaration><![CDATA[PROPERTY P_PistonSurfaceA : LREAL]]></Declaration>
+      <Get Name="Get" Id="{4e13b714-5fd6-4130-a212-ab2c3c8e985c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_PressureOk" Id="{dd264b0b-600d-4fda-b8ab-fc785f881925}">
+      <Declaration><![CDATA[PROPERTY P_PressureOk : BOOL]]></Declaration>
+      <Get Name="Get" Id="{6d65a202-d413-4f0f-baa3-711fa2c85d81}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{0740d98d-e1ea-4a26-b0ca-7196aec5a971}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{83b47822-94f4-4930-95fb-53eb1264c36c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_WorkPressure" Id="{e1a33b87-7f65-4ff6-a069-934218d97fa5}">
+      <Declaration><![CDATA[PROPERTY P_WorkPressure : REAL]]></Declaration>
+      <Get Name="Get" Id="{912e89bc-bdc3-4d4f-bad4-d21fda373182}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

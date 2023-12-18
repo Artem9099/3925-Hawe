@@ -1,0 +1,127 @@
+{
+    "enableBackup": false,
+    "historizedSymbolList": {
+        "PLC1.PrgStation.iPressureConverted_CounterCyl1": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_CounterCyl2": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_CounterCyl3": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_CounterCyl4": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_LowPressure": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1_A": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1_B": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1_BreakPressure_A": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1_BreakPressure_B": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl1_PressureReservoir": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl2": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl2_A": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl2_B": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl3": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl3_A": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl3_B": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl4": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl4_A": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        },
+        "PLC1.PrgStation.iPressureConverted_TestCyl4_B": {
+            "interval": "PT0.1S",
+            "maxEntries": 10000,
+            "recordingEnabled": true,
+            "rowLimit": 100000
+        }
+    },
+    "inMemory": false,
+    "maxBackups": 1
+}

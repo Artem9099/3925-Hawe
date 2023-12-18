@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_VALVE_X_3" Id="{8c5bb943-91ed-4383-aab0-32203af0056b}">
+    <Declaration><![CDATA[INTERFACE I_VALVE_X_3 EXTENDS I_VALVE_X_2
+]]></Declaration>
+    <Method Name="M_SetReady" Id="{8f8080cb-3598-4a11-add3-cce8a4bbaa59}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToWP2" Id="{31b36efe-6aec-41e1-ae6d-7779ac33c4a0}">
+      <Declaration><![CDATA[METHOD M_ToWP2 : BOOL
+VAR_INPUT
+  tDelay:        TIME;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_InWP2" Id="{38452301-59f5-4e78-a711-8bdffd4728a3}">
+      <Declaration><![CDATA[PROPERTY P_InWP2 : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c6c875b2-3df4-4967-88ec-9dfbcf5503ff}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

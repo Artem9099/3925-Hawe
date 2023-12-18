@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_BREAK_PRESSURE" Id="{ac267bd0-c763-4e30-93a3-5693aacb75ff}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_BREAK_PRESSURE :
+STRUCT
+  // Enables
+  bEnableVentCylinder:            BOOL;
+  bEnableBreakPressureDet:        BOOL;
+  // Vent cylinder
+  uiVentCycles:                   UINT;
+  // Break pressure determination
+  rMinSpeedInMmPerS:              REAL;         // Minimal speed in mm/s
+  rEndPosTol:                     REAL;         // End position tolerance
+  rIncreaseInterval:              REAL;         // Interval in seconds
+  rIncreaseValueInBar:            REAL;         // Value in bar to increase if not mooving
+  rNokLimit:                      REAL;         // Pressure limit to abort
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

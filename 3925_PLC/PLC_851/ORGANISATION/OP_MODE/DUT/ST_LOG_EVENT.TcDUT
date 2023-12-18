@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_LOG_EVENT" Id="{1a19fee0-3aee-418d-a635-335f3d3b5434}">
+    <Declaration><![CDATA[TYPE ST_LOG_EVENT :
+STRUCT
+	CfgEvent		: TcEvent;
+	fbEvent			: ADSLOGEVENT;
+	bActive			: BOOL;
+	stEventData		: ST_EVENT_DATA;
+	strId			: STRING;
+	strText			: STRING;
+	enuEventType	: ENUM_EVENT_TYPE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

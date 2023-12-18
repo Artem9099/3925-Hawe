@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_OP_MODE" Id="{81db37b3-7c92-4e86-a9d8-481131b2b5db}">
+    <Declaration><![CDATA[INTERFACE I_OP_MODE
+]]></Declaration>
+    <Method Name="M_AUTOMATIC" Id="{6bc946c8-ef90-4b3e-bc87-6f98b894fb4b}">
+      <Declaration><![CDATA[METHOD M_AUTOMATIC
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_DEBUG" Id="{8137aad0-8600-4ec6-853f-e76ca788ae78}">
+      <Declaration><![CDATA[METHOD M_DEBUG
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_MANUAL" Id="{711229c5-68a8-49f4-953f-0b9d3c3a4811}">
+      <Declaration><![CDATA[METHOD M_MANUAL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_OP_MODE_OFF" Id="{5720dc2a-47a0-4dbb-8953-5afeda2d317c}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_OFF
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_OP_MODE_ON" Id="{b56ef803-9a12-4ae6-b222-19e2620c82ec}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_ON : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_RESET" Id="{db6763bc-0dd1-4dd7-be1a-df05f15720c3}">
+      <Declaration><![CDATA[METHOD M_RESET : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_CONTROL_ON" Id="{bd23af01-9c05-415b-ab65-5795674cffd9}">
+      <Declaration><![CDATA[PROPERTY P_CONTROL_ON : bool]]></Declaration>
+      <Get Name="Get" Id="{c85e6b9d-e546-4a92-a976-4aa4aa26694e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{0fe84c79-cc84-4cc1-aabb-6c74325a5886}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_EMERGANCY_STOP" Id="{b0fbaf80-79a7-4b0d-83d4-70412e3d52cb}">
+      <Declaration><![CDATA[PROPERTY P_EMERGANCY_STOP : bool]]></Declaration>
+      <Get Name="Get" Id="{c71dd17a-4956-4f31-87cd-6c96ddeb1d1b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{f8d2fed4-d79d-49cc-9ed5-a29ee4d21501}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_INIT_OK" Id="{b5b1d050-c552-4a57-aede-9bdf71eda599}">
+      <Declaration><![CDATA[PROPERTY P_INIT_OK : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f59e6f0f-bede-49a3-8cb6-5e8c00336a76}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{4c4afb63-d8c1-4aa4-8b16-313408dc83f0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_OP_MODE_STATE" Id="{849f70da-3cdc-4892-bafd-2e4cff39f501}">
+      <Declaration><![CDATA[PROPERTY P_OP_MODE_STATE : INT
+
+
+]]></Declaration>
+      <Get Name="Get" Id="{50184866-d9fd-4ecd-8971-a9eac903b5dd}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_QUIT" Id="{8b758699-1ab2-4834-a554-1ca6948142e9}">
+      <Declaration><![CDATA[PROPERTY P_QUIT : BOOL]]></Declaration>
+      <Get Name="Get" Id="{4e7cd1b2-bccf-44a7-acdd-0454189a9685}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

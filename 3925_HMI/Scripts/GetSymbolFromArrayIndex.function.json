@@ -1,0 +1,39 @@
+{
+  "function": {
+    "name": "GetSymbolFromArrayIndex",
+    "displayName": "GetSymbolFromArrayIndex",
+    "visible": true,
+    "category": "",
+    "waitMode": "Synchronous",
+    "injectContextObject": false,
+    "description": "",
+    "returnValue": {
+      "type": "tchmi:framework#/definitions/Symbol"
+    },
+    "arguments": [
+      {
+        "name": "ArraySymbol",
+        "displayName": "Array Symbol",
+        "type": "tchmi:framework#/definitions/Symbol",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      },
+      {
+        "name": "Index",
+        "displayName": "Index",
+        "type": "tchmi:general#/definitions/Integer",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json"
+}

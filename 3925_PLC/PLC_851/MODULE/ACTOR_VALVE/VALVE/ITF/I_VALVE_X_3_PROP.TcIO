@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_VALVE_X_3_PROP" Id="{7016074d-c529-4a64-9060-750b14701dab}">
+    <Declaration><![CDATA[INTERFACE I_VALVE_X_3_PROP EXTENDS I_GENERAL_OBJECT]]></Declaration>
+    <Method Name="M_Reset" Id="{1d937b70-f90d-4da6-beb9-bbc9577bc9f7}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{a0eb5f43-c8ef-41f6-a997-9b37e8bc3c35}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ValveCtrl" Id="{e33ede59-3e7c-4550-a895-f76e2c96af8c}">
+      <Declaration><![CDATA[METHOD M_ValveCtrl : BOOL
+VAR_INPUT
+  /// -100 to -1 = Move to HP, 1 to 100 = Move to WP, 0 = Off
+  rSpeedInPercent:        REAL;
+  tDelay:                 TIME;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ValveCtrlSmooth" Id="{6aaa3d54-aa48-4a45-9744-367e52982da7}">
+      <Declaration><![CDATA[METHOD M_ValveCtrlSmooth : BOOL
+VAR_INPUT
+  /// -100 to -1 = Move to HP, 1 to 100 = Move to WP, 0 = Off
+  rSpeedInPercent:        REAL;
+  tDelay:                 TIME;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="P_ReadyState" Id="{980b83af-b5bd-4179-9629-ed20b41bed47}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e7c50d73-1400-490e-90ef-f258ec9af096}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedInPercent" Id="{5091b486-4d07-479e-b27e-a64df1574a95}">
+      <Declaration><![CDATA[PROPERTY P_SpeedInPercent : REAL]]></Declaration>
+      <Get Name="Get" Id="{99e2ab29-8a44-4cad-a375-2ac05414602d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

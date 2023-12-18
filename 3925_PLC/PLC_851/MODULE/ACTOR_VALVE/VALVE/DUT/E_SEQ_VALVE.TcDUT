@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SEQ_VALVE" Id="{ece4e64a-6906-4a72-aea6-b353f7afbd9e}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SEQ_VALVE :
+(
+	// GENERAL STEPS
+	BASE := 0,
+  INIT,
+  WAIT_FOR_AUTOMATIC_START,
+  SETUP,
+  
+  // Process
+	SET_HP,
+	SET_WP1,
+  SET_WP2,
+  SET_LIMIT,
+  SET_LIMIT_SMOOTH,
+  
+  END,
+	ERROR_SEQ	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

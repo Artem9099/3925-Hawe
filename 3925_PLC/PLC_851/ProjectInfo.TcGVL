@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.10">
+  <GVL Name="ProjectInfo" Id="{f00d3ff5-1abb-40d5-b2a0-8e317fe3f658}" ParameterList="True">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	strProjectNumber: STRING:='3531';
+	strProjectMng: STRING:='Stefan Utz';
+	strPhone: STRING:='???';
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Crc="3349127078" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7335fcd5-e802-4f30-9140-d1203a7bcdb6}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>TwinCAT3SafePlcProject</RootNamespace>
+    <AssemblyName>TwinCAT3SafePlcProject</AssemblyName>
+    <FileUpgradeFlags />
+    <UpgradeBackupLocation />
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetSystem>EL6900</TargetSystem>
+    <ProgrammingLanguage>Graphical Editor</ProgrammingLanguage>
+    <Worker>Artem_Starovojt</Worker>
+    <IntProjName>MainSafety</IntProjName>
+    <IsNewCreated>false</IsNewCreated>
+    <SPlcProjVersion>1.8.0.0</SPlcProjVersion>
+    <NextSdsId>42</NextSdsId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <OutputPath>bin\Release\</OutputPath>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="TwinSafeGroup1\Alias Devices\I_LockDoor.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\I_Restart.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\I_Run.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.2.2 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.2.3 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.2.4 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.2.5 %28EL1904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.3.0 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1.3.1 %28EL2904%29 - Module 1 %28FSOES%29.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\KF1_2_1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ComErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_FbErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_DoorLeftLocked.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_DoorRightLocked.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_EStopJogOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_EStopLeftOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_EStopRightOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_KeySwitchJogMode.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_OtherErr.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_EStopOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_SafetyDoorOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_ServiceModeOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_ServiceValvesOk.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_StateServiceValve1.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_StateServiceValve2.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_StateServiceValve3.sds" />
+    <None Include="TwinSafeGroup1\Alias Devices\Q_ToPlc_StateServiceValve4.sds" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal" />
+    <None Include="TwinSafeGroup1\TwinSafeGroup1.sal.diagram">
+      <DependentUpon>TwinSafeGroup1\TwinSafeGroup1.sal</DependentUpon>
+      <Visible>false</Visible>
+    </None>
+    <None Include="TargetSystemConfig.xml">
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="GVLs" />
+    <Folder Include="TwinSafeGroup1" />
+    <Folder Include="TwinSafeGroup1\Alias Devices" />
+    <Folder Include="User FBs" />
+    <None Include="TwinSafeGroup1\Alias Devices\I_ErrorAcknowledgement.sds" />
+  </ItemGroup>
+  <ProjectExtensions />
+</Project>

@@ -1,0 +1,323 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_VISU_CYLINDER" Id="{bda66ac4-9025-485b-94cc-b133d7ffc625}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VISU_CYLINDER
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	itfPneuActor: I_PNEU_ACTOR;	
+	itfOpMode: I_OP_MODE;
+	iMove: INT;
+	iNegMove: INT;
+	iMoveSmall: INT;
+	iNegMoveSmall: INT;
+	iAngle: INT;
+	iNegAngle: INT;
+	strInfo: STRING;
+	strFullObjName: STRING;
+	bMoveToBase: BOOL;
+	bMoveToWork: BOOL;
+	bAllOff: BOOL;
+	bInBasePos: BOOL;
+	bInWorkPos: BOOL;
+	bInMidPos: 	BOOL;
+	bFaultWorkPos: BOOL;
+	bFaultBasePos: BOOL;
+	dwFrameColorBase: DWORD:= 16#FF00BFFF;
+	dwFrameColorWork: DWORD:= 16#FF00BFFF;
+	dwFrameColorMid: DWORD:= 16#FF00BFFF;
+	bBaseArrowInvisible: BOOL:=TRUE;
+	bWorkArrowInvisible: BOOL:=TRUE;
+	bMidkArrowInvisible: BOOL:=TRUE;
+	iFrame: INT;
+	bFrameInvisible: BOOL:= TRUE;
+	stEvent: ST_EVENT;
+	dwColor: DWORD;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT (itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL) THEN
+	bFrameInvisible:= TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.MoveToBase) THEN
+//IF bMoveToBase AND NOT bInBasePos THEN
+	iMove:=-30;
+	iAngle:=-90;
+	//strInfo:= 'Zylinder fährt in Grundposition';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='3', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveToWork:= FALSE;
+	dwFrameColorBase:= 16#FFFFA500;
+	bBaseArrowInvisible:= FALSE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.InBasePos) THEN
+//IF bMoveToBase AND bInBasePos THEN
+	iMove:=0;
+	iAngle:=0;
+	//strInfo:= 'Zylinder ist in Grundposition';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='4', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveToWork:= FALSE;
+	dwFrameColorBase:= 16#FF77BB77;
+	bBaseArrowInvisible:= FALSE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.MoveToWork) THEN
+//IF bMoveToWork AND NOT bInworkPos THEN
+	iMove:=-30;
+	iAngle:=-90;
+	//strInfo:= 'Zylinder fährt in Arbeitsposition';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='5', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveToBase:= FALSE;
+	dwFrameColorwork:= 16#FFFFA500;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=FALSE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.InWorkPos) THEN
+//IF bMoveToWork AND bInWorkPos THEN
+	iMove:=-70;
+	iAngle:=180;
+	//strInfo:= 'Zylinder ist in Arbeitsposition';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='6', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveTobase:= FALSE;
+	dwFrameColorWork:= 16#FF77BB77;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=FALSE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.InMidPos) THEN
+//IF bMoveToWork AND bInWorkPos THEN
+	iMove:=-50;
+	iAngle:=-90;
+	//strInfo:= 'Zylinder ist in Arbeitsposition';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='15', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveTobase:= FALSE;
+	dwFrameColorMid:= 16#FF77BB77;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=FALSE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.NoDefPos) THEN
+//IF bMoveToWork AND bInWorkPos THEN
+	iMove:=-30;
+	iNegAngle:=-90;
+	//strInfo:= 'Zylinder in undefinierter Position';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='7', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	//bMoveTobase:= FALSE;
+	dwFrameColorWork:= 16#FF77BB77;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.TimeOutToBase) THEN
+//IF bMoveToWork AND bInWorkPos THEN
+	iMove:=-30;
+	iAngle:=-90;
+	//strInfo:= 'Timeout bei Fahrt nach Grundstellung';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='8', strTxtLstName:= 'TXT_LIST_PNEUMATIC_ACTOR');
+	//bMoveTobase:= FALSE;
+	dwFrameColorWork:= 16#FFFF00FF;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=FALSE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.TimeOutToWork) THEN
+//IF bMoveToWork AND bInWorkPos THEN
+	iMove:=-30;	
+	iAngle:=-90;
+	//strInfo:= 'Timeout bei Fahrt nach Arbeitsstellung';
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='9', strTxtLstName:= 'TXT_LIST_PNEUMATIC_ACTOR');
+	//bMoveTobase:= FALSE;
+	dwFrameColorWork:= 16#FFFF00FF;
+	bBaseArrowInvisible:= FALSE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF  (itfPneuActor.P_State=E_POS_STATE.MoveToWorkLock) THEN
+	strInfo:= stEvent.strEventText;
+	dwFrameColorWork:= Color.dwRed;
+	bBaseArrowInvisible:= TRUE;
+	bWorkArrowInvisible:=FALSE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+IF (itfPneuActor.P_State=E_POS_STATE.MoveToBaseLock) THEN
+	strInfo:= stEvent.strEventText;
+	dwFrameColorBase:= Color.dwRed;
+	bBaseArrowInvisible:= FALSE;
+	bWorkArrowInvisible:=TRUE;	
+	bMidkArrowInvisible:=TRUE;
+END_IF
+
+strFullObjName:= itfPneuActor.P_FullObjectPath;
+
+IF (itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL) THEN
+	IF bMoveToBase THEN
+		itfPneuActor.M_ToBasePos();
+		bMoveToBase:=FALSE;
+		//bMoveToWork:= FALSE;
+		//bAllOff:= FALSE;
+	END_IF
+	IF bMoveToWork THEN
+		itfPneuActor.M_ToWorkPos();
+		//bMoveToBase:=FALSE;
+		bMoveToWork:= FALSE;
+		//bAllOff:= FALSE;
+	END_IF
+	IF bAllOff THEN
+		itfPneuActor.M_Stop();
+		//bMoveToBase:=FALSE;
+		//bMoveToWork:= FALSE;
+		bAllOff:= FALSE;
+	END_IF
+	
+ELSE
+	bMoveToBase:=FALSE;
+	bMoveToWork:= FALSE;
+    bAllOff:= FALSE;
+END_IF
+
+
+
+iNegMove:= iMove*(-1);
+iNegAngle:=iAngle*(-1);
+iMoveSmall:=iMove/2;
+iNegMoveSmall:=iNegMove/2;
+stEvent:= itfPneuActor.P_Event;
+
+IF stEvent.bEventActive THEN
+	dwColor:= Color.dwOrange;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{fe04a5a7-319d-43de-bad4-3c0095cd9fbe}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfPneuActor: I_PNEU_ACTOR;
+	itfOpMode: I_OP_MODE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfPneuActor:= itfPneuActor;
+THIS^.itfOpMode:= itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_VISU_CYLINDER">
+      <LineId Id="114" Count="0" />
+      <LineId Id="116" Count="2" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="58" Count="2" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="62" Count="3" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="67" Count="2" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="283" Count="0" />
+      <LineId Id="71" Count="3" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="76" Count="2" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="80" Count="3" />
+      <LineId Id="376" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="361" Count="11" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="123" Count="3" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="128" Count="3" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="133" Count="3" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="138" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="143" Count="3" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="286" Count="0" />
+      <LineId Id="148" Count="3" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="421" Count="0" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="440" Count="2" />
+      <LineId Id="439" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="434" Count="1" />
+      <LineId Id="444" Count="2" />
+      <LineId Id="443" Count="0" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="191" Count="3" />
+      <LineId Id="200" Count="2" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="198" Count="1" />
+      <LineId Id="204" Count="1" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="206" Count="4" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="243" Count="2" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="316" Count="0" />
+      <LineId Id="276" Count="0" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="356" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="274" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_VISU_CYLINDER.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

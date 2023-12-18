@@ -1,0 +1,32 @@
+{
+  "function": {
+    "name": "BooleanToVisibility",
+    "namespace": "",
+    "displayName": "BooleanToVisibility",
+    "description": "",
+    "waitMode": "Synchronous",
+    "category": "",
+    "returnValue": {
+      "type": "tchmi:framework#/definitions/Visibility"
+    },
+    "visible": true,
+    "injectContextObject": false,
+    "arguments": [
+      {
+        "name": "Input",
+        "displayName": "Input",
+        "type": "tchmi:general#/definitions/Boolean",
+        "description": "",
+        "defaultValue": "False",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json",
+  "apiVersion": 1,
+  "dependencyFiles": []
+}

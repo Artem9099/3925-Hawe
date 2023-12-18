@@ -1,0 +1,697 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_OP_MODE_PAUSE" Id="{b2df02bd-0585-4beb-9ab8-a5cf33eff2c1}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OP_MODE_PAUSE IMPLEMENTS I_OP_MODE_PAUSE
+
+VAR
+	bAutomatic:                                      BOOL;
+	bDebug:                                          BOOL;
+	bManual:                                         BOOL;
+	bReset:                                          BOOL;
+	bInitOK:                                         BOOL;
+	bInitOKToState:                                  BOOL;
+	btemporay_Automatic:                             BOOL;
+	btemporay_Debug:                                 BOOL;
+	btemporay_Manual:                                BOOL;
+	btemporay_Reset:                                 BOOL;
+	bMachineStateOK:                                 BOOL;
+	bControlOn:                                      BOOL;
+  bAllConnectorsContacted:                         BOOL;
+  bTemperatureOk:                                  BOOL;
+  bLiquiphantStateOk:                              BOOL;
+	bEmergancyStop:                                  BOOL;
+	bFatalError:                                     BOOL;
+	bPauseActivate:                                  BOOL;
+	bInPause:                                        BOOL;
+	bInPauseTemp:                                    BOOL;
+	bStartAfterPause:                                BOOL;
+  bServiceModeActive:                              BOOL;
+	
+	fbBlink:                                         FB_Blink;
+	bBlinkPause:                                     BOOL;
+	tonInitOK:                                       Tc2_Standard.TON;
+  
+  // FB_init
+  itfHandleEvents:                                 I_HANDLE_EVENTS;
+  itfPowerAdapter24V_Hydraulics_Ok:                I_BINARY_SWITCH;
+  itfSelectivityModules_Ok:                        I_BINARY_SWITCH;
+  itfCircuitBreaker_Ok:                            I_BINARY_SWITCH;
+  itfCabinetTemperature_Ok:                        I_BINARY_SWITCH;
+  itfUnitConnector1_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector2_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector3_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector4_Contacted:                     I_BINARY_SWITCH;
+  itfLiquiphant_TestBench_Triggered:               I_BINARY_SWITCH;
+  itfLiquiphant_ValveBlocks_Triggered:             I_BINARY_SWITCH;
+  itfFromSafety_EStop_Ok:                          I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoor_Ok:                     I_BINARY_SWITCH;
+  itfFromSafety_KeySwitch_JogPos:                  I_BINARY_SWITCH;
+  itfFromSafety_EStopLeft_Ok:                      I_BINARY_SWITCH;
+  itfFromSafety_EStopRight_Ok:                     I_BINARY_SWITCH;
+  itfFromSafety_EStopJog_Ok:                       I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoorLeft_Ok:                 I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoorRight_Ok:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceDoorLeft_Ok:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceDoorRight_Ok:               I_BINARY_SWITCH;
+  itfFromSafety_JogAckBtn_Pressed:                 I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve1:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve2:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve3:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve4:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceMode_Ok:                    I_BINARY_SWITCH;
+  itfFromSafety_ServiceValves_Ok:                  I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//Check the Machine State
+bMachineStateOK := bControlOn 
+                   AND bTemperatureOk
+                   AND bAllConnectorsContacted
+                   AND bLiquiphantStateOk;
+bControlOn := itfPowerAdapter24V_Hydraulics_Ok.P_Active
+              AND itfSelectivityModules_Ok.P_Active
+              AND itfCircuitBreaker_Ok.P_Active
+              AND itfFromSafety_EStop_Ok.P_Active;
+bTemperatureOk := TRUE; //itfCabinetTemperature_Ok.P_Active;
+bAllConnectorsContacted := itfUnitConnector1_Contacted.P_Active
+                           AND itfUnitConnector2_Contacted.P_Active
+                           AND itfUnitConnector3_Contacted.P_Active
+                           AND itfUnitConnector4_Contacted.P_Active;
+bLiquiphantStateOk := NOT itfLiquiphant_TestBench_Triggered.P_Active
+                      AND NOT itfLiquiphant_ValveBlocks_Triggered.P_Active;
+bEmergancyStop := NOT bMachineStateOK;
+	
+tonInitOK(IN:= bInitOK AND bReset AND bMachineStateOK, PT:= T#100MS);]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{60855234-62ef-4706-a1b4-e539311bcdcc}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+	itfHandleEvents:                                 I_HANDLE_EVENTS;
+	itfPowerAdapter24V_Hydraulics_Ok:                I_BINARY_SWITCH;
+  itfSelectivityModules_Ok:                        I_BINARY_SWITCH;
+  itfCircuitBreaker_Ok:                            I_BINARY_SWITCH;
+  itfCabinetTemperature_Ok:                        I_BINARY_SWITCH;
+  itfUnitConnector1_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector2_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector3_Contacted:                     I_BINARY_SWITCH;
+  itfUnitConnector4_Contacted:                     I_BINARY_SWITCH;
+  itfLiquiphant_TestBench_Triggered:               I_BINARY_SWITCH;
+  itfLiquiphant_ValveBlocks_Triggered:             I_BINARY_SWITCH;
+  itfFromSafety_EStop_Ok:                          I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoor_Ok:                     I_BINARY_SWITCH;
+  itfFromSafety_KeySwitch_JogPos:                  I_BINARY_SWITCH;
+  itfFromSafety_EStopLeft_Ok:                      I_BINARY_SWITCH;
+  itfFromSafety_EStopRight_Ok:                     I_BINARY_SWITCH;
+  itfFromSafety_EStopJog_Ok:                       I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoorLeft_Ok:                 I_BINARY_SWITCH;
+  itfFromSafety_SafetyDoorRight_Ok:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceDoorLeft_Ok:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceDoorRight_Ok:               I_BINARY_SWITCH;
+  itfFromSafety_JogAckBtn_Pressed:                 I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve1:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve2:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve3:                I_BINARY_SWITCH;
+  itfFromSafety_StateServiceValve4:                I_BINARY_SWITCH;
+  itfFromSafety_ServiceMode_Ok:                    I_BINARY_SWITCH;
+  itfFromSafety_ServiceValves_Ok:                  I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfHandleEvents := itfHandleEvents;
+THIS^.itfPowerAdapter24V_Hydraulics_Ok := itfPowerAdapter24V_Hydraulics_Ok;
+THIS^.itfSelectivityModules_Ok := itfSelectivityModules_Ok;
+THIS^.itfCircuitBreaker_Ok := itfCircuitBreaker_Ok;
+THIS^.itfCabinetTemperature_Ok := itfCabinetTemperature_Ok;
+THIS^.itfUnitConnector1_Contacted := itfUnitConnector1_Contacted;
+THIS^.itfUnitConnector2_Contacted := itfUnitConnector2_Contacted;
+THIS^.itfUnitConnector3_Contacted := itfUnitConnector3_Contacted;
+THIS^.itfUnitConnector4_Contacted := itfUnitConnector4_Contacted;
+THIS^.itfLiquiphant_TestBench_Triggered := itfLiquiphant_TestBench_Triggered;
+THIS^.itfLiquiphant_ValveBlocks_Triggered := itfLiquiphant_ValveBlocks_Triggered;
+THIS^.itfFromSafety_EStop_Ok := itfFromSafety_EStop_Ok;
+THIS^.itfFromSafety_SafetyDoor_Ok := itfFromSafety_SafetyDoor_Ok;
+THIS^.itfFromSafety_KeySwitch_JogPos := itfFromSafety_KeySwitch_JogPos;
+THIS^.itfFromSafety_EStopLeft_Ok := itfFromSafety_EStopLeft_Ok;
+THIS^.itfFromSafety_EStopRight_Ok := itfFromSafety_EStopRight_Ok;
+THIS^.itfFromSafety_EStopJog_Ok := itfFromSafety_EStopJog_Ok;
+THIS^.itfFromSafety_SafetyDoorLeft_Ok := itfFromSafety_SafetyDoorLeft_Ok;
+THIS^.itfFromSafety_SafetyDoorRight_Ok := itfFromSafety_SafetyDoorRight_Ok;
+THIS^.itfFromSafety_ServiceDoorLeft_Ok := itfFromSafety_ServiceDoorLeft_Ok;
+THIS^.itfFromSafety_ServiceDoorRight_Ok := itfFromSafety_ServiceDoorRight_Ok;
+THIS^.itfFromSafety_JogAckBtn_Pressed := itfFromSafety_JogAckBtn_Pressed;
+THIS^.itfFromSafety_StateServiceValve1 := itfFromSafety_StateServiceValve1;
+THIS^.itfFromSafety_StateServiceValve2 := itfFromSafety_StateServiceValve2;
+THIS^.itfFromSafety_StateServiceValve3 := itfFromSafety_StateServiceValve3;
+THIS^.itfFromSafety_StateServiceValve4 := itfFromSafety_StateServiceValve4;
+THIS^.itfFromSafety_ServiceMode_Ok := itfFromSafety_ServiceMode_Ok;
+THIS^.itfFromSafety_ServiceValves_Ok := itfFromSafety_ServiceValves_Ok;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_AUTOMATIC" Id="{d0c35a72-bb60-406c-8022-da056148d5e9}">
+      <Declaration><![CDATA[METHOD M_AUTOMATIC
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_OP_MODE_OFF();	
+IF NOT (bAutomatic OR bPauseActivate) 
+	(*AND NOT bDebug 
+	AND NOT bManual 
+	AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Automatic THEN
+			btemporay_Automatic	:= TRUE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;	
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DEBUG" Id="{68da7edf-f803-425e-b46b-9f862d5ef5a8}">
+      <Declaration><![CDATA[METHOD M_DEBUG
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_OP_MODE_OFF();
+IF (*NOT bAutomatic 
+	AND*) NOT bDebug 
+	(*AND NOT bManual 
+	AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Debug THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= TRUE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+			bPauseActivate		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+			bPauseActivate		:= FALSE;
+		END_IF
+
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MANUAL" Id="{0f8eafff-ec66-4787-b51b-f423028d48a5}">
+      <Declaration><![CDATA[METHOD M_MANUAL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_OP_MODE_OFF();
+IF (*NOT bAutomatic 
+	AND NOT bDebug 
+	AND*) NOT bManual 
+	(*AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Manual THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= TRUE;
+			btemporay_Reset		:= FALSE;
+			bPauseActivate		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+			bPauseActivate		:= FALSE;	
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OP_MODE_OFF" Id="{d89a6c47-ab0c-4702-88b5-0a06b62968df}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_OFF
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//every OP Mode off
+bAutomatic			:= FALSE;
+bDebug				:= FALSE;
+bManual				:= FALSE;
+bReset				:= FALSE;
+btemporay_Automatic	:= FALSE;
+btemporay_Debug		:= FALSE;
+btemporay_Manual	:= FALSE;
+btemporay_Reset		:= FALSE;
+bPauseActivate		:= FALSE;
+bInPause			:= FALSE;
+bInPauseTemp		:= FALSE;
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OP_MODE_ON" Id="{076ec490-8d31-4bba-8008-5b7ef7db6fc3}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_ON : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Automtic on
+IF TRUE
+AND (btemporay_Automatic 
+OR P_PAUSE_ACTIVATE)	
+AND bInitOK
+THEN
+	bAutomatic			:= TRUE;
+	bDebug				:= FALSE;
+	bManual				:= FALSE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Debug on
+IF btemporay_Debug
+AND bInitOK
+THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= TRUE;
+	bManual				:= FALSE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Manual on
+IF btemporay_Manual THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= FALSE;
+	bManual				:= TRUE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Reset on
+IF btemporay_Reset THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= FALSE;
+	bManual				:= FALSE;
+	bReset				:= TRUE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+
+IF bPauseActivate AND NOT bInPause THEN
+	bAutomatic			:= TRUE;
+	bDebug				:= FALSE;
+	bManual				:= FALSE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+
+bInPause:=FALSE;
+bInPauseTemp:=FALSE;
+bPauseActivate:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OP_MODE_TO_PAUSE" Id="{47aad6d4-15e3-47ac-ad15-10e624a55b26}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_TO_PAUSE
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.P_OP_MODE_STATE=OP_MODE.AUTO THEN
+	THIS^.bPauseActivate:=TRUE;
+END_IF	]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_RESET" Id="{582ff589-d9e7-4591-9dbc-8f8daaf17565}">
+      <Declaration><![CDATA[METHOD M_RESET : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_OP_MODE_OFF();
+IF (*NOT bAutomatic 
+	AND NOT bDebug 
+	AND NOT bManual 
+	AND*) NOT bReset THEN
+		//set Temporary OP Mode
+			IF NOT btemporay_Reset THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= TRUE;
+			bPauseActivate		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;	
+			bPauseActivate		:= FALSE;
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CONTROL_ON" Id="{d9ab6cb0-6017-40d8-9b65-f8d8e659ea55}">
+      <Declaration><![CDATA[
+PROPERTY P_CONTROL_ON : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{20a1788c-98fe-4cf6-ab99-429b46d2eb21}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CONTROL_ON:= bControlOn;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{7199410d-a5bf-4627-aafc-995b2e22d0b9}">
+        <Declaration><![CDATA[
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bControlOn:= P_CONTROL_ON;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_EMERGANCY_STOP" Id="{0df682fb-98ec-4aa9-84b9-c09fcb4721b7}">
+      <Declaration><![CDATA[PROPERTY P_EMERGANCY_STOP : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{3d9df83d-e374-4a3c-adbb-5734c9b824a1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_EMERGANCY_STOP:= bEmergancyStop;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a094d241-ed21-470d-9db5-00ae351edd84}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bEmergancyStop:=P_EMERGANCY_STOP;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_INIT_OK" Id="{85a10f96-89d0-455a-a023-e5c22abaf959}">
+      <Declaration><![CDATA[PROPERTY P_INIT_OK : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{345edb3a-c259-4d61-9a3c-326f099bb605}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_INIT_OK:=THIS^.P_OP_MODE_STATE=OP_MODE.INIT_OK;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e9ff8e4b-58dd-41ac-ba47-f7095c1c41f2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bInitOK:= P_INIT_OK;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_OP_MODE_STATE" Id="{1238692c-449d-450f-9971-c2c66c436ef6}">
+      <Declaration><![CDATA[PROPERTY P_OP_MODE_STATE : INT
+]]></Declaration>
+      <Get Name="Get" Id="{0df5e58a-871b-4ff3-8b0f-31ab9e98dbae}">
+        <Declaration><![CDATA[VAR
+	thne: INT;
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//MACHINE STATE
+//IF P_CONTROL_ON AND THIS^.itfMainAirOk.P_Active THEN
+//	P_OP_MODE_STATE:=OP_MODE.MAIN_AIR_OK;
+//END_IF
+
+IF P_CONTROL_ON THEN
+	P_OP_MODE_STATE:=OP_MODE.CONTROL_ON;
+END_IF
+
+IF itfHandleEvents.P_State >= ENUM_EVENT_TYPE.Rd6_Warning THEN
+	P_OP_MODE_STATE:=OP_MODE.MACHINE_ERROR;
+END_IF
+
+IF P_EMERGANCY_STOP THEN
+	P_OP_MODE_STATE:=OP_MODE.SAFETY_STOP;
+END_IF
+
+
+
+
+
+//OP MODE
+
+//IF bInitOK AND bReset AND bMachineStateOK THEN
+IF tonInitOK.Q THEN
+	P_OP_MODE_STATE:=OP_MODE.INIT_OK;
+END_IF
+
+IF bAutomatic  AND bMachineStateOK 	THEN
+	IF NOT bPauseActivate THEN
+		P_OP_MODE_STATE:=OP_MODE.AUTO;
+	ELSE
+		P_OP_MODE_STATE:=OP_MODE.PAUSE;	
+	END_IF
+END_IF;
+			
+IF bDebug AND bMachineStateOK 		THEN
+	P_OP_MODE_STATE:=OP_MODE.DEBUG;
+END_IF
+
+IF bManual	AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.MANUAL;
+END_IF
+
+IF  bReset	AND NOT tonInitOK.Q AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.INIT;
+END_IF
+
+
+(*
+IF THIS^.P_PAUSE_ACTIVATE AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.INIT;
+END_IF
+*)
+
+//OP MODE TEMP
+
+IF btemporay_Automatic	AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.AUTO_TEMPORARY;
+END_IF
+
+IF btemporay_Debug AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.DEBUG_TEMPORARY;
+END_IF
+
+IF btemporay_Manual	AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.MANUAL_TEMPORARY;
+END_IF
+
+IF btemporay_Reset AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.RESET_TEMPORARY;
+END_IF
+
+IF bMachineStateOK AND  bInPause THEN
+	P_OP_MODE_STATE:=OP_MODE.AUTO_TEMPORARY;
+END_IF
+
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_PAUSE_ACTIVATE" Id="{7c6288cf-f608-4c7f-92af-8c87e4adb0de}">
+      <Declaration><![CDATA[PROPERTY P_PAUSE_ACTIVATE : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{07b46ed8-498c-49bb-b5c3-4ed1f763c01d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_PAUSE_ACTIVATE:=THIS^.bPauseActivate;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_QUIT" Id="{9c53791b-b58f-4897-8a04-bca67c9c1bec}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_QUIT : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{9fdac6f3-e4a0-45d0-a295-746158ce5bae}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_OP_MODE_PAUSE">
+      <LineId Id="3" Count="2" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="234" Count="1" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="241" Count="2" />
+      <LineId Id="245" Count="1" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="154" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="54" Count="7" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="98" Count="15" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_AUTOMATIC">
+      <LineId Id="25" Count="0" />
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_DEBUG">
+      <LineId Id="28" Count="0" />
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_MANUAL">
+      <LineId Id="28" Count="0" />
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_OP_MODE_OFF">
+      <LineId Id="3" Count="9" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_OP_MODE_ON">
+      <LineId Id="3" Count="1" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="5" Count="9" />
+      <LineId Id="66" Count="2" />
+      <LineId Id="16" Count="29" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="51" Count="6" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="60" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_OP_MODE_TO_PAUSE">
+      <LineId Id="7" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.M_RESET">
+      <LineId Id="28" Count="0" />
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_CONTROL_ON.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_CONTROL_ON.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_EMERGANCY_STOP.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_EMERGANCY_STOP.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_INIT_OK.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_INIT_OK.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_OP_MODE_STATE.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="4" Count="10" />
+      <LineId Id="62" Count="3" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="122" Count="2" />
+      <LineId Id="21" Count="12" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="100" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="66" Count="15" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_PAUSE_ACTIVATE.Get">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE.P_QUIT.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="FB_VISU_WORD_TO_BYTES" Id="{cb98ca81-fd12-4dbd-9693-11d87c8dee59}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VISU_WORD_TO_BYTES
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	itfOpMode:												I_OP_MODE;
+	itfUser:												I_USER_MANAGER;
+	itfWordToBytes:											I_WORD_TO_BYTES;
+	
+	lrUnscaledInput:										LREAL;
+	bAdmin:													BOOL;
+	bEnable:												BOOL;
+END_VAR
+
+VAR PERSISTENT 
+	lrXMax:									LREAL:=1;
+	lrXMin:                                 LREAL;
+	lrYMax:                                 LREAL:=1;
+	lrYMin:                                 LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Tastensperre bei Auto oder Keiner Betriebsartenauswahl
+IF THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL THEN
+	bEnable:=TRUE;
+ELSE
+	bEnable:=FALSE;
+END_IF
+
+bAdmin:=FALSE;
+IF itfUser.P_UserGroupID=USER.Admin THEN
+	bAdmin:=TRUE;
+END_IF
+//Übergabe Daten
+itfWordToBytes.P_X_MAX:=lrXMax;
+itfWordToBytes.P_X_MIN:=lrXMin;
+itfWordToBytes.P_Y_MAX:=lrYMax;
+itfWordToBytes.P_Y_MIN:=lrYMin;
+
+lrUnscaledInput:=itfWordToBytes.P_VALUE;]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{b179b6bb-2e1d-4c6f-8d4d-a7e180183205}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:												I_OP_MODE;
+	itfUser:												I_USER_MANAGER;
+	itfWordToBytes:											I_WORD_TO_BYTES;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode:=itfOpMode;
+THIS^.itfUser:=itfUser;
+THIS^.itfWordToBytes:=itfWordToBytes;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_VISU_WORD_TO_BYTES">
+      <LineId Id="27" Count="9" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="16" Count="2" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="23" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VISU_WORD_TO_BYTES.FB_init">
+      <LineId Id="20" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

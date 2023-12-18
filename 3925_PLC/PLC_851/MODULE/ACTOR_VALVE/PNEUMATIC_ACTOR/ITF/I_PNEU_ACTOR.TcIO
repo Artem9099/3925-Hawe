@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PNEU_ACTOR" Id="{0e4932e2-6d78-48e3-a6ae-3c487f452003}">
+    <Declaration><![CDATA[INTERFACE I_PNEU_ACTOR EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_LockMovment" Id="{33e9986a-f6f8-4060-b2f2-5f454dc545e9}">
+      <Declaration><![CDATA[METHOD M_LockMovment
+VAR_INPUT
+	bLockBaseMovement: 	BOOL;
+	bLockWorkMovement: 	BOOL;
+	itfObject:			I_GENERAL_OBJECT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Stop" Id="{a86c093e-7e97-4048-83aa-e1c1ce477367}">
+      <Declaration><![CDATA[METHOD M_Stop
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToBasePos" Id="{5c78c8a6-63c3-43b2-aeb4-09147f84a102}">
+      <Declaration><![CDATA[METHOD M_ToBasePos
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ToWorkPos" Id="{e7df209a-e36e-4967-88ed-1358569abb56}">
+      <Declaration><![CDATA[METHOD M_ToWorkPos
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_UnLockMovment" Id="{28ddbd9b-3b68-47a8-8c0e-4b6615549f6e}">
+      <Declaration><![CDATA[METHOD M_UnLockMovment
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_State" Id="{81f64ca4-cbbd-46de-b247-8f77c23415d7}">
+      <Declaration><![CDATA[PROPERTY P_State : E_POS_STATE]]></Declaration>
+      <Get Name="Get" Id="{2c11293b-ee97-4582-a0a6-0657c92d75e1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_TimeOutToBase" Id="{4f478b06-5474-4d7f-8687-97091a41fffc}">
+      <Declaration><![CDATA[PROPERTY P_TimeOutToBase : TIME]]></Declaration>
+      <Get Name="Get" Id="{cfbdb429-4dc6-4c9e-b3c3-2abe7e46542c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{7e9a43a3-de69-4e95-ab17-580f38f39fe0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_TimeOutToWork" Id="{163fa33f-45df-4bb8-9a4b-97c47922e465}">
+      <Declaration><![CDATA[PROPERTY P_TimeOutToWork : TIME]]></Declaration>
+      <Get Name="Get" Id="{7f9decfe-fe6a-460a-8281-5a7384ee66f8}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{6f0a7b70-0327-4354-ba00-0b54d2dc5786}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

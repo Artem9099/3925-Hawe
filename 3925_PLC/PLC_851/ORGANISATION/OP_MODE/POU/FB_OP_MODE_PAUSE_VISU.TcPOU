@@ -1,0 +1,602 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_OP_MODE_PAUSE_VISU" Id="{21846bfb-10ab-4a00-8cfd-505048c68831}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OP_MODE_PAUSE_VISU IMPLEMENTS I_OP_MODE_PAUSE_VISU
+VAR
+	itfOpMode:                          I_OP_MODE_PAUSE;
+	//Press 
+	bClick_Automatic:                   BOOL;
+	bClick_Debug:                       BOOL;
+	bClick_Manual:                      BOOL;
+	bClick_Reset:                       BOOL;
+	bClick_Start:                       BOOL;
+	bClick_Stop:                        BOOL;
+	bClick_Pause:                       BOOL;
+	//State
+	b_Automatic:                        BOOL;
+	b_Debug:                            BOOL;
+	b_Manual:                           BOOL;
+	b_Reset:                            BOOL;
+	//temporay State
+	btemporay_Automatic:                BOOL;
+	btemporay_Debug:                    BOOL;
+	btemporay_Manual:                   BOOL;
+	btemporay_Reset:                    BOOL;
+	iOPModeState:                       INT;
+  // Control buttons clicked
+  bEnduranceRunClicked:               BOOL;
+  bLeakTest1Clicked:                  BOOL;
+  bLeakTest2Clicked:                  BOOL;
+  bBreakTestClicked:                  BOOL;
+  bJogClicked:                        BOOL;
+  bHandClicked:                       BOOL;
+  bEnduranceRunMode:                  BOOL;
+  bLeakTest1Mode:                     BOOL;
+  bLeakTest2Mode:                     BOOL;
+  bBreakTestMode:                     BOOL;
+  bJogMode:                           BOOL;
+  bHandMode:                          BOOL;
+  
+  // JOG Direction
+  bJogCounterCyl1_Clicked:            BOOL;
+  bJogCounterCyl2_Clicked:            BOOL;
+  bJogCounterCyl3_Clicked:            BOOL;
+  bJogCounterCyl4_Clicked:            BOOL;
+  bJogCounterCyl1_Active:             BOOL;
+  bJogCounterCyl2_Active:             BOOL;
+  bJogCounterCyl3_Active:             BOOL;
+  bJogCounterCyl4_Active:             BOOL;
+	fbBlink:                            FB_Blink;
+END_VAR
+VAR_IN_OUT
+
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//CLICK to OP-Mode
+IF bClick_Automatic	THEN
+	itfOpMode.M_AUTOMATIC();
+	bClick_Automatic := FALSE;
+END_IF
+	
+IF bClick_Debug	THEN
+	itfOpMode.M_DEBUG();
+	bClick_Debug := FALSE;
+END_IF
+		
+IF bClick_Manual THEN
+	itfOpMode.M_MANUAL();
+	bClick_Manual		:= FALSE;
+END_IF
+			
+IF bClick_Reset	THEN
+	itfOpMode.M_RESET();
+	bClick_Reset		:= FALSE;
+  //M_ResetModeSelection();
+END_IF
+	
+		
+IF bClick_Start	THEN
+	itfOpMode.M_OP_MODE_ON();
+	bClick_Start := FALSE;
+END_IF
+		
+IF bClick_Stop THEN
+	itfOpMode.M_OP_MODE_OFF();
+	bClick_Stop			:= FALSE;
+  //M_ResetModeSelection();
+END_IF
+
+IF bClick_Pause	THEN
+	itfOpMode.M_OP_MODE_TO_PAUSE();
+	bClick_Pause := FALSE;
+END_IF
+//
+b_Automatic := FALSE;
+b_Debug := FALSE; 
+b_Manual := FALSE;
+b_Reset := FALSE;
+btemporay_Automatic := FALSE;
+btemporay_Debug := FALSE;
+btemporay_Manual := FALSE;
+btemporay_Reset := FALSE;
+
+//GET OP MODE STATE
+CASE itfOpMode.P_OP_MODE_STATE OF		
+	OP_MODE.AUTO: 				    b_Automatic := TRUE;
+	OP_MODE.PAUSE:				    b_Automatic :=fbBlink.P_1Hz;		
+ 	OP_MODE.DEBUG:				    b_Debug := TRUE;
+	OP_MODE.MANUAL:				    b_Manual := TRUE;
+	OP_MODE.INIT:				      b_Reset := fbBlink.P_1Hz;
+	OP_MODE.INIT_OK:			    b_Reset := TRUE;							
+	OP_MODE.AUTO_TEMPORARY:		btemporay_Automatic := TRUE;
+	OP_MODE.DEBUG_TEMPORARY:	btemporay_Debug := TRUE;
+	OP_MODE.MANUAL_TEMPORARY:	btemporay_Manual := TRUE;
+	OP_MODE.RESET_TEMPORARY:	btemporay_Reset := TRUE;
+END_CASE
+iOPModeState := itfOpMode.P_OP_MODE_STATE;
+
+// Control buttons clicked
+IF bEnduranceRunClicked THEN
+  bEnduranceRunClicked := FALSE;
+  bEnduranceRunMode := TRUE;
+  bLeakTest1Mode := FALSE;
+  bLeakTest2Mode := FALSE;
+  bBreakTestMode := FALSE;
+  bJogMode := FALSE;
+  bHandMode := FALSE;
+ELSIF bLeakTest1Clicked THEN
+  bLeakTest1Clicked := FALSE;
+  bEnduranceRunMode := FALSE;
+  bLeakTest1Mode := TRUE;
+  bLeakTest2Mode := FALSE;
+  bBreakTestMode := FALSE;
+  bJogMode := FALSE;
+  bHandMode := FALSE;
+ELSIF bLeakTest2Clicked THEN
+  bLeakTest2Clicked := FALSE;
+  bEnduranceRunMode := FALSE;
+  bLeakTest1Mode := FALSE;
+  bLeakTest2Mode := TRUE;
+  bBreakTestMode := FALSE;
+  bJogMode := FALSE;
+  bHandMode := FALSE;
+ELSIF bBreakTestClicked THEN
+  bBreakTestClicked := FALSE;
+  bEnduranceRunMode := FALSE;
+  bLeakTest1Mode := FALSE;
+  bLeakTest2Mode := FALSE;
+  bBreakTestMode := TRUE;
+  bJogMode := FALSE;
+  bHandMode := FALSE;
+ELSIF bJogClicked THEN
+  bJogClicked := FALSE;
+  bEnduranceRunMode := FALSE;
+  bLeakTest1Mode := FALSE;
+  bLeakTest2Mode := FALSE;
+  bBreakTestMode := FALSE;
+  bJogMode := TRUE;
+  bHandMode := FALSE;
+ELSIF bHandClicked THEN
+  bHandClicked := FALSE;
+  bEnduranceRunMode := FALSE;
+  bLeakTest1Mode := FALSE;
+  bLeakTest2Mode := FALSE;
+  bBreakTestMode := FALSE;
+  bJogMode := FALSE;
+  bHandMode := TRUE;
+END_IF
+
+IF bJogCounterCyl1_Clicked THEN
+  bJogCounterCyl1_Clicked := FALSE;
+  bJogCounterCyl1_Active := TRUE;
+  bJogCounterCyl2_Active := FALSE;
+  bJogCounterCyl3_Active := FALSE;
+  bJogCounterCyl4_Active := FALSE;
+ELSIF bJogCounterCyl2_Clicked THEN
+  bJogCounterCyl2_Clicked := FALSE;
+  bJogCounterCyl1_Active := FALSE;
+  bJogCounterCyl2_Active := TRUE;
+  bJogCounterCyl3_Active := FALSE;
+  bJogCounterCyl4_Active := FALSE;
+ELSIF bJogCounterCyl3_Clicked THEN
+  bJogCounterCyl3_Clicked := FALSE;
+  bJogCounterCyl1_Active := FALSE;
+  bJogCounterCyl2_Active := FALSE;
+  bJogCounterCyl3_Active := TRUE;
+  bJogCounterCyl4_Active := FALSE;
+ELSIF bJogCounterCyl4_Clicked THEN
+  bJogCounterCyl4_Clicked := FALSE;
+  bJogCounterCyl1_Active := FALSE;
+  bJogCounterCyl2_Active := FALSE;
+  bJogCounterCyl3_Active := FALSE;
+  bJogCounterCyl4_Active := TRUE;
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{ef90d29b-19a5-49d7-9c2f-49ea526d388d}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+	itfOpMode:  I_OP_MODE_PAUSE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[this^.itfOpMode := itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ResetModeSelection" Id="{ed6bb6b7-7ee8-44bc-bb61-57981ce4404b}">
+      <Declaration><![CDATA[METHOD M_ResetModeSelection : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ResetModeSelection := TRUE
+                        AND NOT THIS^.bEnduranceRunMode
+                        AND NOT THIS^.bLeakTest1Mode
+                        AND NOT THIS^.bLeakTest2Mode
+                        AND NOT THIS^.bBreakTestMode
+                        AND NOT THIS^.bJogMode
+                        AND NOT THIS^.bHandMode
+                        AND NOT THIS^.bJogCounterCyl1_Active
+                        AND NOT THIS^.bJogCounterCyl2_Active
+                        AND NOT THIS^.bJogCounterCyl3_Active
+                        AND NOT THIS^.bJogCounterCyl4_Active;
+
+THIS^.bEnduranceRunMode := FALSE;
+THIS^.bLeakTest1Mode := FALSE;
+THIS^.bLeakTest2Mode := FALSE;
+THIS^.bBreakTestMode := FALSE;
+THIS^.bJogMode := FALSE;
+THIS^.bHandMode := FALSE;
+THIS^.bJogCounterCyl1_Active := FALSE;
+THIS^.bJogCounterCyl2_Active := FALSE;
+THIS^.bJogCounterCyl3_Active := FALSE;
+THIS^.bJogCounterCyl4_Active := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{25d69dd4-1a2e-4aa8-88b9-41157bc76fd3}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_BreakPressureDetSelected" Id="{9e2f8408-9f90-4edb-975c-0375e7cc1de8}">
+      <Declaration><![CDATA[PROPERTY P_BreakPressureDetSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f00eaaf0-6fd5-406a-a0aa-a0e17b29c27b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_BreakPressureDetSelected := THIS^.bBreakTestMode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_EnduranceRunSelected" Id="{55596e8e-fd2b-4892-bae9-c2b2c8b0650d}">
+      <Declaration><![CDATA[PROPERTY P_EnduranceRunSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{146ecbf0-fa61-42ab-9046-8c7bd4eea36f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_EnduranceRunSelected := THIS^.bEnduranceRunMode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{0013c4f3-8ef2-4acc-b9ff-b4d21af35df3}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{16da5ebb-e1ba-412a-9385-d267f83fa96f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{15c2cf47-45f8-4bed-9867-fe74c0d58ca4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{30d58662-7dd1-4d45-9941-22a43133154a}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{83b3d34d-ebac-4b4b-99d7-1534e5d6c13d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{f8074a86-4d82-4182-9217-7a619c0d78f9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{0b20a64d-535c-46df-8e22-d206c31593f8}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{245dd6fb-1b8d-48ef-a778-96c3889acc81}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8f9ef490-c110-41fe-a43d-76c30f18408f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{b4e0dff9-b570-4d28-bc6a-a2a56ee871ad}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{734a7e7a-f5aa-41f8-ac05-999f4622e75d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_HandSelected" Id="{dc8d6c2e-ed31-4892-91b6-8bd1275c8450}">
+      <Declaration><![CDATA[PROPERTY P_HandSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{266ead21-aa93-4a74-b017-fb70959f9a62}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_HandSelected := THIS^.bHandMode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl1_Active" Id="{41ce52b1-d9d5-4d81-9fcc-40ffd720cf55}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_JogCounterCyl1_Active : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{31f927e7-9a2f-45ff-971e-f4ce5c33b146}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_JogCounterCyl1_Active := THIS^.bJogCounterCyl1_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl2_Active" Id="{218ba377-fdfa-4c91-9b7f-101a3012b390}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl2_Active : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{67028e16-a345-47ed-bd9d-7502433c0b99}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_JogCounterCyl2_Active := THIS^.bJogCounterCyl2_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl3_Active" Id="{40d652dd-e117-49b6-91b0-58e3d27ff270}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl3_Active : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{9c1bc024-504c-4ea2-8903-afdde46ed1ed}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_JogCounterCyl3_Active := THIS^.bJogCounterCyl3_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl4_Active" Id="{75d9f9ef-3025-42d0-b114-a9989627c807}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl4_Active : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{22fe3de9-2816-480c-98c8-fd5617d04fbf}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_JogCounterCyl4_Active := THIS^.bJogCounterCyl4_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_JogSelected" Id="{ed6a1918-793e-4474-adcd-7cf0768dbd7d}">
+      <Declaration><![CDATA[PROPERTY P_JogSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7b757e90-f141-454e-83b4-a1a4f9501638}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_JogSelected := THIS^.bJogMode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_LeakTest1Selected" Id="{2f385bb0-5569-4364-97b9-dcce12ab5aab}">
+      <Declaration><![CDATA[PROPERTY P_LeakTest1Selected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{61f4667f-b28e-47dc-9485-7f8cfc507be5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_LeakTest1Selected := THIS^.bLeakTest1Mode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_LeakTest2Selected" Id="{e1a026fa-f0b7-4234-ad9c-7a51bf880788}">
+      <Declaration><![CDATA[PROPERTY P_LeakTest2Selected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{ed5d08a8-d7e2-48cb-bc9f-e3eb0ff89961}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_LeakTest2Selected := THIS^.bLeakTest2Mode;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU">
+      <LineId Id="109" Count="19" />
+      <LineId Id="500" Count="0" />
+      <LineId Id="129" Count="10" />
+      <LineId Id="499" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="196" Count="3" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="141" Count="12" />
+      <LineId Id="295" Count="0" />
+      <LineId Id="154" Count="2" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="157" Count="5" />
+      <LineId Id="342" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="460" Count="4" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="465" Count="5" />
+      <LineId Id="347" Count="1" />
+      <LineId Id="475" Count="5" />
+      <LineId Id="349" Count="1" />
+      <LineId Id="481" Count="5" />
+      <LineId Id="353" Count="1" />
+      <LineId Id="487" Count="5" />
+      <LineId Id="355" Count="1" />
+      <LineId Id="493" Count="5" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="518" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="537" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="541" Count="0" />
+      <LineId Id="544" Count="0" />
+      <LineId Id="523" Count="1" />
+      <LineId Id="553" Count="0" />
+      <LineId Id="555" Count="0" />
+      <LineId Id="557" Count="0" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="527" Count="1" />
+      <LineId Id="569" Count="0" />
+      <LineId Id="571" Count="0" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="576" Count="0" />
+      <LineId Id="531" Count="1" />
+      <LineId Id="585" Count="0" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="520" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.M_ResetModeSelection">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="5" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="34" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_BreakPressureDetSelected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_EnduranceRunSelected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_HandSelected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_JogCounterCyl1_Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_JogCounterCyl2_Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_JogCounterCyl3_Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_JogCounterCyl4_Active.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_JogSelected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_LeakTest1Selected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE_PAUSE_VISU.P_LeakTest2Selected.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

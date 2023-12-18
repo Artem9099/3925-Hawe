@@ -1,0 +1,190 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <TextList Name="TXT_LIST_PNEMATIC_ACTOR" Id="{8c9f483a-8540-47eb-89f4-d680911906ae}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="TextListObject">
+          <v n="UniqueIdGenerator">"0"</v>
+          <l n="TextList" t="ArrayList" cet="TextListRow">
+            <o>
+              <v n="TextID">"1"</v>
+              <v n="TextDefault">"Timeout: Bewegung nach Arbeitsstellung"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Timeout: Bewegung nach Arbeitsstellung</v>
+                <v>Timeout: Move to Workposition</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"2"</v>
+              <v n="TextDefault">"Timeout: Bewegung nach Grundstellung"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Timeout: Bewegung nach Grundstellung</v>
+                <v>Timeout: Move to Basepostion</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"3"</v>
+              <v n="TextDefault">"fährt in Grundposition"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>fährt in Grundposition</v>
+                <v>moves to Baseposition</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"4"</v>
+              <v n="TextDefault">"ist in Grundposition"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>ist in Grundposition</v>
+                <v>in Baseposition</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"5"</v>
+              <v n="TextDefault">"fährt in Arbeitsposition"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>fährt in Arbeitsposition</v>
+                <v>moves to Workposition</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"6"</v>
+              <v n="TextDefault">"ist in Arbeitsposition"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>ist in Arbeitsposition</v>
+                <v>in Workposition</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"7"</v>
+              <v n="TextDefault">"in undefinierter Position"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>in undefinierter Position</v>
+                <v>in undefined postion</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"8"</v>
+              <v n="TextDefault">"Timeout bei Fahrt nach Grundstellung"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Timeout bei Fahrt nach Grundstellung</v>
+                <v>Timeout: Move to Basepos.</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"9"</v>
+              <v n="TextDefault">"Timeout bei Fahrt nach Arbeitsstellung"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Timeout bei Fahrt nach Arbeitsstellung</v>
+                <v>Timeout: Move to Workpos.</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"11"</v>
+              <v n="TextDefault">"Vakuum ein / Druck nicht erreicht"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Vakuum ein / Druck nicht erreicht</v>
+                <v>vaccum on / pressure NOK</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"12"</v>
+              <v n="TextDefault">"Vakuum ein / Druck OK"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Vakuum ein / Druck OK</v>
+                <v>vaccum on / pressure OK</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"13"</v>
+              <v n="TextDefault">"Abblasen ein"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Abblasen ein</v>
+                <v>blow out</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"14"</v>
+              <v n="TextDefault">"nicht aktiv"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>nicht aktiv</v>
+                <v>not active</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"15"</v>
+              <v n="TextDefault">"ist in Mittelstellung"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>ist in Mittelstellung</v>
+                <v>in mid position</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"16"</v>
+              <v n="TextDefault">"blockiert durch"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>blockiert durch</v>
+                <v>locked by</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">""</v>
+              <v n="TextDefault">""</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v></v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+          </l>
+          <l n="Languages" t="ArrayList" cet="String">
+            <v>de</v>
+            <v>en</v>
+            <v>ch</v>
+            <v>zh_CHS</v>
+          </l>
+          <v n="GuidInit">{9ee84480-caf9-4f9d-b2c7-a37905852ea2}</v>
+          <v n="GuidReInit">{ea9d0c95-b721-450a-a226-7dada4cc0c31}</v>
+          <v n="GuidExitX">{29ad6605-d503-4b90-9ed1-dfbfafc93a97}</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="String">System.String</Type>
+        <Type n="TextListObject">{2bef0454-1bd3-412a-ac2c-af0f31dbc40f}</Type>
+        <Type n="TextListRow">{53da1be7-ad25-47c3-b0e8-e26286dad2e0}</Type>
+      </TypeList>
+    </XmlArchive>
+  </TextList>
+</TcPlcObject>

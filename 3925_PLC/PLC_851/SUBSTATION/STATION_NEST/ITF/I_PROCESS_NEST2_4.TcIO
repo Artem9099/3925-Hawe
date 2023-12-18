@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PROCESS_NEST2_4" Id="{6f696aaf-e8af-4351-8608-42dfd3bffb6c}">
+    <Declaration><![CDATA[INTERFACE I_PROCESS_NEST2_4 EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_EnduranceRun" Id="{f617bdb5-2346-4bf3-b769-8d3e40cc76be}">
+      <Declaration><![CDATA[METHOD M_EnduranceRun : BOOL
+VAR_INPUT
+  udiCycles:                            UDINT;
+  stEnduranceRunParams:                 ST_RECIPE_ENDURANCE_RUN;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_LeakTest1" Id="{2adb96ae-fd5c-4ece-bb88-a9737ebaef35}">
+      <Declaration><![CDATA[METHOD M_LeakTest1 : BOOL
+VAR_INPUT
+  stLeakTest1Params:                 ST_RECIPE_LEAK_TEST1;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_MeasureStrokeLength" Id="{ed996126-2858-4368-8d8b-e6f77fde652f}">
+      <Declaration><![CDATA[METHOD M_MeasureStrokeLength : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_MoveToSetPos" Id="{1e57c0b3-56ba-47b6-9c1a-137b29f7fc03}">
+      <Declaration><![CDATA[METHOD M_MoveToSetPos : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{d57b43d5-154c-4286-b50b-92504feea29a}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetEnableState" Id="{e748f508-7460-4608-bcd9-24c60df37e46}">
+      <Declaration><![CDATA[METHOD M_SetEnableState : BOOL
+VAR_INPUT
+  bEnable:              BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{2fe4d089-4209-4b6e-968b-b6d8bd2a5128}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Stop" Id="{dd7d451f-ad91-4c13-bb23-9981be66abb8}">
+      <Declaration><![CDATA[METHOD M_Stop : BOOL
+]]></Declaration>
+    </Method>
+    <Method Name="M_StopEngine" Id="{31c86038-9414-42fd-a997-7cfd6b89aa13}">
+      <Declaration><![CDATA[METHOD M_StopEngine : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_VentCylinder" Id="{785aa2c9-964a-47eb-8dc8-ea77ef867a89}">
+      <Declaration><![CDATA[METHOD M_VentCylinder : BOOL
+VAR_INPUT
+  uiVentCount:                UINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_EnableState" Id="{5a8f3172-1a32-470f-a9e7-01d6a343eb69}">
+      <Declaration><![CDATA[PROPERTY P_EnableState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{700f6fd8-6e5d-4586-a6a4-0457e22d4347}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{2ad007eb-173e-41f1-8228-f61cd49a53b8}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e59d8284-0a56-4adc-83b7-924c13874db0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_SerialNr" Id="{a78d2b4f-c30b-4d7f-ad07-1c7d34455ef3}">
+      <Declaration><![CDATA[PROPERTY P_SerialNr : STRING]]></Declaration>
+      <Get Name="Get" Id="{558e5a12-a10e-4b0d-ad88-d117f0a6a7b1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{ebd5d485-93f0-4e93-8512-cdb1e4a9bcf5}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

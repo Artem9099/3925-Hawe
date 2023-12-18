@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <DUT Name="stMesswerte" Id="{cebaa76d-1853-4bf2-8405-6d3009848399}">
+    <Declaration><![CDATA[TYPE stMesswerte :
+STRUCT
+	X: 			LREAL;
+	Y: 			LREAL;
+	//SQR_Y_Ys:	LREAL;
+	//sqr_Y_Yd:  	LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SEQ_CYLINDER" Id="{c9b153d0-f6f4-4ed0-aa7e-4b5d2114c427}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SEQ_CYLINDER :
+(
+	// GENERAL STEPS
+	BASE := 0,
+  INIT,
+  SETUP,
+  // Process
+  SET_MAX_POS,
+  SET_SPEED_BWD,
+  SET_SPEED_FWD,
+  SET_WORK_PRESSURE,
+  SET_ZERO_POS,
+  STOP,
+  STOP_AND_LOCK,
+  TO_HP,
+  TO_SET_POS,
+  TO_WP,
+  PRESSURE_CALIBRATION,
+  LOW_PRESSURE_CALIBRATION,
+  LOW_PRESSURE_CIRCUIT,
+  LOW_PRESSURE_MODE,
+  OPEN_RESERVOIR,
+  OPEN_LOCK_VALVES,
+  PUMP2_ADD,
+  PUMP3_ADD,
+  PUMP4_ADD,
+  
+  END,
+	ERROR_SEQ	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

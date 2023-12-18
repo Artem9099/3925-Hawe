@@ -1,0 +1,677 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ESTOP" Id="{15fb33be-c5aa-4888-80f2-6bdbdaf7dd14}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ESTOP IMPLEMENTS I_ESTOP
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR //General
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath:										STRING;
+	strFullObjectPath: 										STRING;
+	stEvent: 												ST_EVENT;
+	bAck: 													BOOL;
+	quitDelayTimer:											TON;
+
+	//Interfaces
+	itfOpMode:												I_OP_MODE;
+	itfQuitEStop:											I_BINARY_OUTPUT;
+	itfEStopLoadingLeftState:								I_BINARY_SWITCH;
+	itfEStopLoadingRightState: 								I_BINARY_SWITCH;	
+	itfEStopWeighSideState:									I_BINARY_SWITCH;
+ 
+	//Schrittkettensteuerung
+	eSeq, eLastSeq, eNextSeq:								E_STEP_STATE_ESTOP:=	E_STEP_STATE_ESTOP.ESTOP_PRESSED;
+	tonDelay, tonTimeOut, tonStepTime:						TON;
+	tDelay:													TIME := T#100MS;
+	tTimeOut:												TIME := T#100MS;
+	tTimeOutExt:											TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					BOOL;//Debug Option
+	i:														INT;
+    iError:													INT; //ERROR-CODE                    	                   		
+	listLastSteps:											ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											STRING; 
+	eStep_Type:												E_STEP_STATE_TYPE; 
+	bDebugModeActive:										BOOL;   
+	bWaitForBreakpoint:										BOOL;
+	bBreakpointActive:										BOOL;
+	bDebugResume:											BOOL;   
+	listBreakpoint:											ARRAY[0..10] OF  INT;  
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[eLastSeq:=eSeq;
+
+CASE eSeq OF 
+E_STEP_STATE_ESTOP.BASE:;
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_OK;
+	
+E_STEP_STATE_ESTOP.RESET:;
+		eSeq:=E_STEP_STATE_ESTOP.BASE;
+
+E_STEP_STATE_ESTOP.ESTOP_OK:;
+	IF FALSE
+		OR itfEStopLoadingLeftState.P_Active
+		OR itfEStopLoadingRightState.P_Active
+		OR itfEStopWeighSideState.P_Active
+	THEN
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_PRESSED;
+	ELSE
+		itfOpMode.P_EMERGANCY_STOP:=FALSE;
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_OK;
+	END_IF
+
+E_STEP_STATE_ESTOP.ESTOP_PRESSED:;
+	IF FALSE
+		OR itfEStopLoadingLeftState.P_Active
+		OR itfEStopLoadingRightState.P_Active
+		OR itfEStopWeighSideState.P_Active
+	THEN
+		itfOpMode.P_EMERGANCY_STOP:=TRUE;
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_PRESSED;
+	ELSE
+		eSeq:=E_STEP_STATE_ESTOP.WAIT_QUIT_ESTOP;
+	END_IF
+					
+E_STEP_STATE_ESTOP.WAIT_QUIT_ESTOP:;
+	IF itfQuitEStop.P_State THEN
+		itfQuitEStop.M_Reset();
+	END_IF
+	IF FALSE
+		OR itfEStopLoadingLeftState.P_Active
+		OR itfEStopLoadingRightState.P_Active
+		OR itfEStopWeighSideState.P_Active
+	THEN
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_PRESSED;
+	END_IF
+
+E_STEP_STATE_ESTOP.SET_QUIT_ESTOP:;
+	itfQuitEStop.M_Set();
+	eSeq:=E_STEP_STATE_ESTOP.RESET_QUIT_ESTOP;
+	
+E_STEP_STATE_ESTOP.RESET_QUIT_ESTOP:;
+	quitDelayTimer(IN:= NOT quitDelayTimer.Q, PT := T#500MS);
+	IF quitDelayTimer.Q THEN
+  		itfQuitEStop.M_Reset();
+		eSeq:=E_STEP_STATE_ESTOP.ESTOP_QUIT_OK;
+	END_IF
+					
+E_STEP_STATE_ESTOP.ESTOP_QUIT_OK:;
+	eSeq:=E_STEP_STATE_ESTOP.BASE;
+
+(*E_STEP_STATE_ESTOP.TIME_OUT_TO_QUIT:;
+
+	stEvent.bEventActive:=TRUE;
+	stEvent.enumEventType:=ENUM_EVENT_TYPE.Rd6_Warning;
+	stEvent.strEventText:=concat('Timeout: ',listLastSteps[1].strStepName);
+	stEvent.strEventText:=concat(stEvent.strEventText,' > ');
+	stEvent.strEventText:=concat(stEvent.strEventText,TO_STRING(listLastSteps[1].tStepTime));
+	stEvent.strObject:=strFullObjectPath;
+	//Timeout eine Schrittes
+	//ENDE	
+	IF THIS^.bAck THEN
+		eSeq:=eLastSeq;
+		stEvent.bEventActive:=FALSE;
+	END_IF
+E_STEP_STATE_ESTOP.TIME_OUT:;
+
+	stEvent.bEventActive:=TRUE;
+	stEvent.enumEventType:=ENUM_EVENT_TYPE.Rd6_Warning;
+	stEvent.strEventText:=concat('Timeout: ',listLastSteps[1].strStepName);
+	stEvent.strEventText:=concat(stEvent.strEventText,' > ');
+	stEvent.strEventText:=concat(stEvent.strEventText,TO_STRING(listLastSteps[1].tStepTime));
+	stEvent.strObject:=strFullObjectPath;
+	//Timeout eine Schrittes
+	//ENDE	
+
+	
+E_STEP_STATE_ESTOP.ERROR:;
+	
+E_STEP_STATE_ESTOP.ERROR_TO_QUIT:;
+
+E_STEP_STATE_ESTOP.ERROR_RESTART:;
+
+
+E_STEP_STATE_ESTOP.IBN_DUMMY:;
+	bDelayActive:=TRUE;
+	tDelay:=T#5S;
+	IF tonDelay.Q THEN
+		eSeq:=E_STEP_STATE_ESTOP.RESET;
+	END_IF
+	
+E_STEP_STATE_ESTOP.DEBUG_BREAK:;
+//Warten auf Debug-Bit
+IF bDebugNext THEN
+	eSeq:=eNextSeq;
+	bDebugNext:=FALSE;
+END_IF
+//Debug Step Ende
+
+ELSE
+	eSeq:=E_STEP_STATE_ESTOP.ERROR;
+	//ENDE
+	
+	*)
+END_CASE
+
+
+
+
+
+
+
+
+THIS^._m_SequenceManager();
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Folder Name="PRIVAT" Id="{874fbe09-aba2-4fec-97e7-f6330717220f}" />
+    <Method Name="_m_DebugManager" Id="{ca203e19-6035-4ed9-8202-230d7b063be7}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.bDebugModeActive 
+AND NOT THIS^.bActiveStep
+THEN
+
+THIS^.bBreakpointActive:=TRUE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{fa783276-1ea7-4691-bfea-9861fe084b64}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.bDelayActive:=TRUE;
+THIS^.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{f632950c-a1b7-4e11-a63f-7405c169283e}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			E_STEP_STATE_TYPE;
+	TimeOutOptions:		E_STEP_STATE_TIMEOUT_OPTION;
+	TimeOut:			TIME;
+	InfoText:			STRING(20);
+	EnableDebug:		BOOL;
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.bActiveStep THEN
+
+CASE TimeOutOptions OF
+	E_STEP_STATE_TIMEOUT_OPTION.NO_TIME_OUT:
+		THIS^.bTimeOutActiveNoQuit:=FALSE;
+		THIS^.bTimeOutActiveQuit:=FALSE;
+		tTimeOut:=T#0S;
+	E_STEP_STATE_TIMEOUT_OPTION.TIME_OUT_TO_ERROR:
+		THIS^.bTimeOutActiveNoQuit:=TRUE;
+		THIS^.bTimeOutActiveQuit:=FALSE;
+		tTimeOut:=TimeOut;
+	E_STEP_STATE_TIMEOUT_OPTION.TIME_OUT_TO_QUIT:
+		THIS^.bTimeOutActiveNoQuit:=FALSE;
+		THIS^.bTimeOutActiveQuit:=TRUE;	
+		tTimeOut:=TimeOut;
+	E_STEP_STATE_TIMEOUT_OPTION.TIME_OUT_TO_RESET:
+		THIS^.bTimeOutActiveNoQuit:=TRUE;
+		THIS^.bTimeOutActiveQuit:=TRUE;	
+		tTimeOut:=TimeOut;
+	ELSE
+		THIS^.bTimeOutActiveNoQuit:=FALSE;
+		THIS^.bTimeOutActiveQuit:=FALSE;
+		tTimeOut:=T#0S;;		
+END_CASE
+
+THIS^.eStep_Type:=StepType;
+THIS^.strExtraInfo:=InfoText;
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{810baa62-fa64-4dc5-b7d2-35727054465f}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			listLastSteps[i].strStepName:=listLastSteps[i-1].strStepName;
+			listLastSteps[i].tStepTime:=listLastSteps[i-1].tStepTime;
+			listLastSteps[i].tDelayTime:=listLastSteps[i-1].tDelayTime;
+	END_FOR
+	listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	listLastSteps[1].tStepTime:=THIS^.tonStepTime.ET;
+	listLastSteps[1].tStepTime:=THIS^.tonDelay.ET;
+ELSE
+	listLastSteps[0].tStepTime:=THIS^.tonStepTime.ET;
+	listLastSteps[0].tStepTime:=THIS^.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{29e9a5fc-cbd8-44b4-a002-7bbb07ba63d2}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+//DelayTimer und TimeOut Timer verwalten
+bActiveStep:=eLastSeq=eSeq;
+IF NOT bActiveStep THEN
+	bDelayActive:=FALSE;
+	bTimeOutActiveQuit:=FALSE;
+	bTimeOutActiveNoQuit:=FALSE;
+END_IF
+_m_SaveLastStep();
+tonDelay	(IN:=bActiveStep AND bDelayActive, 		PT:=tDelay);
+tonTimeOut	(IN:=bActiveStep AND (bTimeOutActiveNoQuit OR bTimeOutActiveQuit), 	PT:=tTimeOut);
+tonStepTime	(IN:= bActiveStep, PT:= T#1H);
+
+IF tonTimeOut.Q AND FALSE THEN
+	eSeq:=E_STEP_STATE_ESTOP.TIME_OUT;
+END_IF
+
+IF iError<>0 THEN
+	eSeq:=E_STEP_STATE_ESTOP.ERROR;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{959d8e6c-4ef1-486b-91a8-94e9c7f53484}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : 											BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : 											BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	                                						
+    itfOpMode:												I_OP_MODE;
+	itfQuitEStop:											I_BINARY_OUTPUT;
+	itfEStopLoadingLeftState:								I_BINARY_SWITCH;
+	itfEStopLoadingRightState: 								I_BINARY_SWITCH;	
+	itfEStopWeighSideState:									I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode:=						itfOpMode;
+THIS^.itfQuitEStop:=					itfQuitEStop;
+THIS^.itfEStopLoadingLeftState:=		itfEStopLoadingLeftState;	
+THIS^.itfEStopLoadingRightState:= 	    itfEStopLoadingRightState; 	
+THIS^.itfEStopWeighSideState:=		    itfEStopWeighSideState;		]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Quit" Id="{ab81bded-c456-44c0-b444-761ea928ef04}">
+      <Declaration><![CDATA[METHOD M_Quit : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF eSeq=E_STEP_STATE_ESTOP.WAIT_QUIT_ESTOP THEN
+	eSeq:=E_STEP_STATE_ESTOP.SET_QUIT_ESTOP;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{cbf85d69-b26f-4329-8199-c40dcebb0513}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{36224c4a-7b3a-4594-8783-dffaf8a10535}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_E_StopAktiv" Id="{0993f1ff-85a7-4695-b77b-7a861407775b}">
+      <Declaration><![CDATA[PROPERTY P_E_StopAktiv : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{11c9f56f-4f55-4adc-bdb9-bc9116401f21}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF eSeq=E_STEP_STATE_ESTOP.ESTOP_PRESSED THEN
+	P_E_StopAktiv:=TRUE;
+ELSE
+	P_E_StopAktiv:=FALSE;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_E_StopLoadingLeftAktiv" Id="{b7504e4a-a12d-4615-b3e4-36ff29da359c}">
+      <Declaration><![CDATA[PROPERTY P_E_StopLoadingLeftAktiv : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{ce46bc26-6b26-4968-b4ab-18065610663c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_E_StopLoadingLeftAktiv:=NOT THIS^.itfEStopLoadingLeftState.P_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_E_StopLoadingRightAktiv" Id="{9e15750d-4f71-4905-bafa-de768541edeb}">
+      <Declaration><![CDATA[PROPERTY P_E_StopLoadingRightAktiv : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{e0a7ff12-637b-461c-a4ec-56b0a7224d09}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_E_StopLoadingRightAktiv:=NOT THIS^.itfEStopLoadingRightState.P_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_E_StopQuittieren" Id="{842dd984-6538-4d1a-b48d-e6349ed4626f}">
+      <Declaration><![CDATA[PROPERTY P_E_StopQuittieren : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{d26f17a8-aeec-4d44-a92a-aea794dbf42c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF eSeq=E_STEP_STATE_ESTOP.SET_QUIT_ESTOP THEN
+	P_E_StopQuittieren:=TRUE;
+ELSE
+	P_E_StopQuittieren:=FALSE;
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_E_StopWeighSideAktiv" Id="{9b2168ab-b4c2-43b2-ad7f-2af8488e3b90}">
+      <Declaration><![CDATA[PROPERTY P_E_StopWeighSideAktiv : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{e9a34693-d8db-4a0e-bbca-12dacd0e627d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_E_StopWeighSideAktiv:=NOT THIS^.itfEStopWeighSideState.P_Active;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_ErrorCode" Id="{77164016-02d4-494e-9393-9a056d2e0e5e}">
+      <Declaration><![CDATA[PROPERTY P_ErrorCode : UINT
+]]></Declaration>
+      <Get Name="Get" Id="{99286281-367e-4403-a7da-fa224b31e7c8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{57358baf-bb8e-429f-bd58-fe77db81c981}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{ef77edb3-3f43-4143-9f2f-6aeb74b371ed}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:=stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{19e6fc51-b8d5-40c7-b9fe-aa6c452f8dfd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stEvent:=P_Event;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{761170fe-a0dc-4fb1-838f-7dab50776303}">
+      <Declaration><![CDATA[(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{4ef9c63a-49a0-4a43-b17b-fd243f5228ce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{31015d3c-4d63-435b-a0f8-1696952628d7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{21945882-d87b-4744-b144-b3db8f158eff}">
+      <Declaration><![CDATA[(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{5e53c0fa-ca14-4ae0-a0d4-ac967a99040a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:=THIS^.bAck;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{31c92d86-ff55-4877-842f-914ad0089d77}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bAck:=P_Global_Ack;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{d017b435-25d6-44e5-8f34-32ac6c8daae3}">
+      <Declaration><![CDATA[(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{454d6a0b-ead6-4be6-8ae8-35b67a8bcf4a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_ESTOP">
+      <LineId Id="491" Count="16" />
+      <LineId Id="658" Count="0" />
+      <LineId Id="508" Count="8" />
+      <LineId Id="657" Count="0" />
+      <LineId Id="517" Count="17" />
+      <LineId Id="536" Count="1" />
+      <LineId Id="539" Count="77" />
+      <LineId Id="450" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP._m_GeneralStepSetting">
+      <LineId Id="39" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP._m_SequenceManager">
+      <LineId Id="14" Count="20" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.FB_init">
+      <LineId Id="7" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="20" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.M_Quit">
+      <LineId Id="9" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.M_Reset">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.M_Run">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_E_StopAktiv.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_E_StopLoadingLeftAktiv.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_E_StopLoadingRightAktiv.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_E_StopQuittieren.Get">
+      <LineId Id="5" Count="3" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_E_StopWeighSideAktiv.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_ErrorCode.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ESTOP.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

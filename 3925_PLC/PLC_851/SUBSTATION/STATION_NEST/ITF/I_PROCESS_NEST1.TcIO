@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PROCESS_NEST1" Id="{edc1e09d-e3bc-4fed-b47d-6bd9cc91184d}">
+    <Declaration><![CDATA[INTERFACE I_PROCESS_NEST1 EXTENDS I_PROCESS_NEST2_4
+]]></Declaration>
+    <Method Name="M_BreakPressureDet" Id="{9cf48771-97df-4689-a62e-bf8e01864296}">
+      <Declaration><![CDATA[METHOD M_BreakPressureDet : BOOL
+VAR_INPUT
+  stBreakPressureParams:                ST_RECIPE_BREAK_PRESSURE;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_LeakTest2" Id="{54198aa6-b47e-4071-9225-d3be8ab2546d}">
+      <Declaration><![CDATA[METHOD M_LeakTest2 : BOOL
+VAR_INPUT
+  stLeakTest2Params:                 ST_RECIPE_LEAK_TEST2;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_MaxSpeedRecord" Id="{10777362-8ef3-4797-80fb-72a999409b50}">
+      <Declaration><![CDATA[METHOD M_MaxSpeedRecord : BOOL
+VAR_INPUT
+  stEnduranceRunParams:                 ST_RECIPE_ENDURANCE_RUN;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="P_MaxSpeedInMmPerSHP" Id="{8b174bcc-d00c-4edd-a2c0-74bf79ef296b}">
+      <Declaration><![CDATA[PROPERTY P_MaxSpeedInMmPerSHP : REAL]]></Declaration>
+      <Get Name="Get" Id="{a81abbf1-6270-437f-925f-8a4e30d7ff42}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_MaxSpeedInMmPerSWP" Id="{1fd405d8-3434-4d93-8826-41cea2b7e03d}">
+      <Declaration><![CDATA[PROPERTY P_MaxSpeedInMmPerSWP : REAL]]></Declaration>
+      <Get Name="Get" Id="{ae579e16-c194-40d8-a756-1e0c8b5874f2}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{5c3a9d23-7ec2-4a7c-87d2-9a25c630ae32}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a6c72925-121e-4dbc-a83b-37df5879491a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_SpeedEfficiencyFactor" Id="{5511dbfa-41a0-4a2e-9040-544d28053537}">
+      <Declaration><![CDATA[PROPERTY P_SpeedEfficiencyFactor : REAL]]></Declaration>
+      <Get Name="Get" Id="{d2abe799-f5c9-41c6-928d-7361bf23d046}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

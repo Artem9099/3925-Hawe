@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_STEP_STATE" Id="{e2411b6a-d2bd-4230-a82d-4f66bef7d62e}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_STEP_STATE :
+(
+	//GENERAL STEPS
+	BASE := 0,
+  INIT,
+  RESET,
+  
+  SET_READY,
+	SET_BUSY,
+  SET_DONE,
+  
+  ERROR := 999
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

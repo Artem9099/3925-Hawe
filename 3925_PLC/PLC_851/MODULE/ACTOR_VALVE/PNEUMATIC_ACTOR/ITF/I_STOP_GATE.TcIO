@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_STOP_GATE" Id="{d2545a88-d905-4266-b7ff-b4ed84ac9176}">
+    <Declaration><![CDATA[INTERFACE I_STOP_GATE EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_Close" Id="{9010d98f-dc8a-4065-83b3-965b8a7191e0}">
+      <Declaration><![CDATA[METHOD M_Close
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Open" Id="{fc3288e5-9699-4262-a557-3e9d4cda5436}">
+      <Declaration><![CDATA[METHOD M_Open
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Seperate" Id="{959ae008-8bb0-4b17-ad33-8b9bbea65977}">
+      <Declaration><![CDATA[METHOD M_Seperate
+VAR_INPUT
+	iCntCarrier: INT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_CarrierByStopGate" Id="{5d520a10-f556-4676-96fc-f08b795439bc}">
+      <Declaration><![CDATA[PROPERTY P_CarrierByStopGate : BOOL]]></Declaration>
+      <Get Name="Get" Id="{c92f1a23-7dc5-426a-87ea-d9fb607700ee}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Congestion" Id="{e0aa719d-a570-4c33-a415-eb090448b3c6}">
+      <Declaration><![CDATA[PROPERTY P_Congestion : BOOL]]></Declaration>
+      <Get Name="Get" Id="{22a5db1c-d2e3-4446-9e87-26f677ae3798}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

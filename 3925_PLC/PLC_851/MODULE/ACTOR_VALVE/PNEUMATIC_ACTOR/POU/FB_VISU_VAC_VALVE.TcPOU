@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_VISU_VAC_VALVE" Id="{8c62bd0b-96f6-4f37-a5b2-bacd54a8806f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_VISU_VAC_VALVE 
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	itfVacValve: I_VAC_VALVE;
+	itfOpMode: I_OP_MODE;
+	strFullObjectName: STRING;
+	strInfo: STRING;
+	bVacOn: BOOL;
+	bBlowOn: BOOL;
+	bBlowOrVac: BOOL;   
+	bVakOk: BOOL; 
+	bActivateVac: BOOL;
+	bActivateBlow: BOOL;   
+	bActivateOff: BOOL;  
+	bFrameInvisible: BOOL:= TRUE;
+	stEvent: ST_EVENT;                                                                                                                      
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT (itfOpMode.P_OP_MODE_STATE= OP_MODE.MANUAL) THEN
+	bFrameInvisible:=TRUE;
+END_IF
+
+IF itfVacValve.P_STATE= E_PNEU_VAC_VALVE.AllOff THEN
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='14', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	bVacOn:=FALSE;
+	bBlowOn:=FALSE;
+	bVakOk:=FALSE;	
+END_IF
+
+IF itfVacValve.P_STATE= E_PNEU_VAC_VALVE.Blowing THEN
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='13', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	bVacOn:=FALSE;
+	bBlowOn:=TRUE;	
+	bVakOk:=FALSE;
+END_IF
+
+IF itfVacValve.P_STATE= E_PNEU_VAC_VALVE.Vac_ON_NotDetect THEN
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='11', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	bVacOn:=TRUE;
+	bBlowOn:=FALSE;	
+	bVakOk:=FALSE;
+END_IF
+
+IF itfVacValve.P_STATE= E_PNEU_VAC_VALVE.VacDetect THEN
+	strInfo:= F_RET_TXTLIST_ENTRY(strPortNr:= '851', strID:='12', strTxtLstName:= 'TXT_LIST_PNEMATIC_ACTOR');
+	bVacOn:=TRUE;
+	bBlowOn:=FALSE;	
+	bVakOk:=TRUE;
+END_IF
+
+strFullObjectName:= itfVacValve.P_FullObjectPath;
+bBlowOrVac:=bVacOn OR bBlowOn;
+
+IF (itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL) THEN
+	IF bActivateVac THEN
+		itfVacValve.M_Vac();
+	END_IF
+	IF bActivateBlow THEN
+		itfVacValve.M_Blow();
+	END_IF
+	IF bActivateOff THEN
+		itfVacValve.M_AllOff();
+	END_IF
+ELSE
+	bActivateVac:=FALSE;
+	bActivateBlow:= FALSE;
+	bActivateOff:= FALSE;
+END_IF
+
+stEvent:= itfVacValve.P_Event;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{682b31ce-f8d2-4d55-918e-ce2c1024dcab}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfVacValve: I_VAC_VALVE;
+	itfOpMode: I_OP_MODE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfVacValve:= itfVacValve;
+THIS^.itfOpMode:= itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_VISU_VAC_VALVE">
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="3" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="50" Count="2" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="68" Count="1" />
+      <LineId Id="91" Count="3" />
+      <LineId Id="96" Count="1" />
+      <LineId Id="102" Count="3" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="71" Count="19" />
+      <LineId Id="70" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VISU_VAC_VALVE.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

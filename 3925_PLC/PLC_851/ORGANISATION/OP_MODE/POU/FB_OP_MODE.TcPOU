@@ -1,0 +1,471 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_OP_MODE" Id="{a36a83a9-0243-4b32-9838-2824cb7f42fb}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_OP_MODE IMPLEMENTS I_OP_MODE
+
+VAR
+	bAutomatic						: BOOL;
+	bDebug							: BOOL;
+	bManual							: BOOL;
+	bReset							: BOOL;
+	btemporay_Automatic				: BOOL;
+	btemporay_Debug					: BOOL;
+	btemporay_Manual				: BOOL;
+	btemporay_Reset					: BOOL;
+	bInitOK							: BOOL;
+	bMachineStateOK					: BOOL;
+	bControlOn						: BOOL;
+	bEmergancyStop					: BOOL;
+	bFatalError						: BOOL;
+	itfHandleEvents					: I_HANDLE_EVENTS;
+	itfControlOn					: I_BINARY_SWITCH;
+	itfControlIsOn					: I_BINARY_OUTPUT;
+	itfMainAirOk					: I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//Check the Machine State
+bMachineStateOK:= TRUE;
+bControlOn:= TRUE;
+IF NOT itfControlOn.P_Active OR NOT itfMainAirOk.P_Active 
+OR P_EMERGANCY_STOP
+OR itfHandleEvents.P_State >= ENUM_EVENT_TYPE.Rd6_Warning THEN
+	bMachineStateOK:= FALSE;
+	bControlOn:= FALSE;
+	M_OP_MODE_OFF();		
+END_IF
+
+IF bControlOn THEN
+	itfControlIsOn.M_Set();
+ELSE
+	itfControlIsOn.M_Reset();
+END_IF
+	]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{0adc5cd6-da5a-4522-b2a6-97fe9efecc98}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfHandleEvents: I_HANDLE_EVENTS;
+	//itfControlOn: I_BINARY_SWITCH;
+	//itfControlIsOn: I_BINARY_OUTPUT;
+	//itfMainAirOk:  I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfHandleEvents:=itfHandleEvents;
+//THIS^.itfControlOn:= itfControlOn;
+//THIS^.itfControlIsOn:= itfControlIsOn;
+//THIS^.itfMainAirOk:= itfMainAirOk;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_AUTOMATIC" Id="{0e945531-6501-4687-a41d-f51bbc3e3660}">
+      <Declaration><![CDATA[METHOD M_AUTOMATIC
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT bAutomatic 
+	(*AND NOT bDebug 
+	AND NOT bManual 
+	AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Automatic THEN
+			btemporay_Automatic	:= TRUE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;	
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DEBUG" Id="{725c2478-22ce-45e8-8d24-eb1d43e81e9e}">
+      <Declaration><![CDATA[METHOD M_DEBUG
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (*NOT bAutomatic 
+	AND*) NOT bDebug 
+	(*AND NOT bManual 
+	AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Debug THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= TRUE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MANUAL" Id="{99b89dad-2309-4cea-a95c-333c5be52d97}">
+      <Declaration><![CDATA[METHOD M_MANUAL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (*NOT bAutomatic 
+	AND NOT bDebug 
+	AND*) NOT bManual 
+	(*AND NOT bReset*) THEN
+		//set Temporary OP Mode
+		IF NOT btemporay_Manual THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= TRUE;
+			btemporay_Reset		:= FALSE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;	
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OP_MODE_OFF" Id="{12c1b6a3-3454-4244-9ee4-65bd91ae27c6}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_OFF
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//every OP Mode off
+bAutomatic	:= FALSE;
+bDebug		:= FALSE;
+bManual		:= FALSE;
+bReset		:= FALSE;
+btemporay_Automatic	:= FALSE;
+btemporay_Debug		:= FALSE;
+btemporay_Manual	:= FALSE;
+btemporay_Reset		:= FALSE;
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OP_MODE_ON" Id="{5bbb46e9-b3f5-4c76-9f7b-edbef3fc7ed4}">
+      <Declaration><![CDATA[METHOD M_OP_MODE_ON : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Automtic on
+IF btemporay_Automatic THEN
+	bAutomatic			:= TRUE;
+	bDebug				:= FALSE;
+	bManual				:= FALSE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Debug on
+IF btemporay_Debug THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= TRUE;
+	bManual				:= FALSE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Manual on
+IF btemporay_Manual THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= FALSE;
+	bManual				:= TRUE;
+	bReset				:= FALSE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF
+//Reset on
+IF btemporay_Reset THEN
+	bAutomatic			:= FALSE;
+	bDebug				:= FALSE;
+	bManual				:= FALSE;
+	bReset				:= TRUE;
+	btemporay_Automatic := FALSE;
+	btemporay_Debug     := FALSE;
+	btemporay_Manual    := FALSE;
+	btemporay_Reset     := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_RESET" Id="{df52dd66-e21e-4357-9cc5-9c51220c123a}">
+      <Declaration><![CDATA[METHOD M_RESET : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (*NOT bAutomatic 
+	AND NOT bDebug 
+	AND NOT bManual 
+	AND*) NOT bReset THEN
+		//set Temporary OP Mode
+			IF NOT btemporay_Reset THEN
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= TRUE;
+		ELSE
+			btemporay_Automatic	:= FALSE;
+			btemporay_Debug		:= FALSE;
+			btemporay_Manual	:= FALSE;
+			btemporay_Reset		:= FALSE;	
+		END_IF
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CONTROL_ON" Id="{754ad225-f405-4521-94ae-fd2a4efeda16}">
+      <Declaration><![CDATA[
+PROPERTY P_CONTROL_ON : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{59483166-ab26-4d1e-8f53-e3fc8a1569e4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CONTROL_ON:= bControlOn;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{77eb0e0a-8e7e-4cf2-a07d-83b26679ad4c}">
+        <Declaration><![CDATA[
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bControlOn:= P_CONTROL_ON;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_EMERGANCY_STOP" Id="{da5362b8-3d55-4623-b7f6-5afd27a7fa49}">
+      <Declaration><![CDATA[PROPERTY P_EMERGANCY_STOP : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{8a7a399e-303b-47c6-9b43-7584df1971c1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_EMERGANCY_STOP:= bEmergancyStop;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{97d0ce72-1ef4-45d3-bf95-aae0dde63efa}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[bEmergancyStop:=P_EMERGANCY_STOP;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_INIT_OK" Id="{c985751a-44c7-4767-a5d0-afcab2a04f68}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_INIT_OK : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{159bb2f0-5d6e-417c-8ac4-8c91f7f40d57}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_INIT_OK := THIS^.P_OP_MODE_STATE = OP_MODE.INIT_OK;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b4b2cd28-2b69-4877-aad2-2c32a025604a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bInitOK := P_INIT_OK;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_OP_MODE_STATE" Id="{64066940-cf35-455f-a7b5-c87d5d4a5344}">
+      <Declaration><![CDATA[PROPERTY P_OP_MODE_STATE : INT
+]]></Declaration>
+      <Get Name="Get" Id="{31b64ec7-b4b5-4927-9004-c2254447a042}">
+        <Declaration><![CDATA[VAR
+	thne: INT;
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[//MACHINE STATE
+IF P_CONTROL_ON AND THIS^.itfMainAirOk.P_Active THEN
+	P_OP_MODE_STATE:=OP_MODE.MAIN_AIR_OK;
+END_IF
+
+IF P_CONTROL_ON THEN
+	P_OP_MODE_STATE:=OP_MODE.CONTROL_ON;
+END_IF
+
+IF itfHandleEvents.P_State > ENUM_EVENT_TYPE.Rd6_Warning THEN
+	P_OP_MODE_STATE:=OP_MODE.MACHINE_ERROR;
+END_IF
+
+IF P_EMERGANCY_STOP THEN
+	P_OP_MODE_STATE:=OP_MODE.SAFETY_STOP;
+END_IF
+
+
+
+
+
+//OP MODE
+
+IF bAutomatic AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.AUTO;
+END_IF;
+			
+IF bDebug AND bMachineStateOK 		THEN
+	P_OP_MODE_STATE:=OP_MODE.DEBUG;
+END_IF
+
+IF bManual	AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.MANUAL;
+END_IF
+
+IF  bReset	AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.INIT;
+END_IF
+
+IF bInitOK AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.INIT_OK;
+END_IF
+
+//OP MODE TEMP
+
+IF btemporay_Automatic	AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.AUTO_TEMPORARY;
+END_IF
+
+IF btemporay_Debug AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.DEBUG_TEMPORARY;
+END_IF
+
+IF btemporay_Manual	AND bMachineStateOK THEN
+	P_OP_MODE_STATE:=OP_MODE.MANUAL_TEMPORARY;
+END_IF
+
+IF btemporay_Reset AND bMachineStateOK 	THEN
+	P_OP_MODE_STATE:=OP_MODE.RESET_TEMPORARY;
+END_IF
+
+
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_QUIT" Id="{d570285a-4d10-4454-9c22-ccd1f78088a4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_QUIT : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{ce53b326-1d12-45e9-b12d-eda5b278f69d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_OP_MODE">
+      <LineId Id="3" Count="2" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="54" Count="2" />
+      <LineId Id="52" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="34" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_AUTOMATIC">
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_DEBUG">
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_MANUAL">
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_OP_MODE_OFF">
+      <LineId Id="3" Count="9" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_OP_MODE_ON">
+      <LineId Id="3" Count="42" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.M_RESET">
+      <LineId Id="3" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_CONTROL_ON.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_CONTROL_ON.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_EMERGANCY_STOP.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_EMERGANCY_STOP.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_INIT_OK.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_INIT_OK.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_OP_MODE_STATE.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="4" Count="10" />
+      <LineId Id="62" Count="3" />
+      <LineId Id="16" Count="17" />
+      <LineId Id="85" Count="3" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="66" Count="15" />
+      <LineId Id="49" Count="2" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_OP_MODE.P_QUIT.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_ENDURANCERUN_RECORD" Id="{c5ae7290-156c-4cd6-855a-b6e867faac4f}">
+    <Declaration><![CDATA[TYPE ST_ENDURANCERUN_RECORD :
+STRUCT
+	id: DINT;
+	dtTimeStamp: DT;
+	sItem: STRING(255);
+	diCycle: DINT;
+	rWorkPressure: REAL;
+	rLoadPressure: REAL;
+	rPosition: REAL;
+	rTemperature: REAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="U_BytesToWord" Id="{5948d70f-820c-4cff-864a-288dfddfd688}">
+    <Declaration><![CDATA[TYPE U_BytesToWord :
+UNION
+	arByteIn:ARRAY [0..1] OF BYTE;
+	uintOut: UINT;
+END_UNION
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

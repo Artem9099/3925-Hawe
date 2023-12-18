@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_STOP_GATE" Id="{6c87846b-0d5e-4e25-aa10-1fd8ba04cd60}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+{attribute 'no_explicit_call' := 'do not call this POU directly'} 
+FUNCTION_BLOCK FB_STOP_GATE IMPLEMENTS I_STOP_GATE
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+	stEvent: ST_EVENT;
+	bAck: BOOL;
+	itfOpMode:				I_OP_MODE;
+	itfValveOpenStopGate:	I_BASE_VALVE;
+	itfSensorByStopGate: 	I_BINARY_SWITCH;
+	itfSensorCongestion: 	I_BINARY_SWITCH;
+	
+	tonToBase: Tc2_Standard.TON;
+	tToBase: TIME;
+	tonToWork: Tc2_Standard.TON;
+	tToWork: TIME;
+	bViewToBase: BOOL;
+	bViewToWork: BOOL;
+	
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{9f238b89-a8eb-46d7-bade-6edcb946518f}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Close" Id="{f095a0e5-08dd-4684-8d1c-fdc58c1a1dc9}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Close
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Open" Id="{ebfb7bcf-289f-464c-9ad7-d2d176ed6185}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Open
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{8a855a35-0833-4a9f-b28b-df3703f5fc08}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Seperate" Id="{850f7e3b-f59f-42d8-8819-d765e855d36c}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Seperate
+VAR_INPUT
+	iCntCarrier	: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_CarrierByStopGate" Id="{12c045a0-37e2-4fc6-b295-b354b256d416}">
+      <Declaration><![CDATA[
+PROPERTY P_CarrierByStopGate : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{636615a9-835c-4e54-afb4-da33e93c18ec}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Congestion" Id="{5c9d1971-bb29-4ab7-b74b-67da4c761ca2}">
+      <Declaration><![CDATA[
+PROPERTY P_Congestion : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{49c81655-1825-43e4-887c-4e16e2d01db1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{56ff248b-14ab-4b88-bdb6-19da5ba6ca6b}">
+      <Declaration><![CDATA[
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{4cb80f78-8228-4ac5-9fc9-e3f089be378c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{035289c2-1f89-40b7-a2a7-929b15678703}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{f56c6fc3-cc94-4614-8e3c-fe067d613b78}">
+      <Declaration><![CDATA[
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{f486a656-b7e4-4525-bfeb-a4e43f627c94}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{0858d306-68a1-476a-a472-dc50ab23ea4f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{efa49c73-5214-40a8-b58c-ba55eeb009b0}">
+      <Declaration><![CDATA[
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{7cca04fc-de1a-4ff9-aee3-7d1bb32f222a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{40404ff5-97ae-49fa-a21e-54846416180a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{f7d8e9c8-6366-40ae-9bc0-aeca1eeb27f1}">
+      <Declaration><![CDATA[
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{91de927d-ffb9-4641-8c52-fe06e0a5ad71}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_STOP_GATE">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.M_Close">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.M_Open">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.M_Seperate">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_CarrierByStopGate.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_Congestion.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_STOP_GATE.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

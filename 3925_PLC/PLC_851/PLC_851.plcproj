@@ -1,0 +1,850 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5b0045ac-3ba2-4b78-9f56-5c1d2b77f187}</ProjectGuid>
+    <SubObjectsSortedByName>True</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>true</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>PLC_851</Name>
+    <ProgramVersion>3.1.4023.0</ProgramVersion>
+    <Application>{83398d48-859e-4538-9f9a-4ee0a9f92558}</Application>
+    <TypeSystem>{ca096929-729d-46e5-aec2-7a6f0e447a42}</TypeSystem>
+    <Implicit_Task_Info>{48d27fb5-8eba-4f9a-86c4-150e4b13dfc2}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{8b51f3fe-9b9e-4b6f-b24f-666b52055ecc}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{40f8a914-85b3-4a27-84bc-6629930016ce}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{79c1a969-cabd-43e6-9e1b-6150a5350183}</LibraryReferences>
+    <Company>Infineon</Company>
+    <Released>false</Released>
+    <Title>2505</Title>
+    <Author>Utz</Author>
+    <CompilerDefines>VISU_USEPROPERTYINFO</CompilerDefines>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DUTs\ST_RECIPE_ENDURANCE_RUN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_BREAK_PRESSURE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_GENERAL.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_LEAK_TEST1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_LEAK_TEST2.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_PARAMS.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_RECIPE_CYL.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_SETTINGS.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GlobalTextList.TcGTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GVL.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVL_EventLogger.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="MeasureTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\E_POS_STATE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\E_SPEED_TYPE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\E_PRESSURE_TYPE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\ST_CYL_CALIBRATION.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\ST_HMI_CYLINDER.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\ST_HMI_VALVE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\ST_RECORD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\GENERAL\DUT\ST_RECORD_DATA.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\DUT\E_SEQ_CYLINDER.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\DUT\E_SEQ_ENGINE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_CYLINDER_DA_COUNTER.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_CYLINDER_DA_GENERAL.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_CYLINDER_DA_TESTDEV2_4.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_CYLINDER_SA_GENERAL.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_CYLINDER_DA_TESTDEV1.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_ENGINE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_PUMP.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF\I_PUMP_WITH_BYPASS.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU\FB_CYLINDER_DA_COUNTER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU\FB_CYLINDER_DA_TESTDEV1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU\FB_CYLINDER_DA_TESTDEV2_4.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU\FB_PUMP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU\FB_PUMP_WITH_BYPASS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\DUT\E_PNEU_VAC_VALVE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\ITF\I_PNEU_ACTOR.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\ITF\I_STOP_GATE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\ITF\I_VAC_VALVE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_STOP_GATE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_VAC_BLOW_VALVE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_VAC_VALVE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_VISU_CYLINDER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_VISU_STOP_GATE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_VISU_VAC_VALVE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_ZYLINDER_TWO_WAY.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU\FB_ZYLINDER_TWO_WAY_MID_POS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\TXTLIST\TXT_LIST_PNEMATIC_ACTOR.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderGripperDown.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderHorLeft.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderHorLeftCtrl.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderHorRight.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderHorRightCtrl.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderHorRight_MidPos.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderTurn.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderVertDown.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderVertDownCtrl.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderVertUp.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU\VisuCylinderVertUpCtrl.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\DUT\E_SEQ_VALVE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\ITF\I_ENGINE_VALVE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\ITF\I_PRV_PROP.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\ITF\I_VALVE_X_3_PROP.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\ITF\I_VALVE_X_2.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\ITF\I_VALVE_X_3.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\POU\FB_SHUTOFF_VALVE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\POU\FB_PRV_PROP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\POU\FB_VALVE_X_2.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\POU\FB_VALVE_X_3.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\ACTOR_VALVE\VALVE\POU\FB_VALVE_X_3_PROP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BUS_DIAG\POU\FB_EC_MASTER.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BUS_DIAG\POU\FB_VISU_BUS_DIAG.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BUS_DIAG\VISU\VISU_BUS_DIAG_MASTER.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\DUT\U_BytesToWord.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\ITF\I_WORD_TO_BYTES.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\POU\FB_BYTES_TO_WORD.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\POU\FB_WORD_TO_BYTES.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\VISU\FB_VISU_WORD_TO_BYTES.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\BYTES_TO_WORD\VISU\VISU_WORD_TO_BYTES.TcVIS">
+      <SubType>Code</SubType>
+      <DependentUpon>Visualisierungsmanager.TcVMO</DependentUpon>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\DUT\E_SEQ_DATABASE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\ITF\I_MYSQL.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\POU\FB_MYSQL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\FREQUENCE\ITF\I_FREQ_GEN.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\FREQUENCE\POU\FB_FREQENCE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\DUT\E_STEP_STATE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\E_Direction.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\F_Lineare_Regression.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\F_RangeSetpoint.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\INPUTS\ITF\I_BINARY_SWITCH_SENS.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\INPUTS\POU\FB_BINARY_SWITCH_SENS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\SIMU_ANALOG_IN\FB_SIMU_ANALOG_IN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\SIMU_ANALOG_IN\I_SIMU_ANALOG_IN.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\stMesswerte.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\stRampAnalytic.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\GENERAL\ST_CHART.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\HMI\ITF\I_HMI_CTRL.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\HMI\POU\FB_HMI_CTRL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\DUT\E_STEP_STATE_ESTOP.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\GVL_SAFETY.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\ITF\I_ESTOP.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\PIC\IMG_LIST_GATE_LOCK.TcIPO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\POU\FB_ESTOP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\SAFETY\VISU\FB_VISU_GATE_LOCK.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckBounds.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckDivDInt.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckDivLInt.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckDivLReal.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckDivReal.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckLRangeSigned.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckLRangeUnsigned.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckPointer.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckRangeSigned.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IMPLICIT_CHECKS\CheckRangeUnsigned.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\DATE_TIME\ITF\I_CLOCK.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\DATE_TIME\POU\FB_CLOCK.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\DUT\E_SEQ_GENERAL.TcTLEO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\DUT\E_STEP_STATE_TYPE.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\DUT\ST_GENERAL_HMI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\DUT\ST_LAST_STEPS.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\DUT\ST_SEQ_CTRL_GEN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\ITF\FB_Abstract_FunktionCtrl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\ITF\I_FunctionCtrl.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\ITF\I_GENERAL.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\POU\FB_GENERAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\GENERAL\POU\F_CreateObjectName.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\DUT\ST_EVENT_DATA.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\DUT\ST_LOG_EVENT.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\GVL_PARA\OP_MODE.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\ITF\I_OP_MODE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\ITF\I_OP_MODE_PAUSE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\ITF\I_OP_MODE_PAUSE_VISU.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\POU\FB_OP_MODE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\POU\FB_OP_MODE_HMI.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\POU\FB_OP_MODE_PAUSE.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\POU\FB_OP_MODE_PAUSE_VISU.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\POU\FB_OP_MODE_VISU.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\OP_MODE\TXTLIST\TXT_LIST_OP_MODE.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\USER_MANAGER\POU\FB_ESTOP_RESET.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\F_SEND_EVENTLOGGER_MSG.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PROGRAMS\PrgMeasure.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PROGRAMS\PrgOrg.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PROGRAMS\PrgStation.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PROGRAMS\PrgVisu.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProjectInfo.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="SUBSTATION\GVL_SUBSTATION.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\DUT\E_SEQ_PROCESS.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\DUT\ST_ENDURANCERUN_RECORD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\GVL_PROCESS.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\ITF\I_PROCESS_MAIN.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\ITF\I_PROCESS_NEST1.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\ITF\I_PROCESS_NEST2_4.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\POU\FB_PROCESS_MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\POU\FB_SEQ_PROCESS_NEST1.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SUBSTATION\STATION_NEST\POU\FB_SEQ_PROCESS_NEST2_4.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TXT_LIST_OBJECTS.TcTLO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="VisuTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MODULE\SAFETY\PIC\GateLock.jpg">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="PLC851.tmc">
+      <SubType>Content</SubType>
+    </Content>
+    <None Include="PLC_851.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="#GeneralLib">
+      <DefaultResolution>GeneralLib, * (IB-Muhr)</DefaultResolution>
+      <Namespace>GenLib</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="CmpBitmapPool">
+      <DefaultResolution>CmpBitmapPool, * (System)</DefaultResolution>
+      <Namespace>CmpBitmapPool</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="GeneralLib">
+      <DefaultResolution>GeneralLib, * (IB-Muhr)</DefaultResolution>
+      <Namespace>GenLib</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemEventTable">
+      <DefaultResolution>VisuElemEventTable, 1.0.3.0 (System)</DefaultResolution>
+      <Namespace>VisuElemEventTable</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemMeter">
+      <DefaultResolution>VisuElemMeter, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemMeter</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElems">
+      <DefaultResolution>VisuElems, 3.5.13.40 (System)</DefaultResolution>
+      <Namespace>VisuElems</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsSpecialControls">
+      <DefaultResolution>VisuElemsSpecialControls, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemsSpecialControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemsWinControls">
+      <DefaultResolution>VisuElemsWinControls, 3.5.13.20 (System)</DefaultResolution>
+      <Namespace>VisuElemsWinControls</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuElemTextEditor">
+      <DefaultResolution>VisuElemTextEditor, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuElemTextEditor</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="system_visuinputs">
+      <DefaultResolution>visuinputs, 3.5.13.0 (system)</DefaultResolution>
+      <Namespace>visuinputs</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="System_VisuNativeControl">
+      <DefaultResolution>VisuNativeControl, 3.5.13.0 (System)</DefaultResolution>
+      <Namespace>VisuNativeControl</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+      <ResolverGuid>2717eb6a-dd07-4c66-8d8d-cacebd7b18ae</ResolverGuid>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_EtherCAT">
+      <DefaultResolution>Tc2_EtherCAT, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_EtherCAT</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_MC2">
+      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_MC2</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_SerialCom">
+      <DefaultResolution>Tc2_SerialCom, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_SerialCom</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_TcpIp">
+      <DefaultResolution>Tc2_TcpIp, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_TcpIp</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_XmlDataSrv">
+      <DefaultResolution>Tc2_XmlDataSrv, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_XmlDataSrv</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Database">
+      <DefaultResolution>Tc3_Database, * (Beckhoff Automation GmbH)</DefaultResolution>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_EventLogger">
+      <DefaultResolution>Tc3_EventLogger, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_EventLogger</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuDialogs">
+      <DefaultResolution>VisuDialogs, * (System)</DefaultResolution>
+      <Namespace>VisuDialogs</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuSymbols">
+      <DefaultResolution>VisuSymbols, * (System)</DefaultResolution>
+      <Namespace>VisuSymbols</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="VisuUserManagement">
+      <DefaultResolution>VisuUserMgmt, * (System)</DefaultResolution>
+      <Namespace>VisuUserManagement</Namespace>
+      <SystemLibrary>true</SystemLibrary>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MODULE" />
+    <Folder Include="MODULE\ACTOR_VALVE\GENERAL" />
+    <Folder Include="MODULE\ACTOR_VALVE\GENERAL\DUT" />
+    <Folder Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR" />
+    <Folder Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\DUT" />
+    <Folder Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\ITF" />
+    <Folder Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\PARA" />
+    <Folder Include="MODULE\ACTOR_VALVE\HYDRAULIC_ACTOR\POU" />
+    <Folder Include="MODULE\ACTOR_VALVE\VALVE" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\DUT" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\ITF" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\PARA" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\POU" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\TXTLIST" />
+    <Folder Include="MODULE\ACTOR_VALVE\PNEUMATIC_ACTOR\VISU" />
+    <Folder Include="MODULE\ACTOR_VALVE\VALVE\ITF" />
+    <Folder Include="MODULE\ACTOR_VALVE\VALVE\DUT" />
+    <Folder Include="MODULE\ACTOR_VALVE\VALVE\POU" />
+    <Folder Include="MODULE\BUS_DIAG\POU" />
+    <Folder Include="MODULE\BUS_DIAG\VISU" />
+    <Folder Include="MODULE\BYTES_TO_WORD\DUT" />
+    <Folder Include="MODULE\BYTES_TO_WORD\ITF" />
+    <Folder Include="MODULE\BYTES_TO_WORD\VISU" />
+    <Folder Include="MODULE\BYTES_TO_WORD\POU" />
+    <Folder Include="MODULE\DATABASE\DUT" />
+    <Folder Include="MODULE\DATABASE\ITF" />
+    <Folder Include="MODULE\DATABASE\POU" />
+    <Folder Include="MODULE\FREQUENCE" />
+    <Folder Include="MODULE\FREQUENCE\ITF" />
+    <Folder Include="MODULE\FREQUENCE\POU" />
+    <Folder Include="MODULE\GENERAL" />
+    <Folder Include="MODULE\GENERAL\INPUTS" />
+    <Folder Include="MODULE\GENERAL\INPUTS\ITF" />
+    <Folder Include="MODULE\GENERAL\INPUTS\POU" />
+    <Folder Include="MODULE\GENERAL\DUT" />
+    <Folder Include="MODULE\GENERAL\ITF" />
+    <Folder Include="MODULE\GENERAL\POU" />
+    <Folder Include="MODULE\GENERAL\SIMU_ANALOG_IN" />
+    <Folder Include="MODULE\BYTES_TO_WORD" />
+    <Folder Include="MODULE\BUS_DIAG" />
+    <Folder Include="MODULE\ACTOR_VALVE" />
+    <Folder Include="MODULE\DATABASE" />
+    <Folder Include="MODULE\HMI" />
+    <Folder Include="MODULE\HMI\ITF" />
+    <Folder Include="MODULE\HMI\POU" />
+    <Folder Include="MODULE\SAFETY" />
+    <Folder Include="MODULE\SAFETY\DUT" />
+    <Folder Include="MODULE\SAFETY\ITF" />
+    <Folder Include="MODULE\SAFETY\PIC" />
+    <Folder Include="MODULE\SAFETY\VISU" />
+    <Folder Include="MODULE\SAFETY\POU" />
+    <Folder Include="IMPLICIT_CHECKS" />
+    <Folder Include="DUTs" />
+    <Folder Include="ORGANISATION" />
+    <Folder Include="ORGANISATION\DATE_TIME\DUT" />
+    <Folder Include="ORGANISATION\DATE_TIME\ITF" />
+    <Folder Include="ORGANISATION\DATE_TIME\POU" />
+    <Folder Include="ORGANISATION\GENERAL" />
+    <Folder Include="ORGANISATION\GENERAL\ITF" />
+    <Folder Include="ORGANISATION\GENERAL\DUT" />
+    <Folder Include="ORGANISATION\GENERAL\POU" />
+    <Folder Include="ORGANISATION\DATE_TIME" />
+    <Folder Include="ORGANISATION\OP_MODE" />
+    <Folder Include="ORGANISATION\OP_MODE\DUT" />
+    <Folder Include="ORGANISATION\OP_MODE\GVL_PARA" />
+    <Folder Include="ORGANISATION\OP_MODE\ITF" />
+    <Folder Include="ORGANISATION\OP_MODE\POU" />
+    <Folder Include="ORGANISATION\OP_MODE\TXTLIST" />
+    <Folder Include="ORGANISATION\USER_MANAGER" />
+    <Folder Include="ORGANISATION\USER_MANAGER\POU" />
+    <Folder Include="POUs" />
+    <Folder Include="PROGRAMS" />
+    <Folder Include="SUBSTATION" />
+    <Folder Include="SUBSTATION\STATION_NEST" />
+    <Folder Include="SUBSTATION\STATION_NEST\DUT" />
+    <Folder Include="SUBSTATION\STATION_NEST\ITF" />
+    <Folder Include="SUBSTATION\STATION_NEST\POU" />
+  </ItemGroup>
+  <ItemGroup>
+    <LibraryReference Include="Tc2_Standard,3.3.3.0,Beckhoff Automation GmbH">
+      <Namespace>Tc2_Standard</Namespace>
+    </LibraryReference>
+    <LibraryReference Include="VisuSymbols,3.5.10.0,System">
+      <Namespace>VisuSymbols</Namespace>
+    </LibraryReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PinnedGlobalDataType Include="PN_Completion_Clear_Control_Bits_Register_DE9A96D2" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+        <v>{8F99A816-E488-41E4-9FA3-846536012284}</v>
+        <o>
+          <v n="Name">"{8F99A816-E488-41E4-9FA3-846536012284}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{29BD8D0C-3586-4548-BB48-497B9A01693F}</v>
+        <o>
+          <v n="Name">"{29BD8D0C-3586-4548-BB48-497B9A01693F}"</v>
+          <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
+            <v>Rules</v>
+            <o>
+              <v n="Name">"Rules"</v>
+              <d n="SubKeys" t="Hashtable" />
+              <d n="Values" t="Hashtable" />
+            </o>
+          </d>
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{40450F57-0AA3-4216-96F3-5444ECB29763}</v>
+        <o>
+          <v n="Name">"{40450F57-0AA3-4216-96F3-5444ECB29763}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String">
+            <v>ActiveVisuExtensionsLength</v>
+            <v>1</v>
+            <v>ActiveVisuExtensions_0</v>
+            <v>"IR0whWr8bwdyBwAA2CM5uwAAAAC4AQAAabXwRAAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsANgBkADQAMgBlADkAMQA4AC0AZQA2AGEANQAtADQAYgAyAGMALQA5ADEANwBiAC0AZQAwADcAMwAxAGIANwA2ADYAYgAxAGYAfQADDkMAbwBtAHAAYQBuAHkABDBCAGUAYwBrAGgAbwBmAGYAIABBAHUAdABvAG0AYQB0AGkAbwBuACAARwBtAGIASAAFDlYAZQByAHMAaQBvAG4ABg4xAC4AMAAuADMALgAwAAcMQQBjAHQAaQB2AGUACAhiAG8AbwBsAAkITgBhAG0AZQAKJFYAaQBzAHUARQBsAGUAbQBFAHYAZQBuAHQAVABhAGIAbABlAAsWUAByAG8AZgBpAGwAZQBEAGEAdABhAAxMewAxADYAZQA1ADUAYgA2ADAALQA3ADAANAAzAC0ANABhADYAMwAtAGIANgA1AGIALQA2ADEANAA3ADEAMwA4ADcAOABkADQAMgB9AA0STABpAGIAcgBhAHIAaQBlAHMADkx7ADMAYgBmAGQANQA0ADUAOQAtAGIAMAA3AGYALQA0AGQANgBlAC0AYQBlADEAYQAtAGEAOAAzADMANQA2AGEANQA1ADEANAAyAH0AD0x7ADkAYwA5ADUAOAA5ADYAOAAtADIAYwA4ADUALQA0ADEAYgBiAC0AOAA4ADcAMQAtADgAOQA1AGYAZgAxAGYAZQBkAGUAMQBhAH0AEAZpAG4AdAARClUAcwBhAGcAZQASClQAaQB0AGwAZQATDFMAeQBzAHQAZQBtABQSVgBpAHMAdQBFAGwAZQBtAHMAFRhWAGkAcwB1AEUAbABlAG0AQgBhAHMAZQAWFFYAaQBzAHUASQBuAHAAdQB0AHMAFyZEAGUAdgBQAGwAYQBjAGUAaABvAGwAZABlAHIAcwBVAHMAZQBkABgiUABsAHUAZwBpAG4AQwBvAG4AcwB0AHIAYQBpAG4AdABzABlMewA0ADMAZAA1ADIAYgBjAGUALQA5ADQAMgBjAC0ANAA0AGQANwAtADkAZQA5ADQALQAxAGIAZgBkAGYAMwAxADAAZQA2ADMAYwB9ABocQQB0AEwAZQBhAHMAdABWAGUAcgBzAGkAbwBuABsUUABsAHUAZwBpAG4ARwB1AGkAZAAcFlMAeQBzAHQAZQBtAC4ARwB1AGkAZAAdSGEAZgBjAGQANQA0ADQANgAtADQAOQAxADQALQA0AGYAZQA3AC0AYgBiADcAOAAtADkAYgBmAGYAZQBiADcAMABmAGQAMQA3AB4UVQBwAGQAYQB0AGUASQBuAGYAbwAfTHsAYgAwADMAMwA2ADYAYQA4AC0AYgA1AGMAMAAtADQAYgA5AGEALQBhADAAMABlAC0AZQBiADgANgAwADEAMQAxADAANABjADMAfQAgDlUAcABkAGEAdABlAHMAIUx7ADEAOAA2ADgAZgBmAGMAOQAtAGUANABmAGMALQA0ADUAMwAyAC0AYQBjADAANgAtADEAZQAzADkAYgBiADUANQA3AGIANgA5AH0AIkx7AGEANQBiAGQANAA4AGMAMwAtADAAZAAxADcALQA0ADEAYgA1AC0AYgAxADYANAAtADUAZgBjADYAYQBkADIAYgA5ADYAYgA3AH0AIxZPAGIAagBlAGMAdABzAFQAeQBwAGUAJFRVAHAAZABhAHQAZQBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAEYAbwByAEMAbwBuAHYAZQByAHQAaQBiAGwAZQBMAGkAYgByAGEAcgBpAGUAcwAlEEwAaQBiAFQAaQB0AGwAZQAmFEwAaQBiAEMAbwBtAHAAYQBuAHkAJx5VAHAAZABhAHQAZQBQAHIAbwB2AGkAZABlAHIAcwAoOFMAeQBzAHQAZQBtAC4AQwBvAGwAbABlAGMAdABpAG8AbgBzAC4ASABhAHMAaAB0AGEAYgBsAGUAKRJ2AGkAcwB1AGUAbABlAG0AcwAqDHMAeQBzAHQAZQBtACtINgBjAGIAMQBjAGQAZQAxAC0AZAA1AGQAYwAtADQAYQAzAGIALQA5ADAANQA0AC0AMgAxAGYAYQA3ADUANgBhADMAZgBhADQALChJAG4AdABlAHIAZgBhAGMAZQBWAGUAcgBzAGkAbwBuAEkAbgBmAG8ALUx7AGMANgAxADEAZQA0ADAAMAAtADcAZgBiADkALQA0AGMAMwA1AC0AYgA5AGEAYwAtADQAZQAzADEANABiADUAOQA5ADYANAAzAH0ALhhNAGEAagBvAHIAVgBlAHIAcwBpAG8AbgAvGE0AaQBuAG8AcgBWAGUAcgBzAGkAbwBuADAMTABlAGcAYQBjAHkAMTBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAFYAZQByAHMAaQBvAG4ASQBuAGYAbwAyMEwAbwBhAGQATABpAGIAcgBhAHIAaQBlAHMASQBuAHQAbwBQAHIAbwBqAGUAYwB0ADMaQwBvAG0AcABhAHQAaQBiAGkAbABpAHQAeQDQAAIaBtADAS0E0AUBLQbQBwitAdAJAS0K0AsMGgfQDQ4aAUUNDwTQAA8aBEUFEAQBAAAAAAAAAAMAAAAAAAAA0BEQrQIAAADQEgEtCtADAS0T0AAPGgRFBRAEAwAAAAUAAAANAAAAFAAAANAREK0BAAAA0BIBLRTQAwEtE9AADxoERQUQBAMAAAAFAAAADQAAABQAAADQERCtBAAAANASAS0V0AMBLRPQAA8aBEUFEAQDAAAABQAAAA0AAAAAAAAA0BEQrQQAAADQEgEtFtADAS0T0BcIrQFFGBkB0AAZGgJFGhAEAwAAAAUAAAANAAAAAAAAANAbHC0d0B4fGgJFICEC0AAiGgVFBRAEAwAAAAMAAAAAAAAACgAAANAjEK0AAAAA0AkBLSTQJQEtFNAmAS0T0AAiGgVFBRAEAwAAAAMAAAAAAAAACgAAANAjEK0BAAAA0AkBLSTQJQEtFNAmAS0TmicoAUUAAQLQAAEtKdAAAS0q0AAcLSvQLC0aA9AuEK0BAAAA0C8QrRcAAADQMAitANAxLRoD0C4QrQIAAADQLxCtAwAAANAwCK0A0DIIrQDQMwitAA=="</v>
+            <v>ActiveVisuProfile</v>
+            <v>"IR0whWr8bwfwBwAAiD2qpQAAAABVAgAA37x72QAAAAABAAAAAAAAAAEaUwB5AHMAdABlAG0ALgBTAHQAcgBpAG4AZwACTHsAZgA5ADUAYgBiADQAMgA2AC0ANQA1ADIANAAtADQAYgA0ADUALQA5ADQAMAAwAC0AZgBiADAAZgAyAGUANwA3AGUANQAxAGIAfQADCE4AYQBtAGUABDBUAHcAaQBuAEMAQQBUACAAMwAuADEAIABCAHUAaQBsAGQAIAA0ADAAMgA0AC4ANwAFFlAAcgBvAGYAaQBsAGUARABhAHQAYQAGTHsAMQA2AGUANQA1AGIANgAwAC0ANwAwADQAMwAtADQAYQA2ADMALQBiADYANQBiAC0ANgAxADQANwAxADMAOAA3ADgAZAA0ADIAfQAHEkwAaQBiAHIAYQByAGkAZQBzAAhMewAzAGIAZgBkADUANAA1ADkALQBiADAANwBmAC0ANABkADYAZQAtAGEAZQAxAGEALQBhADgAMwAzADUANgBhADUANQAxADQAMgB9AAlMewA5AGMAOQA1ADgAOQA2ADgALQAyAGMAOAA1AC0ANAAxAGIAYgAtADgAOAA3ADEALQA4ADkANQBmAGYAMQBmAGUAZABlADEAYQB9AAoOVgBlAHIAcwBpAG8AbgALBmkAbgB0AAwKVQBzAGEAZwBlAA0KVABpAHQAbABlAA4aVgBpAHMAdQBFAGwAZQBtAE0AZQB0AGUAcgAPDkMAbwBtAHAAYQBuAHkAEAxTAHkAcwB0AGUAbQARElYAaQBzAHUARQBsAGUAbQBzABIwVgBpAHMAdQBFAGwAZQBtAHMAUwBwAGUAYwBpAGEAbABDAG8AbgB0AHIAbwBsAHMAEyhWAGkAcwB1AEUAbABlAG0AcwBXAGkAbgBDAG8AbgB0AHIAbwBsAHMAFCRWAGkAcwB1AEUAbABlAG0AVABlAHgAdABFAGQAaQB0AG8AcgAVIlYAaQBzAHUATgBhAHQAaQB2AGUAQwBvAG4AdAByAG8AbAAWFHYAaQBzAHUAaQBuAHAAdQB0AHMAFwxzAHkAcwB0AGUAbQAYGFYAaQBzAHUARQBsAGUAbQBCAGEAcwBlABkmRABlAHYAUABsAGEAYwBlAGgAbwBsAGQAZQByAHMAVQBzAGUAZAAaCGIAbwBvAGwAGyJQAGwAdQBnAGkAbgBDAG8AbgBzAHQAcgBhAGkAbgB0AHMAHEx7ADQAMwBkADUAMgBiAGMAZQAtADkANAAyAGMALQA0ADQAZAA3AC0AOQBlADkANAAtADEAYgBmAGQAZgAzADEAMABlADYAMwBjAH0AHRxBAHQATABlAGEAcwB0AFYAZQByAHMAaQBvAG4AHhRQAGwAdQBnAGkAbgBHAHUAaQBkAB8WUwB5AHMAdABlAG0ALgBHAHUAaQBkACBIYQBmAGMAZAA1ADQANAA2AC0ANAA5ADEANAAtADQAZgBlADcALQBiAGIANwA4AC0AOQBiAGYAZgBlAGIANwAwAGYAZAAxADcAIRRVAHAAZABhAHQAZQBJAG4AZgBvACJMewBiADAAMwAzADYANgBhADgALQBiADUAYwAwAC0ANABiADkAYQAtAGEAMAAwAGUALQBlAGIAOAA2ADAAMQAxADEAMAA0AGMAMwB9ACMOVQBwAGQAYQB0AGUAcwAkTHsAMQA4ADYAOABmAGYAYwA5AC0AZQA0AGYAYwAtADQANQAzADIALQBhAGMAMAA2AC0AMQBlADMAOQBiAGIANQA1ADcAYgA2ADkAfQAlTHsAYQA1AGIAZAA0ADgAYwAzAC0AMABkADEANwAtADQAMQBiADUALQBiADEANgA0AC0ANQBmAGMANgBhAGQAMgBiADkANgBiADcAfQAmFk8AYgBqAGUAYwB0AHMAVAB5AHAAZQAnVFUAcABkAGEAdABlAEwAYQBuAGcAdQBhAGcAZQBNAG8AZABlAGwARgBvAHIAQwBvAG4AdgBlAHIAdABpAGIAbABlAEwAaQBiAHIAYQByAGkAZQBzACgQTABpAGIAVABpAHQAbABlACkUTABpAGIAQwBvAG0AcABhAG4AeQAqHlUAcABkAGEAdABlAFAAcgBvAHYAaQBkAGUAcgBzACs4UwB5AHMAdABlAG0ALgBDAG8AbABsAGUAYwB0AGkAbwBuAHMALgBIAGEAcwBoAHQAYQBiAGwAZQAsEnYAaQBzAHUAZQBsAGUAbQBzAC1INgBjAGIAMQBjAGQAZQAxAC0AZAA1AGQAYwAtADQAYQAzAGIALQA5ADAANQA0AC0AMgAxAGYAYQA3ADUANgBhADMAZgBhADQALihJAG4AdABlAHIAZgBhAGMAZQBWAGUAcgBzAGkAbwBuAEkAbgBmAG8AL0x7AGMANgAxADEAZQA0ADAAMAAtADcAZgBiADkALQA0AGMAMwA1AC0AYgA5AGEAYwAtADQAZQAzADEANABiADUAOQA5ADYANAAzAH0AMBhNAGEAagBvAHIAVgBlAHIAcwBpAG8AbgAxGE0AaQBuAG8AcgBWAGUAcgBzAGkAbwBuADIMTABlAGcAYQBjAHkAMzBMAGEAbgBnAHUAYQBnAGUATQBvAGQAZQBsAFYAZQByAHMAaQBvAG4ASQBuAGYAbwA0MEwAbwBhAGQATABpAGIAcgBhAHIAaQBlAHMASQBuAHQAbwBQAHIAbwBqAGUAYwB0ADUaQwBvAG0AcABhAHQAaQBiAGkAbABpAHQAeQDQAAIaA9ADAS0E0AUGGgfQBwgaAUUHCQjQAAkaBEUKCwQDAAAABQAAAA0AAAAAAAAA0AwLrQIAAADQDQEtDtAPAS0Q0AAJGgRFCgsEAwAAAAUAAAANAAAAKAAAANAMC60BAAAA0A0BLRHQDwEtENAACRoERQoLBAMAAAAFAAAADQAAAAAAAADQDAutAgAAANANAS0S0A8BLRDQAAkaBEUKCwQDAAAABQAAAA0AAAAUAAAA0AwLrQIAAADQDQEtE9APAS0Q0AAJGgRFCgsEAwAAAAUAAAANAAAAAAAAANAMC60CAAAA0A0BLRTQDwEtENAACRoERQoLBAMAAAAFAAAADQAAAAAAAADQDAutAgAAANANAS0V0A8BLRDQAAkaBEUKCwQDAAAABQAAAA0AAAAAAAAA0AwLrQIAAADQDQEtFtAPAS0X0AAJGgRFCgsEAwAAAAUAAAANAAAAKAAAANAMC60EAAAA0A0BLRjQDwEtENAZGq0BRRscAdAAHBoCRR0LBAMAAAAFAAAADQAAAAAAAADQHh8tINAhIhoCRSMkAtAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAAAAANADAS0n0CgBLRHQKQEtENAAJRoFRQoLBAMAAAADAAAAAAAAAAoAAADQJgutAQAAANADAS0n0CgBLRHQKQEtEJoqKwFFAAEC0AABLSzQAAEtF9AAHy0t0C4vGgPQMAutAQAAANAxC60XAAAA0DIarQDQMy8aA9AwC60CAAAA0DELrQMAAADQMhqtANA0Gq0A0DUarQA="</v>
+          </d>
+        </o>
+        <v>{192FAD59-8248-4824-A8DE-9177C94C195A}</v>
+        <o>
+          <v n="Name">"{192FAD59-8248-4824-A8DE-9177C94C195A}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" />
+        </o>
+        <v>{F66C7017-BDD8-4114-926C-81D6D687E35F}</v>
+        <o>
+          <v n="Name">"{F66C7017-BDD8-4114-926C-81D6D687E35F}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String" cvt="Boolean">
+            <v>FlagUseCurrentStep</v>
+            <v>True</v>
+            <v>FlagUseTrans</v>
+            <v>True</v>
+            <v>FlagUsePause</v>
+            <v>True</v>
+            <v>FlagUseError</v>
+            <v>True</v>
+            <v>FlagUseReset</v>
+            <v>True</v>
+            <v>FlagUseQuitError</v>
+            <v>True</v>
+            <v>FlagUseTipMode</v>
+            <v>True</v>
+            <v>FlagUseErrorStep</v>
+            <v>True</v>
+            <v>FlagUseSFCErrorAnalyzation</v>
+            <v>True</v>
+            <v>FlagUseTip</v>
+            <v>True</v>
+            <v>FlagUseInit</v>
+            <v>True</v>
+            <v>FlagUseSFCErrorAnalyzationTable</v>
+            <v>True</v>
+            <v>FlagUseEnableLimit</v>
+            <v>True</v>
+            <v>FlagUseErrorPOU</v>
+            <v>True</v>
+          </d>
+        </o>
+        <v>{246001F4-279D-43AC-B241-948EB31120E1}</v>
+        <o>
+          <v n="Name">"{246001F4-279D-43AC-B241-948EB31120E1}"</v>
+          <d n="SubKeys" t="Hashtable" />
+          <d n="Values" t="Hashtable" ckt="String">
+            <v>UnicodeStrings</v>
+            <v>false</v>
+            <v>GlobalTextListFilePath</v>
+            <v>""</v>
+            <v>GeneralPropertySupport</v>
+            <v>true</v>
+            <v>GlobalVisuImageFilePath</v>
+            <v>"%APPLICATIONPATH%\"</v>
+            <v>ExtendedSettings</v>
+            <v>true</v>
+          </d>
+        </o>
+      </d>
+      <d n="Values" t="Hashtable" />
+    </o>
+        </Data>
+        <TypeList>
+          <Type n="Boolean">System.Boolean</Type>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="Int32">System.Int32</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
+    </PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

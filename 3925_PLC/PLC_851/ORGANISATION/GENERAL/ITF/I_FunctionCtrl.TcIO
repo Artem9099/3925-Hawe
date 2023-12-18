@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_FunctionCtrl" Id="{75825b88-e051-41e1-bbb8-dba470dbfa85}">
+    <Declaration><![CDATA[INTERFACE I_FunctionCtrl
+]]></Declaration>
+    <Property Name="Busy" Id="{762627fd-1668-4582-b138-af236d08d857}">
+      <Declaration><![CDATA[PROPERTY Busy : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e83284a1-35e1-49c8-a1d5-a7de831f6808}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="Done" Id="{b6b16eae-2766-479d-b5a4-225237641aa4}">
+      <Declaration><![CDATA[PROPERTY Done : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3747324a-74de-4abd-bb9e-c7ce844f3a91}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="Error" Id="{ee917f80-b962-4d3b-9b75-bf215e983ec2}">
+      <Declaration><![CDATA[PROPERTY Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fd7cdf33-ec5b-4539-ad00-a1f8e619c3dd}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="ErrorCode" Id="{790ee994-ef1f-4260-9e9f-10942df8c7b8}">
+      <Declaration><![CDATA[PROPERTY ErrorCode : WORD]]></Declaration>
+      <Get Name="Get" Id="{7adfeff6-cba1-4b46-93f4-6e0e8f7d576b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="Execute" Id="{d0740410-8171-4a25-980b-853f7b4191c7}">
+      <Declaration><![CDATA[METHOD Execute : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="Ready" Id="{f2008cc2-d584-4f85-a508-96e681ebc01b}">
+      <Declaration><![CDATA[PROPERTY Ready : BOOL]]></Declaration>
+      <Get Name="Get" Id="{93880a20-a6dc-4e63-aa89-8441c74272b3}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="Reset" Id="{b6773d63-d6c5-4448-8aee-ddd048cc2087}">
+      <Declaration><![CDATA[METHOD Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

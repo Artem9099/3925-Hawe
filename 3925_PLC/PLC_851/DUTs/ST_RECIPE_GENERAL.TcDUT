@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_GENERAL" Id="{5af6601f-8b36-4e5e-a923-75cacc68533a}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_GENERAL :
+STRUCT
+  uiVentCycles:                   UINT;         // Count of vent cycles
+  rVentDelay:                     REAL;         // Delay on HP/WP
+  rStrokeLengthDetDelay:          REAL;         // Delay timer to determine stroke length
+  rStrokeLengthDetTol:            REAL;         // Stroke length determine tolerance
+  rPressureMin:                   REAL;         // Minimum pressure limit
+  rPressureMax:                   REAL;         // Maximum pressure limit
+  iTemperatureMin:                INT;          // Minimum temperature limit
+  iTemperatureMax:                INT;          // Maximum temperature limit
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

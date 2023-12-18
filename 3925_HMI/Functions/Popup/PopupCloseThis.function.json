@@ -1,0 +1,45 @@
+{
+  "function": {
+    "name": "PopupCloseThis",
+    "namespace": "TcHmi.Functions._9998_HMI",
+    "displayName": "PopupCloseThis",
+    "description": "Close the object it is called from",
+    "waitMode": "Synchronous",
+    "category": "Popup",
+    "returnValue": {
+      "type": "tchmi:general#/definitions/String"
+    },
+    "visible": true,
+    "injectContextObject": false,
+    "arguments": [
+      {
+        "name": "objectAround",
+        "displayName": "objectAround",
+        "type": "tchmi:general#/definitions/Object",
+        "description": "This is an important Parameter which does... This text is used in a tooltip.",
+        "defaultValue": {},
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "./../../../9998_PLC/Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json",
+  "apiVersion": 1,
+  "version": {
+    "full": "0.0.0.0",
+    "major": 0,
+    "minor": 0,
+    "revision": 0,
+    "build": 0
+  },
+  "dependencyFiles": [
+    {
+      "name": "PopupCloseThis.js",
+      "type": "JavaScript",
+      "description": ""
+    }
+  ]
+}

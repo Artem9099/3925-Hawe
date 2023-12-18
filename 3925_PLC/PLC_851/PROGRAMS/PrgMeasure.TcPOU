@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PrgMeasure" Id="{863d4cd8-1269-4ff0-9112-1a4520e9c307}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PrgMeasure
+VAR
+  
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="PrgMeasure">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

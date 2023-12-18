@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <Itf Name="I_WORD_TO_BYTES" Id="{a43b5e70-5fe6-4dce-a4dc-45846dc32ca6}">
+    <Declaration><![CDATA[INTERFACE I_WORD_TO_BYTES EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Property Name="P_VALUE" Id="{bcd2043b-b63c-40d6-9ce0-b1a0aa0acd68}">
+      <Declaration><![CDATA[PROPERTY P_VALUE : LREAL]]></Declaration>
+      <Get Name="Get" Id="{627801ee-5142-4fb4-b340-7c86e309bd09}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{dd891c25-3282-46e7-bf54-a6d32b02b039}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_X_MAX" Id="{b78c3eaa-964b-4c48-92d0-37c7c0b7ffaa}">
+      <Declaration><![CDATA[PROPERTY P_X_MAX : LREAL]]></Declaration>
+      <Get Name="Get" Id="{aacf60ed-588d-4bf9-8747-5be46cc8153f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{842ff3e2-ef13-4e71-8bb7-5d1264101f94}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_X_MIN" Id="{9eccb532-fce0-44ca-b2f3-e9746fc8a442}">
+      <Declaration><![CDATA[PROPERTY P_X_MIN : LREAL]]></Declaration>
+      <Get Name="Get" Id="{14a32970-45ea-41d9-88bf-25b3663510bd}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{194d443a-5a42-40d1-9b8f-4f6d66ebb5e0}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_Y_MAX" Id="{40fa60d2-c3b4-4c4d-8d6d-01cf9d60370b}">
+      <Declaration><![CDATA[PROPERTY P_Y_MAX : LREAL]]></Declaration>
+      <Get Name="Get" Id="{74338adc-331a-485e-84d4-dbe12d2bbd7a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{c8c8c7eb-c55f-4a13-bec8-ae6061489e3f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+    <Property Name="P_Y_MIN" Id="{ce7075ad-edfc-4c45-b3dd-6d9b5dc86b6e}">
+      <Declaration><![CDATA[PROPERTY P_Y_MIN : LREAL]]></Declaration>
+      <Get Name="Get" Id="{e004b219-9fb3-4ff5-8fc8-59bd65246952}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{280c2acb-b172-4d21-8c69-87887a94516a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

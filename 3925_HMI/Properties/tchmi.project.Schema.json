@@ -1,0 +1,1344 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "Symbol_Of_Object": {
+      "allOf": [
+        {
+          "$ref": "tchmi:framework#/definitions/Symbol"
+        },
+        {
+          "frameworkSymbolSubType": {
+            "$ref": "tchmi:general#/definitions/Object"
+          }
+        }
+      ]
+    },
+    "Cylinder": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\Cylinder\\Cylinder_Popup.usercontrol.json",
+      "id": "tchmi:project#/definitions/Cylinder",
+      "type": "object"
+    },
+    "Cylinder_Popup": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\Cylinder\\Cylinder_Popup.usercontrol.json",
+      "id": "tchmi:project#/definitions/Cylinder_Popup",
+      "type": "object"
+    },
+    "Cylinder_Info": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\Cylinder\\Cylinder_Info.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/Cylinder_Info"
+    },
+    "Cylinder_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\Cylinder\\Cylinder.usercontrol.json",
+      "id": "tchmi:project#/definitions/Cylinder_1",
+      "type": "object"
+    },
+    "CylinderValveUnit_Info": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\Cylinder\\CylinderValveUnit_Info.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/CylinderValveUnit_Info"
+    },
+    "ucCylinderValveUnit_0": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\ucCylinderValveUnit.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucCylinderValveUnit_0"
+    },
+    "ucCylinderValveUnit_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Cylinder\\ucCylinder.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucCylinderValveUnit_1"
+    },
+    "ucValve_General": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve_General.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_General",
+      "type": "object"
+    },
+    "ucValve_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucValve_1"
+    },
+    "ucActuation_spring": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveActuation\\ucActuation_spring.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucActuation_spring",
+      "type": "object"
+    },
+    "ucValve_2-2_NC": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_2-2_NC.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_2-2_NC",
+      "type": "object"
+    },
+    "ucValve_4-2": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_4-2.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_4-2",
+      "type": "object"
+    },
+    "ucValve_2": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_2",
+      "type": "object"
+    },
+    "ucValve_3": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_3",
+      "type": "object"
+    },
+    "ucValve_4-3_NC": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_4-3_NC.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_4-3_NC",
+      "type": "object"
+    },
+    "ucValveCylinderUnit": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\3925_CylValveUnit\\ucValveCylinderUnit.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_General": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\3925_CylValveUnit\\ucValveCylinderUnit_General.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_General",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_Popup": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\3925_CylValveUnit\\ucValveCylinderUnit_Popup.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_Popup",
+      "type": "object"
+    },
+    "ucCylinder_General": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Cylinder\\ucCylinder_General.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucCylinder_General",
+      "type": "object"
+    },
+    "CylinderCfg": {
+      "properties": {
+        "bAdjustableDamping": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bBuiltInSpring": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bDoubleActingCylinder": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "sName": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "bVisiblePressureOk": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bVisibleHP": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bVisibleWP": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bVisibleCurrentPos": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bVisibleCurrentPressure": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        }
+      },
+      "type": "object",
+      "id": "tchmi:project#/definitions/CylinderCfg"
+    },
+    "PLC1.GenLib.I_OP_MODE": {
+      "properties": {},
+      "type": "object"
+    },
+    "PLC1.E_HMI_VALVE_TYPE": {
+      "generate_implicit_init_function": "",
+      "qualified_only": "",
+      "strict": "",
+      "type": "integer",
+      "enum": [
+        "0",
+        "21",
+        "22",
+        "31",
+        "32",
+        "33",
+        "41",
+        "42",
+        "43",
+        "51",
+        "52"
+      ],
+      "options": [
+        {
+          "value": 0,
+          "label": "valve_off"
+        },
+        {
+          "value": 21,
+          "label": "valve_2_2_NC"
+        },
+        {
+          "value": 22,
+          "label": "valve_2_2_NO"
+        },
+        {
+          "value": 31,
+          "label": "valve_3_2_NC"
+        },
+        {
+          "value": 32,
+          "label": "valve_3_2_NO"
+        },
+        {
+          "value": 33,
+          "label": "valve_3_3_NC"
+        },
+        {
+          "value": 41,
+          "label": "valve_4_2"
+        },
+        {
+          "value": 42,
+          "label": "valve_4_3_FMP"
+        },
+        {
+          "value": 43,
+          "label": "valve_4_3_NC"
+        },
+        {
+          "value": 51,
+          "label": "valve_5_2"
+        },
+        {
+          "value": 52,
+          "label": "valve_5_3_NC"
+        }
+      ]
+    },
+    "PLC1.ST_HMI_VALVE": {
+      "properties": {
+        "bPressureOk": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 9
+            }
+          ]
+        },
+        "bToHP": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Control",
+              "propertyOrder": 2
+            }
+          ]
+        },
+        "bToSetPos": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 4
+            }
+          ]
+        },
+        "bToWP": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 3
+            }
+          ]
+        },
+        "diPressure": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/DINT"
+            },
+            {
+              "propertyOrder": 10
+            }
+          ]
+        },
+        "eValveType": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.E_HMI_VALVE_TYPE"
+            },
+            {
+              "propertyOrder": 7
+            }
+          ]
+        },
+        "itfOpMode": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.GenLib.I_OP_MODE"
+            },
+            {
+              "comment": "OP mode",
+              "propertyOrder": 1
+            }
+          ]
+        },
+        "lrPosToSet": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/LREAL"
+            },
+            {
+              "propertyOrder": 6
+            }
+          ]
+        },
+        "sState": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "comment": "Info",
+              "propertyOrder": 8
+            }
+          ]
+        },
+        "uiSpeedInPercent": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/UINT"
+            },
+            {
+              "propertyOrder": 5
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ucValve_4": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_4",
+      "type": "object"
+    },
+    "ucValve_5": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_5",
+      "type": "object"
+    },
+    "ucValve_6": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_6",
+      "type": "object"
+    },
+    "ucValve_3-2_NC": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_3-2_NC.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucValve_3-2_NC"
+    },
+    "ucValve_3-2_NO": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_3-2_NO.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucValve_3-2_NO"
+    },
+    "ucValve_3-3_NC": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_3-3_NC.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucValve_3-3_NC"
+    },
+    "ucValve_4-3_FMP": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveBase\\ucValve_4-3_FMP.usercontrol.json",
+      "type": "object",
+      "id": "tchmi:project#/definitions/ucValve_4-3_FMP"
+    },
+    "ucActuation_eMagnet_0": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveActuation\\ucActuation_eMagnet.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucActuation_eMagnet_0",
+      "type": "object"
+    },
+    "ucValve_7": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ucValve.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValve_7",
+      "type": "object"
+    },
+    "ucActuation_eMagnet_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\Valve\\ValveActuation\\ucActuation_eMagnet.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucActuation_eMagnet_1",
+      "type": "object"
+    },
+    "eValveActuationType": {
+      "type": "string",
+      "enum": [
+        "Off",
+        "General",
+        "Button",
+        "Handle",
+        "Pull Knob",
+        "Pull and Push Knob",
+        "Pull and Pedal",
+        "Tappet",
+        "Tappet Adjust Stroke",
+        "Spring",
+        "Roller Tappet",
+        "Roller Lever",
+        "Direct",
+        "Indirectly Hydraulic",
+        "Indirectly Pneumatic",
+        "E-Magnet",
+        "E-Motor",
+        "E-Magnet and Pilot Valve"
+      ],
+      "id": "tchmi:project#/definitions/eValveActuationType"
+    },
+    "eValveType": {
+      "type": "string",
+      "enum": [
+        "Valve Off",
+        "Valve 2/2 NC",
+        "Valve 2/2 NO",
+        "Valve 3/2 NC",
+        "Valve 3/2 NO",
+        "Valve 3/3 NC",
+        "Valve 4/2",
+        "Valve 4/3 FMP",
+        "Valve 4/3 NC",
+        "Valve 5/2",
+        "Valve 5/3 NC"
+      ],
+      "id": "tchmi:project#/definitions/eValveType"
+    },
+    "ucControlPanel": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\ControlPanel\\ucControlPanel.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucControlPanel",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\CylinderValveUnit\\ucValveCylinderUnit.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_1",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_General_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\CylinderValveUnit\\ucValveCylinderUnit_General.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_General_1",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_Popup_1": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\CylinderValveUnit\\ucValveCylinderUnit_Popup.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_Popup_1",
+      "type": "object"
+    },
+    "GeneralCfg": {
+      "properties": {
+        "nBtnHeight": {
+          "$ref": "tchmi:general#/definitions/Number"
+        },
+        "nBtnWidth": {
+          "$ref": "tchmi:general#/definitions/Number"
+        },
+        "nContentHeight": {
+          "$ref": "tchmi:general#/definitions/Number"
+        },
+        "nContentWidth": {
+          "$ref": "tchmi:general#/definitions/Number"
+        },
+        "pImage": {
+          "$ref": "tchmi:framework#/definitions/Path"
+        },
+        "sComponentType": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "sInfo": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "sItemNumber": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "sManufacturer": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "sTitle": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "nIndex": {
+          "$ref": "tchmi:general#/definitions/Number"
+        }
+      },
+      "type": "object",
+      "id": "tchmi:project#/definitions/GeneralCfg"
+    },
+    "ValveCfg": {
+      "properties": {
+        "bAdjustableLeft": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bAdjustableRight": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bReverseFlow": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "eValveActuation1Type": {
+          "$ref": "tchmi:project#/definitions/eValveActuationType"
+        },
+        "eValveActuation2Type": {
+          "$ref": "tchmi:project#/definitions/eValveActuationType"
+        },
+        "eValveActuation3Type": {
+          "$ref": "tchmi:project#/definitions/eValveActuationType"
+        },
+        "eValveActuation4Type": {
+          "$ref": "tchmi:project#/definitions/eValveActuationType"
+        },
+        "eValveType": {
+          "$ref": "tchmi:project#/definitions/eValveType"
+        },
+        "sName": {
+          "$ref": "tchmi:general#/definitions/String"
+        },
+        "bLockWP": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        },
+        "bLockHP": {
+          "$ref": "tchmi:general#/definitions/Boolean"
+        }
+      },
+      "type": "object",
+      "id": "tchmi:project#/definitions/ValveCfg"
+    },
+    "PLC1.ARRAY_0..10_OF-INT": {
+      "items": {
+        "$ref": "tchmi:general#/definitions/INT"
+      },
+      "type": "array",
+      "minItems": 11,
+      "maxItems": 11
+    },
+    "PLC1.ARRAY_0..49_OF-ST_LAST_STEPS": {
+      "items": {
+        "$ref": "tchmi:project#/definitions/PLC1.ST_LAST_STEPS"
+      },
+      "type": "array",
+      "minItems": 50,
+      "maxItems": 50
+    },
+    "PLC1.E_SEQ_GENERAL": {
+      "generate_implicit_init_function": "",
+      "qualified_only": "",
+      "strict": "",
+      "textlistenumeration": "",
+      "to_string": "",
+      "to_string_function": "__TO_STRING__160",
+      "to_wstring_function": "__TO_WSTRING__160",
+      "type": "integer",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "options": [
+        {
+          "value": 0,
+          "label": "READY"
+        },
+        {
+          "value": 1,
+          "label": "EXECUTE"
+        },
+        {
+          "value": 2,
+          "label": "RESET"
+        },
+        {
+          "value": 3,
+          "label": "BUSY"
+        },
+        {
+          "value": 4,
+          "label": "DONE"
+        },
+        {
+          "value": 5,
+          "label": "ERROR"
+        },
+        {
+          "value": 6,
+          "label": "TIME_OUT"
+        }
+      ]
+    },
+    "PLC1.E_STEP_STATE_TYPE": {
+      "generate_implicit_init_function": "",
+      "qualified_only": "",
+      "strict": "",
+      "type": "integer",
+      "enum": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "options": [
+        {
+          "value": 0,
+          "label": "BASE"
+        },
+        {
+          "value": 1,
+          "label": "RESET"
+        },
+        {
+          "value": 2,
+          "label": "INIT"
+        },
+        {
+          "value": 3,
+          "label": "INIT_OK"
+        },
+        {
+          "value": 4,
+          "label": "INIT_RUN"
+        },
+        {
+          "value": 5,
+          "label": "WAIT_RUN"
+        },
+        {
+          "value": 6,
+          "label": "WAIT_USER_ACTION"
+        },
+        {
+          "value": 7,
+          "label": "RUN"
+        },
+        {
+          "value": 8,
+          "label": "ERROR_RUN"
+        },
+        {
+          "value": 9,
+          "label": "ERROR"
+        },
+        {
+          "value": 10,
+          "label": "RUN_ALWAYS"
+        }
+      ]
+    },
+    "PLC1.ST_LAST_STEPS": {
+      "properties": {
+        "bBreakpointActive": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 6
+            }
+          ]
+        },
+        "bDisableBreakpoint": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 7
+            }
+          ]
+        },
+        "eStepType": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 5
+            }
+          ]
+        },
+        "iStepID": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/INT"
+            },
+            {
+              "propertyOrder": 2
+            }
+          ]
+        },
+        "strStepName": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "propertyOrder": 1
+            }
+          ]
+        },
+        "tDelayTime": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 4
+            }
+          ]
+        },
+        "tStepTime": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 3
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "PLC1.ST_SEQ_CTRL_GEN": {
+      "properties": {
+        "bActiveStep": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Debug Option",
+              "propertyOrder": 16
+            }
+          ]
+        },
+        "bBreakpointActive": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 25
+            }
+          ]
+        },
+        "bDebugAcitve": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Debug Option",
+              "propertyOrder": 17
+            }
+          ]
+        },
+        "bDebugModeActive": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 23
+            }
+          ]
+        },
+        "bDebugNext": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Debug Option",
+              "propertyOrder": 18
+            }
+          ]
+        },
+        "bDebugResume": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 26
+            }
+          ]
+        },
+        "bDelayActive": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Timer Option",
+              "propertyOrder": 13
+            }
+          ]
+        },
+        "bTimeOutActiveNoQuit": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Timer Option",
+              "propertyOrder": 15
+            }
+          ]
+        },
+        "bTimeOutActiveQuit": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Timer Option",
+              "propertyOrder": 14
+            }
+          ]
+        },
+        "bWaitForBreakpoint": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 24
+            }
+          ]
+        },
+        "eActiveSeqState": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.E_SEQ_GENERAL"
+            },
+            {
+              "propertyOrder": 3
+            }
+          ]
+        },
+        "eLastActiveSeqState": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.E_SEQ_GENERAL"
+            },
+            {
+              "propertyOrder": 4
+            }
+          ]
+        },
+        "eStep_Type": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.E_STEP_STATE_TYPE"
+            },
+            {
+              "propertyOrder": 22
+            }
+          ]
+        },
+        "iError": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/INT"
+            },
+            {
+              "comment": "ERROR-CODE",
+              "propertyOrder": 19
+            }
+          ]
+        },
+        "iInternalSeqStateCase": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/INT"
+            },
+            {
+              "propertyOrder": 5
+            }
+          ]
+        },
+        "iLastInternalSeqStateCase": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/INT"
+            },
+            {
+              "propertyOrder": 6
+            }
+          ]
+        },
+        "listBreakpoint": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.ARRAY_0..10_OF-INT"
+            },
+            {
+              "propertyOrder": 27
+            }
+          ]
+        },
+        "listLastSteps": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.ARRAY_0..49_OF-ST_LAST_STEPS"
+            },
+            {
+              "propertyOrder": 20
+            }
+          ]
+        },
+        "strExtraInfo": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "propertyOrder": 21
+            }
+          ]
+        },
+        "strObject": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "propertyOrder": 1
+            }
+          ]
+        },
+        "strObjectPath": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "propertyOrder": 2
+            }
+          ]
+        },
+        "tDelay": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 10
+            }
+          ]
+        },
+        "tTimeOut": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 11
+            }
+          ]
+        },
+        "tTimeOutExt": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 12
+            }
+          ]
+        },
+        "tonDelay": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.Tc2_Standard.TON"
+            },
+            {
+              "propertyOrder": 7
+            }
+          ]
+        },
+        "tonStepTime": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.Tc2_Standard.TON"
+            },
+            {
+              "propertyOrder": 9
+            }
+          ]
+        },
+        "tonTimeOut": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.Tc2_Standard.TON"
+            },
+            {
+              "propertyOrder": 8
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "PLC1.Tc2_Standard.TON": {
+      "properties": {
+        "ET": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "comment": "elapsed time",
+              "propertyOrder": 4
+            }
+          ]
+        },
+        "IN": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "starts timer with rising edge, resets timer with falling edge",
+              "propertyOrder": 1
+            }
+          ]
+        },
+        "M": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 5
+            }
+          ]
+        },
+        "PT": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "comment": "time to pass, before Q is set",
+              "propertyOrder": 2
+            }
+          ]
+        },
+        "Q": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "gets TRUE, delay time (PT) after a rising edge at IN",
+              "propertyOrder": 3
+            }
+          ]
+        },
+        "StartTime": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/TIME"
+            },
+            {
+              "propertyOrder": 6
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "ucValveCylinderUnit_Popup_2": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\CylinderValveUnit\\ucValveCylinderUnit_Popup.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_Popup_2",
+      "type": "object"
+    },
+    "ucValveCylinderUnit_2": {
+      "frameworkControlNamespace": "TcHmi.Controls.Beckhoff",
+      "frameworkControlType": "TcHmi.Controls.System.TcHmiUserControl",
+      "frameworkInstanceOf": "TcHmi.Controls.System.TcHmiControl",
+      "frameworkUserControlConfig": "Module\\CylinderValveUnit\\CylinderValveUnit\\ucValveCylinderUnit.usercontrol.json",
+      "id": "tchmi:project#/definitions/ucValveCylinderUnit_2",
+      "type": "object"
+    },
+    "PLC1.I_OP_MODE": {
+      "properties": {},
+      "type": "object"
+    },
+    "PLC1.ST_HMI_CYLINDER": {
+      "properties": {
+        "bInHP": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 12
+            }
+          ]
+        },
+        "bInWP": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 11
+            }
+          ]
+        },
+        "bPressureOk": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 14
+            }
+          ]
+        },
+        "bStopTriggered": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 5
+            }
+          ]
+        },
+        "bToHPTriggered": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "comment": "Control",
+              "propertyOrder": 2
+            }
+          ]
+        },
+        "bToSetPosTriggered": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 4
+            }
+          ]
+        },
+        "bToWPTriggered": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            {
+              "propertyOrder": 3
+            }
+          ]
+        },
+        "itfOpMode": {
+          "allOf": [
+            {
+              "$ref": "tchmi:project#/definitions/PLC1.I_OP_MODE"
+            },
+            {
+              "comment": "OP mode",
+              "propertyOrder": 1
+            }
+          ]
+        },
+        "lrCurrentPos": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/LREAL"
+            },
+            {
+              "propertyOrder": 10
+            }
+          ]
+        },
+        "lrMaxPosVal": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/LREAL"
+            },
+            {
+              "propertyOrder": 9
+            }
+          ]
+        },
+        "lrMinPosVal": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/LREAL"
+            },
+            {
+              "comment": "Info",
+              "propertyOrder": 8
+            }
+          ]
+        },
+        "lrPosToSet": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/LREAL"
+            },
+            {
+              "propertyOrder": 7
+            }
+          ]
+        },
+        "rPressure": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/REAL"
+            },
+            {
+              "propertyOrder": 15
+            }
+          ]
+        },
+        "sState": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            {
+              "propertyOrder": 13
+            }
+          ]
+        },
+        "uiSpeedInPercent": {
+          "allOf": [
+            {
+              "$ref": "tchmi:general#/definitions/UINT"
+            },
+            {
+              "propertyOrder": 6
+            }
+          ]
+        }
+      },
+      "type": "object"
+    }
+  }
+}

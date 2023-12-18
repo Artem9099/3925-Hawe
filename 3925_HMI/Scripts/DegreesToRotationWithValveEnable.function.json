@@ -1,0 +1,39 @@
+{
+  "function": {
+    "name": "DegreesToRotationWithValveEnable",
+    "displayName": "DegreesToRotationWithValveEnable",
+    "visible": true,
+    "category": "Utilities",
+    "waitMode": "Synchronous",
+    "injectContextObject": false,
+    "description": "",
+    "returnValue": {
+      "type": "tchmi:framework#/definitions/TransformList"
+    },
+    "arguments": [
+      {
+        "name": "Degrees",
+        "displayName": "Degrees",
+        "type": "tchmi:general#/definitions/Number",
+        "description": "Degrees input 0-360",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      },
+      {
+        "name": "ValveEnable",
+        "displayName": "ValveEnable",
+        "type": "tchmi:general#/definitions/Integer",
+        "description": "If 1 then Valve",
+        "defaultValue": 0,
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json"
+}

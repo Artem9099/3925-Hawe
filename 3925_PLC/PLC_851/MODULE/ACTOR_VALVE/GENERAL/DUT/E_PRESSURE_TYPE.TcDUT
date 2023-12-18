@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_PRESSURE_TYPE" Id="{d133ab2a-a887-434d-87e8-7eb2122c2117}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_PRESSURE_TYPE :
+(
+  VALUE,
+	BAR,
+  FORCE,
+  PERCENT
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

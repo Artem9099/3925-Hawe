@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <TextList Name="TXT_LIST_OP_MODE" Id="{d99f2127-786d-40dc-b5f2-fb061556cfe7}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="TextListObject">
+          <v n="UniqueIdGenerator">"0"</v>
+          <l n="TextList" t="ArrayList" cet="TextListRow">
+            <o>
+              <v n="TextID">"7"</v>
+              <v n="TextDefault">"NOT-HALT"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>EMERGANCY-STOP</v>
+                <v>NOT-HALT</v>
+                <v></v>
+                <v>急停</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"8"</v>
+              <v n="TextDefault">"MASCHINEN-FEHLER"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>FATAL ERROR</v>
+                <v>MASCHINEN-FEHLER</v>
+                <v></v>
+                <v>致命错误</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"9"</v>
+              <v n="TextDefault">"STEUERUNG EIN"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>CONTROL ON</v>
+                <v>STEUERUNG EIN</v>
+                <v></v>
+                <v>控制开启</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"1"</v>
+              <v n="TextDefault">"AUTOMATIK "</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>AUTOMATIC</v>
+                <v>AUTOMATIK </v>
+                <v></v>
+                <v>自动</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"2"</v>
+              <v n="TextDefault">"HANDBETRIEB"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>MANUAL MODE</v>
+                <v>HANDBETRIEB</v>
+                <v></v>
+                <v>手动模式</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"3"</v>
+              <v n="TextDefault">"TIPPBETRIEB"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>DEBUG MODE</v>
+                <v>TIPPBETRIEB</v>
+                <v></v>
+                <v>DEBUG MODE</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"4"</v>
+              <v n="TextDefault">"GRUNDSTELLUNGSFAHRT"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>INITIAL POS RIDE</v>
+                <v>GRUNDSTELLUNGSFAHRT</v>
+                <v></v>
+                <v>复位</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"5"</v>
+              <v n="TextDefault">"GRUNDSTELLUNG ERREICHT"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>INITIAL POS REACH</v>
+                <v>GRUNDSTELLUNG ERREICHT</v>
+                <v></v>
+                <v>达成基本要求</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"101"</v>
+              <v n="TextDefault">"GST"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>INIT</v>
+                <v>GST</v>
+                <v></v>
+                <v>的INIT</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"102"</v>
+              <v n="TextDefault">"AUTO"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>AUTO</v>
+                <v>AUTO</v>
+                <v></v>
+                <v>自动</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"103"</v>
+              <v n="TextDefault">"HAND"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>MANUAL</v>
+                <v>HAND</v>
+                <v></v>
+                <v>手册</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"104"</v>
+              <v n="TextDefault">"TIPP"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>DEBUG</v>
+                <v>TIPP</v>
+                <v></v>
+                <v>去调查</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"105"</v>
+              <v n="TextDefault">"START"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>START</v>
+                <v>START</v>
+                <v></v>
+                <v>开始</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"106"</v>
+              <v n="TextDefault">"STOP"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>STOP</v>
+                <v>STOP</v>
+                <v></v>
+                <v>停</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"11"</v>
+              <v n="TextDefault">"VORWAHL AUTOMATIK"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>SELECTION AUTOMATIC</v>
+                <v>VORWAHL AUTOMATIK</v>
+                <v></v>
+                <v>自动选择</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"12"</v>
+              <v n="TextDefault">"VORWAHL HAND"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>SELECTION MANUAL</v>
+                <v>VORWAHL HAND</v>
+                <v></v>
+                <v>选择手册</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"13"</v>
+              <v n="TextDefault">"VORWAHL TIPPBETRIEB"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>SELECTION DEBUG</v>
+                <v>VORWAHL TIPPBETRIEB</v>
+                <v></v>
+                <v>选择调试</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"14"</v>
+              <v n="TextDefault">"VORWAHL GRUNDSTELLUNGSFAHRT"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>SLECTION INITIAL POS RIDE</v>
+                <v>VORWAHL GRUNDSTELLUNGSFAHRT</v>
+                <v></v>
+                <v>选择初始POS RIDE</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"0"</v>
+              <v n="TextDefault">"MASCHINE EINSCHALTEN"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>TURN ON THE MACHINE</v>
+                <v>MASCHINE EINSCHALTEN</v>
+                <v></v>
+                <v>启动机器</v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"107"</v>
+              <v n="TextDefault">"PAUSE"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>PAUSE</v>
+                <v>PAUSE</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"6"</v>
+              <v n="TextDefault">"PAUSE"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>PAUSE</v>
+                <v>PAUSE</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"10"</v>
+              <v n="TextDefault">"DRUCK OK"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>DRUCK OK</v>
+                <v>MAIN AIR OK</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">""</v>
+              <v n="TextDefault">""</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v></v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+          </l>
+          <l n="Languages" t="ArrayList" cet="String">
+            <v>en</v>
+            <v>de</v>
+            <v>ch</v>
+            <v>zh_CHS</v>
+          </l>
+          <v n="GuidInit">{873a334d-654f-496e-b689-e6c1a9e4fa3a}</v>
+          <v n="GuidReInit">{b1bc11c0-782b-4dac-b522-169736a570d4}</v>
+          <v n="GuidExitX">{301d151c-58cb-4c43-b2c7-062458ae7cad}</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="String">System.String</Type>
+        <Type n="TextListObject">{2bef0454-1bd3-412a-ac2c-af0f31dbc40f}</Type>
+        <Type n="TextListRow">{53da1be7-ad25-47c3-b0e8-e26286dad2e0}</Type>
+      </TypeList>
+    </XmlArchive>
+  </TextList>
+</TcPlcObject>

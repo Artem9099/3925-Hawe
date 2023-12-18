@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_OP_MODE_PAUSE_VISU" Id="{98a1ed61-d86f-4e46-a6b6-7efb36e2fece}">
+    <Declaration><![CDATA[INTERFACE I_OP_MODE_PAUSE_VISU EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_ResetModeSelection" Id="{63a384db-3a1c-43ac-aeaa-eeeeec911782}">
+      <Declaration><![CDATA[METHOD M_ResetModeSelection : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_BreakPressureDetSelected" Id="{fbbc00c5-68ed-46a0-96b2-161fd5786c7c}">
+      <Declaration><![CDATA[PROPERTY P_BreakPressureDetSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{ac688b97-2473-4c1b-9390-96f45d3b97c2}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_EnduranceRunSelected" Id="{c7b6db4b-e9fb-4194-853b-f5e5941fe5d4}">
+      <Declaration><![CDATA[PROPERTY P_EnduranceRunSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{b45c6d21-c314-4e21-b97d-9695bd10e24e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_HandSelected" Id="{5eb67c90-4ce5-4a06-8b96-47eb9ca2fb55}">
+      <Declaration><![CDATA[PROPERTY P_HandSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fb2c83d9-08a9-4f89-a25f-058519a8f55d}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl1_Active" Id="{b52c4b42-6d21-4b2d-aad4-b7e37f0b286f}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl1_Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f4cf070f-5755-49c7-b326-ab93d4d39c2b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl2_Active" Id="{a805c4e3-b72c-442e-bc0e-4d41093c5054}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl2_Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{75c13b91-f592-4cb5-a4e6-6375f039099a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl3_Active" Id="{57462241-0504-4aff-b997-20201994a3cd}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl3_Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fb79bdcf-59e1-4ec5-b20e-f06b47209cca}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_JogCounterCyl4_Active" Id="{0c3e8bb5-da4c-426a-a2df-bff19e5050b0}">
+      <Declaration><![CDATA[PROPERTY P_JogCounterCyl4_Active : BOOL]]></Declaration>
+      <Get Name="Get" Id="{41d688c5-40d4-45fa-9dda-6b8af2bc42e9}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_JogSelected" Id="{04637374-4e0e-41f1-aadf-e92d05001f89}">
+      <Declaration><![CDATA[PROPERTY P_JogSelected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e7a897e6-3cac-4a05-ae84-fcbbca5f4d3c}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LeakTest1Selected" Id="{6fe90742-f44a-4a57-85e1-e290a60aa0be}">
+      <Declaration><![CDATA[PROPERTY P_LeakTest1Selected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{fb741230-1cd3-4451-9cd3-00203901e657}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LeakTest2Selected" Id="{f369598e-4229-4a10-887b-9fd48c88a926}">
+      <Declaration><![CDATA[PROPERTY P_LeakTest2Selected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{36ed6580-8804-49ba-8e91-472b1dbe519a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

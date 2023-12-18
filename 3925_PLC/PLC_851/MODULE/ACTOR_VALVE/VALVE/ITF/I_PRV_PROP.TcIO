@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PRV_PROP" Id="{e50cb31f-32f3-4073-8d43-1109eeac503b}">
+    <Declaration><![CDATA[INTERFACE I_PRV_PROP EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_SetLimit" Id="{5a875f2c-6313-412c-9d48-f77f285f420f}">
+      <Declaration><![CDATA[METHOD M_SetLimit : BOOL
+VAR_INPUT
+  ePressureType:      E_PRESSURE_TYPE;
+  rLimit:             REAL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{a1f77d4d-22d9-4967-bfc3-9b67b25e295d}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_LimitInBar" Id="{99f1315c-9d25-4cb1-9057-0f32504e2741}">
+      <Declaration><![CDATA[PROPERTY P_LimitInBar : REAL]]></Declaration>
+      <Get Name="Get" Id="{30c25ff6-feb2-4187-b71a-c17cff858daa}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LimitInPercent" Id="{05e08f9b-6e90-43a9-b5a6-be9e4552216e}">
+      <Declaration><![CDATA[PROPERTY P_LimitInPercent : REAL]]></Declaration>
+      <Get Name="Get" Id="{a3da2890-e60a-4bb8-8206-fc3b2a714350}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_MaxLimitInBar" Id="{63b325af-d905-4e4d-a2fb-a1462adc93b3}">
+      <Declaration><![CDATA[PROPERTY P_MaxLimitInBar : REAL]]></Declaration>
+      <Get Name="Get" Id="{8cdf6610-13df-4a99-985c-e208376d74eb}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{316eee19-9810-4e33-8e3e-28b176af9662}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{183b93a6-230a-44e6-84c3-bde04d99e101}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

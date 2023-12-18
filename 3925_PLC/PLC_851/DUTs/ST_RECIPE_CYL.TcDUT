@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_CYL" Id="{33fce722-f533-4b3d-af93-b13f7bdaff64}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_CYL :
+STRUCT
+  sItemName:              STRING;       // Name of the cylinder
+  sItemNumber:            STRING;       // Item number of the cylinder
+  bDoubleActing:          BOOL;         // Double- or singleacting cylinder
+  rStrokeLength:          REAL;         // The theoretical Stroke length
+  rStrokeLengthTol:       REAL;         // Stroke length tolerance
+  lrPistonSurfaceA:       LREAL;        // Piston surface for the working direction
+  lrPistonSurfaceB:       LREAL;        // Piston surface for the homing direction
+  rMaxPremittedPressure:  REAL;         // Maximum allowable pressure
+  sInfo:                  STRING;       // Other
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

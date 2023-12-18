@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_SEND_EVENTLOGGER_MSG" Id="{67cbd701-4cfd-4cbb-883d-7330421cfcba}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_SEND_EVENTLOGGER_MSG : BOOL
+VAR_INPUT
+	fbMessage:									TcEventEntry;
+END_VAR
+VAR
+	bInit : 									BOOL; 
+    bSend : 									BOOL; 
+    fbMsg : 									FB_TcMessage; 
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF( fbMessage.nEventId = GVL_EventLogger.fbPrevMsg.nEventId
+	AND fbMessage.eSeverity = GVL_EventLogger.fbPrevMsg.eSeverity) THEN
+	bInit:=FALSE;
+	bSend:=FALSE;
+ELSE
+	bInit:=TRUE;
+	bSend:=TRUE;
+END_IF
+
+IF bInit THEN
+    bInit := FALSE; 
+    fbMsg.CreateEx(fbMessage, 0); 
+END_IF
+
+IF bSend THEN 
+    bSend := FALSE; 
+    fbMsg.Send(0); 
+	GVL_EventLogger.fbPrevMsg:=fbMessage;
+	GVL_EventLogger.udiPrevMsgId:=fbMessage.nEventId;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="F_SEND_EVENTLOGGER_MSG">
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="12" Count="7" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

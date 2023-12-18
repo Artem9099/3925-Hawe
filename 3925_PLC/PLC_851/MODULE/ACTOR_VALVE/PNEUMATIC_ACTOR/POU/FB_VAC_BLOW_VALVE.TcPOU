@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_VAC_BLOW_VALVE" Id="{458f9b90-019b-42cc-971a-ae9ac95c2d03}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+{attribute 'no_explicit_call' := 'do not call this POU directly'} 
+FUNCTION_BLOCK FB_VAC_BLOW_VALVE IMPLEMENTS I_VAC_VALVE
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+	stEvent: ST_EVENT;
+	bAck: BOOL;
+	itfOpMode:			I_OP_MODE;
+	itfValveVac: I_BASE_VALVE;
+	itfValveBlow: I_BASE_VALVE;
+	itfSensorVacDetect: I_BINARY_SWITCH;
+
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{1fd5d2b1-6119-4536-84f9-a2380392d3c1}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:			I_OP_MODE;
+	itfValveVac: I_BASE_VALVE;
+	itfValveBlow: I_BASE_VALVE;
+	itfSensorVacDetect: I_BINARY_SWITCH;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode:= itfOpMode;
+THIS^.itfValveVac:= itfValveVac;
+THIS^.itfValveBlow:= itfValveBlow;
+THIS^.itfSensorVacDetect:= itfSensorVacDetect;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_AllOff" Id="{d0932a76-ec6f-4d20-8e8b-67543967854b}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_AllOff
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfValveVac.M_Close();
+THIS^.itfValveBlow.M_Close();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Blow" Id="{3e2280e5-035b-4a09-afb9-80da9a9c2559}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Blow
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfValveVac.M_Close();
+THIS^.itfValveBlow.M_OPEN();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{b5565619-4816-4d27-bcab-82206a5ad576}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfSensorVacDetect,itfThisObject:=THIS^);
+F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfValveVac,itfThisObject:=THIS^);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Vac" Id="{e0e7cf6a-03c5-4d17-9d8e-27cd1156242e}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Vac
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfValveVac.M_OPEN();
+THIS^.itfValveBlow.M_Close();
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{9b202751-d0ba-4fe1-9c94-59fa8212f0ba}">
+      <Declaration><![CDATA[
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{30211a1f-16d1-4a96-a98a-00d2a2706495}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:= stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{267c0256-3ef0-4649-9adc-08addf285425}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{ede7514b-60c3-44ca-bffd-edea0d8e65be}">
+      <Declaration><![CDATA[
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{f82bab78-cdcb-4e17-aaa8-6a31d70be477}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3845039a-ed5e-4c9d-90ab-17fdbd475ea8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:= P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{d563e364-f937-4e4f-b2e1-e581109896c1}">
+      <Declaration><![CDATA[
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{02a8c969-8729-4e77-a2e9-1499f51221e9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:= THIS^.bAck;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{aa47cce3-a682-4551-9788-87efd1feffc8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bAck:=P_Global_Ack; ]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{68a51acd-ad74-44de-a2e6-b2d1e1d55c09}">
+      <Declaration><![CDATA[
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{f16a56b1-f028-4130-be1a-cde56eee44b5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_STATE" Id="{edeaf7f7-dbf6-4673-a144-79606a72f5df}">
+      <Declaration><![CDATA[
+PROPERTY P_STATE : E_PNEU_VAC_VALVE
+]]></Declaration>
+      <Get Name="Get" Id="{8df11dae-8277-4d8d-8b37-9c32e8e0c41a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF THIS^.itfValveVac.P_IS_OPEN THEN
+	P_STATE:=E_PNEU_VAC_VALVE.Vac_ON_NotDetect;
+END_IF
+
+IF THIS^.itfValveVac.P_IS_CLOSE THEN
+	P_STATE:=E_PNEU_VAC_VALVE.AllOff;
+END_IF
+
+IF THIS^.itfSensorVacDetect.P_Active THEN
+	 P_STATE:=E_PNEU_VAC_VALVE.VacDetect;
+ END_IF
+ 
+ IF THIS^.itfValveBlow.P_IS_OPEN THEN
+	 P_STATE:=E_PNEU_VAC_VALVE.Blowing;
+ END_IF
+ ]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_VAC_BLOW_VALVE">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.FB_init">
+      <LineId Id="13" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.M_AllOff">
+      <LineId Id="4" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.M_Blow">
+      <LineId Id="4" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.M_Run">
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.M_Vac">
+      <LineId Id="4" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_VAC_BLOW_VALVE.P_STATE.Get">
+      <LineId Id="9" Count="0" />
+      <LineId Id="12" Count="4" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="2" />
+      <LineId Id="19" Count="2" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

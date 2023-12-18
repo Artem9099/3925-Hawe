@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.4">
+  <POU Name="F_RangeSetpoint" Id="{f6c276bf-ceeb-4732-9949-a441b5b5ac1f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_RangeSetpoint : BOOL
+VAR_INPUT
+	lrSetpoint: LREAL;
+	lrActValue: LREAL;
+	lrRangePercent: LREAL;
+END_VAR
+VAR
+	lrTempSetpointUp: LREAL;
+	lrTempSetpointDown: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[F_RangeSetpoint:=FALSE;
+
+lrTempSetpointDown:=lrSetpoint-(lrSetpoint*(lrRangePercent/100.0));
+lrTempSetpointUp:=lrSetpoint+(lrSetpoint*(lrRangePercent/100.0));
+
+IF (lrActValue>=lrTempSetpointDown) AND (lrActValue<=lrTempSetpointUp) THEN
+	F_RangeSetpoint:=TRUE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="F_RangeSetpoint">
+      <LineId Id="7" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

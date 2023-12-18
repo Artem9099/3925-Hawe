@@ -1,0 +1,571 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ZYLINDER_TWO_WAY" Id="{5f4725d7-8fb9-4ad5-8382-4fcec28c3858}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+{attribute 'no_explicit_call' := 'do not call this POU directly'} 
+FUNCTION_BLOCK FB_ZYLINDER_TWO_WAY IMPLEMENTS I_PNEU_ACTOR
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+	stEvent: ST_EVENT;
+  stParams: ST_HMI_CYLINDER;
+  stValve:  ST_HMI_VALVE;
+	bAck: BOOL;
+	itfOpMode:			I_OP_MODE;
+	itfValveToBase:		I_BASE_VALVE;
+	itfValveToWork: 	I_BASE_VALVE;
+	itfSensorInBase: 	I_BINARY_SWITCH;
+	itfSensorInWork: 	I_BINARY_SWITCH;
+	
+	tonToBase: Tc2_Standard.TON;
+	tToBase: TIME;
+	tonToWork: Tc2_Standard.TON;
+	tToWork: TIME;
+	bViewToBase: BOOL;
+	bViewToWork: BOOL;
+	//Locking
+	bLockWorkMovement: BOOL:=FALSE;
+	bLockBaseMovement: BOOL:=FALSE;
+	bLockWorkActive: BOOL:=FALSE;
+	bLockBaseActive: BOOL:=FALSE;
+	strLockedByObject: STRING;
+	
+	bTestEvent: BOOL:=0;
+	iStateInfo: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_init" Id="{21caa2a4-e0fa-4238-bdde-298d13f636b1}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	itfOpMode:		I_OP_MODE;
+	itfValveToBase: I_BASE_VALVE;
+	itfValveToWork: I_BASE_VALVE;
+	itfSensorInBase: I_BINARY_SWITCH;
+	itfSensorInWork: I_BINARY_SWITCH;
+	tTimeOutToBase: TIME;
+	tTimeOutToWork: TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode:=		itfOpMode;		
+THIS^.itfValveToBase:=  itfValveToBase; 
+THIS^.itfValveToWork:=  itfValveToWork; 
+THIS^.itfSensorInBase:= itfSensorInBase;
+THIS^.itfSensorInWork:= itfSensorInWork;
+THIS^.tToBase:= 		tTimeOutToBase;
+THIS^.tToWork:= 		tTimeOutToWork;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_LockMovment" Id="{1c64df5a-8911-41f6-a8c0-e531dd727f88}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_LockMovment
+VAR_INPUT
+	bLockBaseMovement	: BOOL;
+	bLockWorkMovement	: BOOL;
+	itfObject	: I_GENERAL_OBJECT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.bLockBaseMovement:=	bLockBaseMovement;
+THIS^.bLockWorkMovement:= 	bLockWorkMovement;
+THIS^.strLockedByObject:= 	itfObject.P_FullObjectPath;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{806be156-5abf-4dcf-8721-daa3e352eb06}">
+      <Declaration><![CDATA[METHOD M_Run
+VAR
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Abarbeiten der geerbten Objekte
+F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfValveToBase,itfThisObject:=THIS^);
+F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfValveToWork,itfThisObject:=THIS^);
+F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfSensorInBase,itfThisObject:=THIS^);
+F_HandleInheritanceObjectInMRun(itfInheritanceObject:=THIS^.itfValveToWork,itfThisObject:=THIS^);
+
+
+//Handle Timeout Fault
+IF TRUE 
+AND (tonToBase.Q 
+AND NOT stEvent.bEventActive 
+AND 
+(THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.AUTO 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.DEBUG 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.INIT))
+THEN
+	stEvent.bEventActive:= TRUE;
+	stEvent.enumEventType:= ENUM_EVENT_TYPE.Bl2_Message;
+	stEvent.strEventText:= F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='2',strTxtLstName:='TXT_LIST_PNEMATIC_ACTOR');
+	stEvent.strObject:= THIS^.P_FullObjectPath;
+END_IF
+IF (THIS^.tToBase=T#0MS) THEN
+	stEvent.bEventActive:= FALSE;
+END_IF
+
+
+IF TRUE
+AND (tonToWork.Q  
+AND NOT stEvent.bEventActive 
+AND 
+(THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.AUTO 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.DEBUG 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.INIT)) 
+THEN
+	stEvent.bEventActive:= TRUE;
+	stEvent.enumEventType:= ENUM_EVENT_TYPE.Ye4_Stateinfo;
+	stEvent.strEventText:= F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='1',strTxtLstName:='TXT_LIST_PNEMATIC_ACTOR');
+	stEvent.strObject:= THIS^.P_FullObjectPath;
+END_IF
+IF (THIS^.tToWork=T#0MS) THEN
+	stEvent.bEventActive:= FALSE;;
+END_IF
+
+//Event movment is locked
+IF THIS^.bLockWorkActive OR THIS^.bLockBaseActive THEN
+	stEvent.bEventActive:= TRUE;
+	stEvent.enumEventType:= ENUM_EVENT_TYPE.Bl3_Hint;
+	stEvent.strEventText:= F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='16',strTxtLstName:='TXT_LIST_PNEMATIC_ACTOR');
+	stEvent.strEventText:= Tc2_Standard.CONCAT(stEvent.strEventText,' ');
+	stEvent.strEventText:= Tc2_Standard.CONCAT(stEvent.strEventText,THIS^.strLockedByObject);
+	stEvent.strObject:= THIS^.P_FullObjectPath;
+	//No Timeout
+	tonToBase.IN:= FALSE;
+	tonToWork.IN:= FALSE;
+END_IF
+
+
+
+IF THIS^.P_Global_Ack (*AND (tonToBase.Q OR tonToWork.Q) *)THEN
+	stEvent.bEventActive:= FALSE;
+	tonToBase.IN:= FALSE;
+	tonToWork.IN:= FALSE;
+	THIS^.bLockWorkActive:=FALSE;
+	THIS^.bLockBaseActive:=FALSE;
+END_IF
+
+
+
+IF THIS^.P_State=E_POS_STATE.InBasePos THEN
+	tonToBase.IN:= FALSE;
+END_IF
+IF THIS^.P_State=E_POS_STATE.InWorkPos THEN
+	tonTowork.IN:= FALSE;
+END_IF
+
+tonToWork(PT:=tToWork);
+tonToBase(PT:=tToBase);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stop" Id="{771a2624-7629-489c-9c71-9340ad84da02}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Stop
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stEvent.bEventActive AND 
+(THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.AUTO 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.INIT 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.DEBUG
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL)THEN
+	THIS^.itfValveToBase.M_close();
+	THIS^.itfValveToWork.M_Close();
+	THIS^.tonToBase.IN:= FALSE;
+	THIS^.tonToWork.IN:= FALSE;
+END_IF
+bViewToBase:= FALSE;
+bViewToWork:= FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToBasePos" Id="{c773db8e-b2ad-463d-bbad-d059cdea3b9c}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_ToBasePos
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (*NOT THIS^.stEvent.bEventActive AND*)
+(THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.AUTO 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.INIT 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.DEBUG
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL) THEN
+	IF NOT THIS^.bLockBaseMovement THEN
+		THIS^.itfValveToBase.M_OPEN();
+		THIS^.itfValveToWork.M_Close();
+		THIS^.tonToBase.IN:= TRUE;
+		THIS^.tonToWork.IN:= FALSE;
+	ELSE
+		THIS^.bLockBaseActive:=TRUE;
+	END_IF;	
+END_IF;
+
+bViewToBase:= TRUE;
+bViewToWork:= FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ToWorkPos" Id="{24c3bc85-5df6-4bee-893f-0f5627e7a7d8}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_ToWorkPos
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (*NOT THIS^.stEvent.bEventActive AND *)
+(THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.AUTO 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.INIT 
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.DEBUG
+OR THIS^.itfOpMode.P_OP_MODE_STATE=OP_MODE.MANUAL)THEN
+	IF NOT THIS^.bLockWorkMovement THEN
+		THIS^.itfValveToWork.M_OPEN();
+		THIS^.itfValveToBase.M_Close();
+		THIS^.tonToWork.IN:= TRUE;
+		THIS^.tonToBase.IN:= FALSE;
+	ELSE
+		THIS^.bLockWorkActive:=TRUE;
+	END_IF
+END_IF
+bViewToBase:= FALSE;
+bViewToWork:= TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_UnLockMovment" Id="{9723ccb6-dce3-41b6-b648-15bbea79f88f}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_UnLockMovment
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.bLockBaseMovement:=	FALSE;
+THIS^.bLockWorkMovement:= 	false;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{1c7220e5-ff24-4bf1-9c87-f12232299cb5}">
+      <Declaration><![CDATA[
+PROPERTY P_Event : ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{a14eb896-7007-4f46-ae56-a3ccde9117fd}">
+        <Declaration><![CDATA[VAR
+	stEventTemp: ST_EVENT;
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:= stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{91049a67-eeec-402d-8b38-844469447552}">
+        <Declaration><![CDATA[
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{892c5ed9-3bb6-4b5b-8b3c-12a490b47e1a}">
+      <Declaration><![CDATA[
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{545c3666-c95e-463c-90c2-0cf920f01cb7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{9d96f189-f632-4302-8431-3e8bfe359a82}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:= P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{fd8f8d58-33fd-4647-8eb9-fb3057cff07f}">
+      <Declaration><![CDATA[
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{3a9a5e16-8cca-411b-ab7c-98f6958fc8f5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:= THIS^.bAck;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{c70f518f-f4bf-4c7a-a11b-6b1821305f95}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bAck:=P_Global_Ack; ]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{f0a2adc6-36d1-417f-b69a-0833a2e2dd0c}">
+      <Declaration><![CDATA[
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{f9b92338-57f2-4715-b01d-4fe2016cf032}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;
+
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_State" Id="{d0acda34-19b3-43c3-aadf-5f4b4a57a623}">
+      <Declaration><![CDATA[
+PROPERTY P_State : E_POS_STATE
+]]></Declaration>
+      <Get Name="Get" Id="{5cc73477-f528-4af6-b4bd-6d3ba7ed0603}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_State:=E_POS_STATE.NoDefPos;
+
+//Actor in BasePos
+IF THIS^.itfSensorInBase.P_Active THEN
+	P_State:=E_POS_STATE.InBasePos;
+ELSE;
+END_IF
+
+//Actor in WorkPos
+IF THIS^.itfSensorInWork.P_Active THEN
+	P_State:=E_POS_STATE.InWorkPos;
+ELSE;
+END_IF
+
+//Actor in BasePos
+IF THIS^.itfSensorInBase.P_Active AND THIS^.itfValveToBase.P_IS_OPEN THEN
+	P_State:=E_POS_STATE.InBasePos;
+ELSE;
+END_IF
+
+//Actor in WorkPos
+IF THIS^.itfSensorInWork.P_Active AND THIS^.itfValveToWork.P_IS_OPEN THEN
+	P_State:=E_POS_STATE.InWorkPos;
+ELSE;
+END_IF
+
+IF  NOT THIS^.itfSensorInWork.P_Active AND NOT THIS^.itfSensorInBase.P_Active THEN
+	P_State:=E_POS_STATE.NoDefPos;
+	//Actor Move to Base
+	IF THIS^.itfValveToBase.P_IS_OPEN AND THIS^.itfValveToWork.P_IS_CLOSE THEN
+		P_State:= E_POS_STATE.MoveToBase;
+	ELSE;	
+	END_IF
+	//Actor Move to Work
+	IF THIS^.itfValveToWork.P_IS_OPEN AND THIS^.itfValveToBase.P_IS_CLOSE THEN
+		P_State:= E_POS_STATE.MoveToWork;
+	ELSE;	
+	END_IF	
+ELSE;
+END_IF
+IF  THIS^.itfSensorInWork.P_Active AND THIS^.itfSensorInBase.P_Active THEN
+	P_State:=E_POS_STATE.NoDefPos;
+END_IF
+
+IF THIS^.bLockBaseActive THEN
+	P_State:=E_POS_STATE.MoveToBaseLock;
+END_IF
+
+IF THIS^.bLockWorkActive THEN
+	P_State:=E_POS_STATE.MoveToWorkLock;
+END_IF
+
+ CASE P_State OF
+	E_POS_STATE.InBasePos: 			THIS^.iStateInfo:=0;
+	E_POS_STATE.InWorkPos:			THIS^.iStateInfo:=1;
+	E_POS_STATE.InMidPos:			THIS^.iStateInfo:=2;
+	E_POS_STATE.InBasePosValveOff:	THIS^.iStateInfo:=3;
+	E_POS_STATE.InWorkPosValveOff:	THIS^.iStateInfo:=4;
+	E_POS_STATE.NoDefPos:			THIS^.iStateInfo:=5;
+	E_POS_STATE.MoveToBase:			THIS^.iStateInfo:=6;
+	E_POS_STATE.MoveToWork:			THIS^.iStateInfo:=7;
+	E_POS_STATE.TimeOutToWork:		THIS^.iStateInfo:=8;
+	E_POS_STATE.TimeOutToBase:		THIS^.iStateInfo:=9;
+	E_POS_STATE.MoveToBaseLock:		THIS^.iStateInfo:=10;
+	E_POS_STATE.MoveToWorkLock:		THIS^.iStateInfo:=11;
+	ELSE
+		iStateInfo:=99;
+ END_CASE
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_TimeOutToBase" Id="{60458534-697c-45c1-b7d1-643623a8c8f7}">
+      <Declaration><![CDATA[
+PROPERTY P_TimeOutToBase : TIME
+]]></Declaration>
+      <Get Name="Get" Id="{7961cfd0-49f2-403d-baec-e30274cf043b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_TimeOutToBase:= tonToBase.PT;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b5ac5f8d-5f83-4389-95b6-89ae22879ece}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[tToBase:= P_TimeOutToBase;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_TimeOutToWork" Id="{a3cb8bf0-c5df-40d3-8c35-a98d1a217863}">
+      <Declaration><![CDATA[
+PROPERTY P_TimeOutToWork : TIME
+]]></Declaration>
+      <Get Name="Get" Id="{44a82eb6-8341-458a-8ada-1fca6c246cc2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_TimeOutToWork:= tonToWork.PT;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{2550a3a8-389d-45fb-b3a3-2e4bb4204251}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[tToWork:= P_TimeOutToWork;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.FB_init">
+      <LineId Id="12" Count="2" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="39" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_LockMovment">
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_Run">
+      <LineId Id="313" Count="14" />
+      <LineId Id="329" Count="5" />
+      <LineId Id="394" Count="1" />
+      <LineId Id="392" Count="1" />
+      <LineId Id="335" Count="1" />
+      <LineId Id="376" Count="6" />
+      <LineId Id="337" Count="4" />
+      <LineId Id="389" Count="2" />
+      <LineId Id="342" Count="8" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="351" Count="21" />
+      <LineId Id="52" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_Stop">
+      <LineId Id="17" Count="3" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="7" Count="2" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_ToBasePos">
+      <LineId Id="16" Count="0" />
+      <LineId Id="19" Count="2" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_ToWorkPos">
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="8" Count="3" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.M_UnLockMovment">
+      <LineId Id="5" Count="0" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_Global_Ack.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_GlobalID.Get">
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_State.Get">
+      <LineId Id="3" Count="12" />
+      <LineId Id="39" Count="10" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="16" Count="17" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="57" Count="2" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="65" Count="10" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="76" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_TimeOutToBase.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_TimeOutToBase.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_TimeOutToWork.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ZYLINDER_TWO_WAY.P_TimeOutToWork.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

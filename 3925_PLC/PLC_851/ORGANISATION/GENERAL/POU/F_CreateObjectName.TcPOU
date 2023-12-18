@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_CreateObjectName" Id="{e2199058-f767-4f4e-801b-87e5fa8f2ba6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CreateObjectName : STRING
+VAR_INPUT
+	strObjecktPath: STRING;
+END_VAR
+VAR
+	strTemp: STRING;
+	i: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+strTemp:=strObjecktPath;
+
+FOR i:=1 TO 10 BY 1 DO
+	IF FIND(strTemp,'.')>0 THEN
+		strTemp:=DELETE(strTemp,FIND(strTemp,'.')+1,0);
+	ELSE
+		EXIT;
+	END_IF
+END_FOR
+
+IF left(strTemp,2)='fb' THEN
+	strTemp:=DELETE(strTemp,3,0);
+END_IF
+
+F_CreateObjectName:=strTemp;]]></ST>
+    </Implementation>
+    <LineIds Name="F_CreateObjectName">
+      <LineId Id="24" Count="2" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PROCESS_MAIN" Id="{e52b4bdf-1c6c-4901-ab31-ef0200b445fd}">
+    <Declaration><![CDATA[INTERFACE I_PROCESS_MAIN EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_BreakPressureDet" Id="{168bebf4-bcca-405a-93a9-c6c338d38a37}">
+      <Declaration><![CDATA[METHOD M_BreakPressureDet : BOOL
+VAR_INPUT
+  stBreakPressureParams:                 ST_RECIPE_BREAK_PRESSURE;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_EnduranceRun" Id="{0c7fd0b6-6df4-4b23-a53a-1862430f6423}">
+      <Declaration><![CDATA[METHOD M_EnduranceRun : BOOL
+VAR_INPUT
+  stEnduranceRunParams:                 ST_RECIPE_ENDURANCE_RUN;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_EStop" Id="{1d9039a6-cd46-43d7-ad00-c472b0c618fb}">
+      <Declaration><![CDATA[METHOD M_EStop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_LeakTest1" Id="{3109deb2-7598-497d-9b3e-8a27651681b3}">
+      <Declaration><![CDATA[METHOD M_LeakTest1 : BOOL
+VAR_INPUT
+  stLeakTest1Params:                 ST_RECIPE_LEAK_TEST1;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_LeakTest2" Id="{b18a9a37-ce66-473b-ae0a-7cb7751c0ade}">
+      <Declaration><![CDATA[METHOD M_LeakTest2 : BOOL
+VAR_INPUT
+  stLeakTest2Params:                 ST_RECIPE_LEAK_TEST2;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{50dc8cf4-d75b-4ab1-9bd3-c504049ff0ed}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{28c5ff99-1e0a-44c5-a1a7-76c3d921bd26}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Stop" Id="{4e3c4220-9ffb-4900-a309-ce6a74e62206}">
+      <Declaration><![CDATA[METHOD M_Stop : BOOL
+]]></Declaration>
+    </Method>
+    <Method Name="M_StopEngine" Id="{2b83be8f-92ff-4c65-8d95-f2c9428499cd}">
+      <Declaration><![CDATA[METHOD M_StopEngine : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_ReadyState" Id="{50fdb5df-3fb3-4a15-8f1a-5fca3eb252f8}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{b0865d3a-4a7b-4f7f-9a17-99e400528a52}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

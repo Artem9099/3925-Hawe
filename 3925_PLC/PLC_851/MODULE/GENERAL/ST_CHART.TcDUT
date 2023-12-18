@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_CHART" Id="{6aeaa56f-861e-4c52-bb59-9741f9039c92}">
+    <Declaration><![CDATA[TYPE ST_CHART :
+STRUCT
+  sName0:        STRING;
+  diValue0:      DINT;
+  sName1:        STRING;
+  diValue1:      DINT;
+  sName2:        STRING;
+  diValue2:      DINT;
+  sName3:        STRING;
+  diValue3:      DINT;
+  sName4:        STRING;
+  diValue4:      DINT;
+  sName5:        STRING;
+  diValue5:      DINT;
+  sName6:        STRING;
+  diValue6:      DINT;
+  sName7:        STRING;
+  diValue7:      DINT;
+  sName8:        STRING;
+  diValue8:      DINT;
+  sName9:        STRING;
+  diValue9:      DINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

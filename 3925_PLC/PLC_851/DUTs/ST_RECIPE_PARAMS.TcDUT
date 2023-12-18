@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_PARAMS" Id="{82e7f578-2dbf-4b81-8f36-15caceacfd68}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_PARAMS :
+STRUCT
+  /// Cylinder parameter
+  stRecipeCyl:            ST_RECIPE_CYL;
+  /// Profiles - Endurance run
+  stRecipeEnduranceRun:   ST_RECIPE_ENDURANCE_RUN;
+  /// Profiles - General settings
+  stRecipeGeneral:        ST_RECIPE_GENERAL;
+  /// Profiles - Leak test 1
+  stRecipeLeakTest1:      ST_RECIPE_LEAK_TEST1;
+  /// Profiles - Leak test 2
+  stRecipeLeakTest2:      ST_RECIPE_LEAK_TEST2;
+  /// Profiles - Determine break pressure
+  stRecipeBreakPressure:  ST_RECIPE_BREAK_PRESSURE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

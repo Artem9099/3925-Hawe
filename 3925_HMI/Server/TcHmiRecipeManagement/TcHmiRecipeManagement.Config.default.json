@@ -1,0 +1,794 @@
+{
+    "recipeList": {
+        "DL": {
+            "Zylinder1": {
+                "recipeTypeName": "Profiles::EnduranceRun",
+                "values": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.bEnableLeakTest1": true,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rDelay": 0.5,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA": 15.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB": 15.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.bEnableLeakTest1": true,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rRestDelay": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.udiDurationPerTest": 1,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles": 100,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval": 2000,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles": 10
+                }
+            }
+        },
+        "DP1": {},
+        "DP2": {},
+        "GEN": {},
+        "LBD": {
+            "Zylinder1": {
+                "recipeTypeName": "Profiles::BreakPressureDet",
+                "values": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rEndPosTol": 1.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseInterval": 1.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseValueInBar": 1.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rMinSpeedInMmPerS": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rNokLimit": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.uiVentCycles": 10
+                }
+            }
+        },
+        "ZYL": {
+            "Zylinder1": {
+                "recipeTypeName": "Cylinder",
+                "values": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.bDoubleActing": true,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA": 907.92,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB": 593.76,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rMaxPremittedPressure": 400.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLength": 230.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLengthTol": 3.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sInfo": "",
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemName": "Zylinder230",
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemNumber": "5555"
+                }
+            }
+        }
+    },
+    "recipeTypeList": {
+        "Cylinder": {
+            "members": {
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.bDoubleActing": {
+                    "defaultValue": true,
+                    "enabled": true,
+                    "group": "",
+                    "order": 2,
+                    "schema": {},
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.bDoubleActing",
+                    "unit": ""
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA": {
+                    "defaultValue": 907.92,
+                    "enabled": true,
+                    "group": "",
+                    "order": 3,
+                    "schema": {
+                        "maximum": 9999.0,
+                        "minimum": 100.0
+                    },
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA",
+                    "unit": "mm²"
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB": {
+                    "defaultValue": 593.76,
+                    "enabled": true,
+                    "group": "",
+                    "order": 4,
+                    "schema": {
+                        "maximum": 9999.0,
+                        "minimum": 50.0
+                    },
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB",
+                    "unit": "mm²"
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rMaxPremittedPressure": {
+                    "defaultValue": 400.0,
+                    "enabled": true,
+                    "group": "",
+                    "order": 5,
+                    "schema": {
+                        "maximum": 1000.0,
+                        "minimum": 0.0
+                    },
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rMaxPremittedPressure",
+                    "unit": "bar"
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLength": {
+                    "defaultValue": 230.0,
+                    "enabled": true,
+                    "group": "",
+                    "order": 6,
+                    "schema": {
+                        "maximum": 1000.0,
+                        "minimum": 50.0
+                    },
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLength",
+                    "unit": "mm"
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLengthTol": {
+                    "defaultValue": 3.0,
+                    "enabled": true,
+                    "group": "",
+                    "order": 7,
+                    "schema": {
+                        "maximum": 100.0,
+                        "minimum": 0.0
+                    },
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLengthTol",
+                    "unit": "mm"
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sInfo": {
+                    "defaultValue": "",
+                    "enabled": true,
+                    "group": "",
+                    "order": 8,
+                    "schema": {},
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sInfo",
+                    "unit": ""
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemName": {
+                    "defaultValue": "",
+                    "enabled": true,
+                    "group": "",
+                    "order": 0,
+                    "schema": {},
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemName",
+                    "unit": ""
+                },
+                "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemNumber": {
+                    "defaultValue": "",
+                    "enabled": true,
+                    "group": "",
+                    "order": 1,
+                    "schema": {},
+                    "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemNumber",
+                    "unit": ""
+                }
+            },
+            "options": {
+                "enabled": "None"
+            },
+            "recipeTypeNames": []
+        },
+        "Profiles": {
+            "BreakPressureDet": {
+                "members": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rEndPosTol": {
+                        "defaultValue": 1.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 4,
+                        "schema": {
+                            "maximum": 10.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rEndPosTol",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseInterval": {
+                        "defaultValue": 1.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 1,
+                        "schema": {
+                            "maximum": 10.0,
+                            "minimum": 0.05
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseInterval",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseValueInBar": {
+                        "defaultValue": 1.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 2,
+                        "schema": {
+                            "maximum": 30.0,
+                            "minimum": 0.05
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rIncreaseValueInBar",
+                        "unit": "bar"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rMinSpeedInMmPerS": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 3,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rMinSpeedInMmPerS",
+                        "unit": "mm/s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rNokLimit": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 5,
+                        "schema": {
+                            "maximum": 30.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.rNokLimit",
+                        "unit": "bar"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.uiVentCycles": {
+                        "defaultValue": 10,
+                        "enabled": true,
+                        "group": "",
+                        "order": 0,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeBreakPressure.uiVentCycles",
+                        "unit": ""
+                    }
+                },
+                "options": {
+                    "enabled": "None"
+                },
+                "recipeTypeNames": []
+            },
+            "EnduranceRun": {
+                "members": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.bEnableLeakTest1": {
+                        "defaultValue": true,
+                        "enabled": true,
+                        "group": "",
+                        "order": 11,
+                        "schema": {},
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.bEnableLeakTest1",
+                        "unit": ""
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rDelay": {
+                        "defaultValue": 0.5,
+                        "enabled": true,
+                        "group": "",
+                        "order": 8,
+                        "schema": {
+                            "maximum": 60.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 5,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 6,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA": {
+                        "defaultValue": 20.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 1,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 5.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA",
+                        "unit": "mm/s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB": {
+                        "defaultValue": 20.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 2,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 5.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB",
+                        "unit": "mm/s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 9,
+                        "schema": {
+                            "maximum": 50.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 10,
+                        "schema": {
+                            "maximum": 50.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA": {
+                        "defaultValue": 20.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 3,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB": {
+                        "defaultValue": 20.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 4,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.bEnableLeakTest1": {
+                        "defaultValue": true,
+                        "enabled": true,
+                        "group": "",
+                        "order": 13,
+                        "schema": {},
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.bEnableLeakTest1",
+                        "unit": ""
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 14,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 15,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 16,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 17,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 18,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rRestDelay": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 19,
+                        "schema": {
+                            "maximum": 3600.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rRestDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.udiDurationPerTest": {
+                        "defaultValue": 1,
+                        "enabled": true,
+                        "group": "",
+                        "order": 20,
+                        "schema": {
+                            "maximum": 60,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.udiDurationPerTest",
+                        "unit": "min"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles": {
+                        "defaultValue": 100,
+                        "enabled": true,
+                        "group": "",
+                        "order": 7,
+                        "schema": {
+                            "maximum": 1000000,
+                            "minimum": 5
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles",
+                        "unit": ""
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval": {
+                        "defaultValue": 2000,
+                        "enabled": true,
+                        "group": "",
+                        "order": 12,
+                        "schema": {
+                            "maximum": 1000000,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval",
+                        "unit": ""
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles": {
+                        "defaultValue": 10,
+                        "enabled": true,
+                        "group": "",
+                        "order": 0,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 2
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles",
+                        "unit": ""
+                    }
+                },
+                "options": {
+                    "enabled": "None"
+                },
+                "recipeTypeNames": []
+            },
+            "General": {
+                "members": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.iTemperatureMax": {
+                        "defaultValue": 100,
+                        "enabled": true,
+                        "group": "",
+                        "order": 0,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.iTemperatureMax",
+                        "unit": "°C"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.iTemperatureMin": {
+                        "defaultValue": 0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 1,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.iTemperatureMin",
+                        "unit": "°C"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rPressureMax": {
+                        "defaultValue": 400.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 2,
+                        "schema": {
+                            "maximum": 400.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rPressureMax",
+                        "unit": "bar"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rPressureMin": {
+                        "defaultValue": 0.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 3,
+                        "schema": {
+                            "maximum": 400.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rPressureMin",
+                        "unit": "bar"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rStrokeLengthDetDelay": {
+                        "defaultValue": 3.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 4,
+                        "schema": {
+                            "maximum": 60.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rStrokeLengthDetDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rStrokeLengthDetTol": {
+                        "defaultValue": 0.1,
+                        "enabled": true,
+                        "group": "",
+                        "order": 5,
+                        "schema": {
+                            "maximum": 5.0,
+                            "minimum": 0.1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rStrokeLengthDetTol",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rVentDelay": {
+                        "defaultValue": 3.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 6,
+                        "schema": {
+                            "maximum": 60.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.rVentDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.uiVentCycles": {
+                        "defaultValue": 5,
+                        "enabled": true,
+                        "group": "",
+                        "order": 7,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeGeneral.uiVentCycles",
+                        "unit": ""
+                    }
+                },
+                "options": {
+                    "enabled": "None"
+                },
+                "recipeTypeNames": []
+            },
+            "LeakTest1": {
+                "members": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rDistanceBeforeEndPosHP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 1,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rDistanceBeforeEndPosHP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rDistanceBeforeEndPosWP": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 2,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 0.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rDistanceBeforeEndPosWP",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceA": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 3,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceA",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceB": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 4,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceB",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rNokLimit": {
+                        "defaultValue": 3.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 5,
+                        "schema": {
+                            "maximum": 20.0,
+                            "minimum": 0.1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rNokLimit",
+                        "unit": "mm"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rRestDelay": {
+                        "defaultValue": 10.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 0,
+                        "schema": {
+                            "maximum": 3600.0,
+                            "minimum": 0.1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rRestDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.udiDurationPerTest": {
+                        "defaultValue": 1,
+                        "enabled": true,
+                        "group": "",
+                        "order": 6,
+                        "schema": {
+                            "maximum": 10000000,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.udiDurationPerTest",
+                        "unit": "min"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.uiVentCycles": {
+                        "defaultValue": 5,
+                        "enabled": true,
+                        "group": "",
+                        "order": 7,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.uiVentCycles",
+                        "unit": ""
+                    }
+                },
+                "options": {
+                    "enabled": "None"
+                },
+                "recipeTypeNames": []
+            },
+            "LeakTest2": {
+                "members": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 1,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB": {
+                        "defaultValue": 5.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 2,
+                        "schema": {
+                            "maximum": 100.0,
+                            "minimum": 1.0
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB",
+                        "unit": "kN"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rNokLimit": {
+                        "defaultValue": 1.0,
+                        "enabled": true,
+                        "group": "",
+                        "order": 5,
+                        "schema": {
+                            "maximum": 1000.0,
+                            "minimum": 0.05
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rNokLimit",
+                        "unit": "cm³ (ml)"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rRestDelay": {
+                        "defaultValue": "10",
+                        "enabled": true,
+                        "group": "",
+                        "order": 4,
+                        "schema": {
+                            "maximum": 3600.0,
+                            "minimum": 0.1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rRestDelay",
+                        "unit": "s"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.udiDurationPerTest": {
+                        "defaultValue": 5,
+                        "enabled": true,
+                        "group": "",
+                        "order": 3,
+                        "schema": {
+                            "maximum": 1000,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.udiDurationPerTest",
+                        "unit": "min"
+                    },
+                    "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles": {
+                        "defaultValue": 10,
+                        "enabled": true,
+                        "group": "",
+                        "order": 0,
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 1
+                        },
+                        "symbol": "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles",
+                        "unit": ""
+                    }
+                },
+                "options": {
+                    "enabled": "None"
+                },
+                "recipeTypeNames": []
+            }
+        }
+    }
+}

@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <TextList Name="TXT_LIST_OBJECTS" Id="{dc98b7f5-a14b-47a3-9dde-dd7a9b8ee9ef}">
+    <XmlArchive>
+      <Data>
+        <o xml:space="preserve" t="TextListObject">
+          <v n="UniqueIdGenerator">"0"</v>
+          <l n="TextList" t="ArrayList" cet="TextListRow">
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbPowerAdapter1"</v>
+              <v n="TextDefault">"Netzteil 1"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Maschine</v>
+                <v>Maschine</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbPowerAdapter2"</v>
+              <v n="TextDefault">"Netzteil 2"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Not-Halt links</v>
+                <v>E-Stop left</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbZylinderLinks"</v>
+              <v n="TextDefault">"Zylinder Links"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Not-Halt rechts</v>
+                <v>E-Stop right</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbZylinderRechts"</v>
+              <v n="TextDefault">"Zylinder Rechts"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Schutztür oben</v>
+                <v>Door left</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbCalibrateVoltageInput1"</v>
+              <v n="TextDefault">"Scallieren Spannung (V)"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Schutztür rechts</v>
+                <v>Door right</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbCalibrateVoltageInput2"</v>
+              <v n="TextDefault">"Scallieren Spannung (V)"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Maschine</v>
+                <v>Machine</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbCalibrateCurrentInput1"</v>
+              <v n="TextDefault">"Scallieren Strom (A)"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Vakuum Druckstück</v>
+                <v>Sensor 1</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3627.PLC_851.PrgStation.fbCalibrateCurrentInput2"</v>
+              <v n="TextDefault">"Scallieren Strom (A)"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Vakuum Druckpilz</v>
+                <v>Vac Syst 1</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbStepSeqFindZeroPosPolepiece"</v>
+              <v n="TextDefault">"Nullpunkt Suche Druckstück"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Nullpunkt-Suche Druckstück</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbStepSeqFindZeroPosPole"</v>
+              <v n="TextDefault">"Nullpunkt Suche Stange"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Nullpunkt-Suche Stange</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbScanner"</v>
+              <v n="TextDefault">"Scanner Druckstück"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Scanner Druckstück</v>
+                <v>Scan Polepiece</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbECMaster"</v>
+              <v n="TextDefault">"Beckoff PC"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Beckoff PC</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbPress"</v>
+              <v n="TextDefault">"Kistler Presse"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Kistler Presse</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbCamera1"</v>
+              <v n="TextDefault">"Kamera Druckstange"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Kamera Druckstange</v>
+                <v>Camera 1</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbCamera2"</v>
+              <v n="TextDefault">"Kamera Druckpilz"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Kamera Druckpilz</v>
+                <v>Camera 2</v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbGripper1"</v>
+              <v n="TextDefault">"Greifer links"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Greifer links</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbGripper2"</v>
+              <v n="TextDefault">"Greifer rechts"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Greifer rechts</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbAxisDruckstangeFunktions"</v>
+              <v n="TextDefault">"Schrittmotor Druckstange"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Schrittmotor Druckstange</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">"_3531.PLC_851.PrgStation.fbAxisDruckstueckFunctions"</v>
+              <v n="TextDefault">"Schrittmotor Druckstück"</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v>Schrittmotor Druckstück</v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+            <o>
+              <v n="TextID">""</v>
+              <v n="TextDefault">""</v>
+              <l n="LanguageTexts" t="ArrayList" cet="String">
+                <v></v>
+                <v></v>
+                <v></v>
+                <v></v>
+              </l>
+            </o>
+          </l>
+          <l n="Languages" t="ArrayList" cet="String">
+            <v>de</v>
+            <v>en</v>
+            <v>ch</v>
+            <v>zh_CHS</v>
+          </l>
+          <v n="GuidInit">{44325894-7667-4512-9762-d8892b83adaf}</v>
+          <v n="GuidReInit">{eeaac335-d3f9-4335-b76b-03f43b1f5e56}</v>
+          <v n="GuidExitX">{9557e47a-ffd8-40f2-a164-12bbf0d99089}</v>
+        </o>
+      </Data>
+      <TypeList>
+        <Type n="ArrayList">System.Collections.ArrayList</Type>
+        <Type n="Guid">System.Guid</Type>
+        <Type n="String">System.String</Type>
+        <Type n="TextListObject">{2bef0454-1bd3-412a-ac2c-af0f31dbc40f}</Type>
+        <Type n="TextListRow">{53da1be7-ad25-47c3-b0e8-e26286dad2e0}</Type>
+      </TypeList>
+    </XmlArchive>
+  </TextList>
+</TcPlcObject>

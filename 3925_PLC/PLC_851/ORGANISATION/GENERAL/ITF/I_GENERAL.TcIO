@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_GENERAL" Id="{b877ffd7-cb87-4368-8804-41aa5666923a}">
+    <Declaration><![CDATA[INTERFACE I_GENERAL
+]]></Declaration>
+    <Method Name="M_CyclicRun" Id="{4e304cb9-56de-449c-b8c1-8ab8fbc31ed6}">
+      <Declaration><![CDATA[METHOD M_CyclicRun : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_ObjectID" Id="{30d6b7eb-5934-4807-bff4-c5c7e206c07a}">
+      <Declaration><![CDATA[PROPERTY P_ObjectID : STRING]]></Declaration>
+      <Get Name="Get" Id="{7c1c1e94-1dc8-4e93-bbf8-9fb0399fd038}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+      <Set Name="Set" Id="{fc2501e5-c238-487d-a54d-06445a3fec3e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Set>
+    </Property>
+  </Itf>
+</TcPlcObject>

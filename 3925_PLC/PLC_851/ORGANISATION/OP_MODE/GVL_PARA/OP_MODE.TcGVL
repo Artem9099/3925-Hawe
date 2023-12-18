@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="OP_MODE" Id="{cc5d150e-a8cd-4ce0-b40e-d496e8bcd91b}" ParameterList="True">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL CONSTANT
+	//OP MODE STATE ACTIVE
+	AUTO			: INT := 1;
+	MANUAL			: INT := 2;
+	DEBUG			: INT := 3;
+	INIT			: INT := 4;
+	INIT_OK			: INT := 5;
+	PAUSE			: INT := 6;
+	//OP MODE SECUNDARY
+	SAFETY_STOP		: INT := 7;
+	MACHINE_ERROR 	: INT := 8;	
+	CONTROL_ON		: INT := 9;
+	MAIN_AIR_OK		: INT := 10;
+	
+	//OP MODE STATE TEMPORARY
+	AUTO_TEMPORARY	: INT := 11;
+	MANUAL_TEMPORARY: INT := 12;
+	DEBUG_TEMPORARY	: INT := 13;
+	RESET_TEMPORARY	: INT := 14;
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

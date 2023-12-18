@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_SETTINGS" Id="{ed29c1f8-e4a6-43cc-ba88-2f8f571a4812}">
+    <Declaration><![CDATA[TYPE ST_SETTINGS :
+STRUCT
+  // Control outside the HMI
+  bCloseHmi:                      BOOL;
+  bShutdownPc:                    BOOL;
+  bRestartPc:                     BOOL;
+  bShowWinKeyboard:               BOOL;
+  // Speed regulation and max speed efficiency
+  rSpeedEfficiencyFactor:         REAL;
+  rRegulationFactor:              REAL;
+  rRegulationTolerance:           REAL;
+  // Recording
+  uiRecordDelay:                  UINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

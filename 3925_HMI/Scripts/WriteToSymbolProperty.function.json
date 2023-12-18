@@ -1,0 +1,50 @@
+{
+  "function": {
+    "name": "WriteToSymbolProperty",
+    "displayName": "WriteToSymbolProperty",
+    "visible": true,
+    "category": "",
+    "waitMode": "Synchronous",
+    "injectContextObject": false,
+    "description": "",
+    "returnValue": {
+      "type": "tchmi:general#/definitions/String"
+    },
+    "arguments": [
+      {
+        "name": "SymbolToWrite",
+        "displayName": "SymbolToWrite",
+        "type": "tchmi:framework#/definitions/Symbol",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      },
+      {
+        "name": "PropertyToWrite",
+        "displayName": "PropertyToWrite",
+        "type": "tchmi:general#/definitions/String",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      },
+      {
+        "name": "ValueToWrite",
+        "displayName": "ValueToWrite",
+        "type": "tchmi:general#/definitions/Object",
+        "description": "",
+        "defaultValue": "",
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false
+      }
+    ]
+  },
+  "$schema": "../../Packages/Beckhoff.TwinCAT.HMI.Framework.12.758.8/runtimes/native1.12-tchmi/Schema/FunctionDescription.Schema.json"
+}

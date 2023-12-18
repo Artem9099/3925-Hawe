@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_RECIPE_LEAK_TEST2" Id="{72ba589a-f864-47b6-97e1-cf93bac9c823}">
+    <Declaration><![CDATA[TYPE ST_RECIPE_LEAK_TEST2 :
+STRUCT
+  // Enables
+  bEnableVentCylinder:            BOOL;
+  bEnableLeakTest2:               BOOL;
+  // Vent cylinder
+  uiVentCycles:                   UINT;
+  // Leak test 1
+  rRestDelay:                     REAL;         // Rest delay between cycles
+  rLoadPressureA:                 REAL;         // Testing pressure A for leak test 2
+  rLoadPressureB:                 REAL;         // Testing pressure A for leak test 2
+  rLoadForceA:                    REAL;         // Testing force A for leak test 2
+  rLoadForceB:                    REAL;         // Testing force A for leak test 2
+  udiDurationPerTest:             UDINT;         // Testing duration
+  rNokLimit:                      REAL;         // Limit value for abort program
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

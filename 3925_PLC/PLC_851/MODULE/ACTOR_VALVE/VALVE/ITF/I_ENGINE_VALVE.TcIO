@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_ENGINE_VALVE" Id="{7e3ceb72-8a0a-4c5a-9e38-262f19a4f12a}">
+    <Declaration><![CDATA[INTERFACE I_ENGINE_VALVE EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_Close" Id="{2ea4d968-aa32-49e9-92a5-3cfde55592cc}">
+      <Declaration><![CDATA[METHOD M_Close : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Open" Id="{9b168fe1-6505-4f60-9e5c-4242991cd250}">
+      <Declaration><![CDATA[METHOD M_Open : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{fdd3cae0-8774-4296-b5ba-55d8bd97d36c}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_Closed" Id="{ff5951e8-0f3a-4262-bf83-1327a1158ec9}">
+      <Declaration><![CDATA[PROPERTY P_Closed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{1a09b6d8-8ccb-4b68-ba38-3ee26c837e9f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Open" Id="{7cbca0b2-4ae5-4dda-9aed-c8e41f134351}">
+      <Declaration><![CDATA[PROPERTY P_Open : BOOL]]></Declaration>
+      <Get Name="Get" Id="{4f749848-7be1-46fb-bf28-eaa9bc61f912}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ReadyState" Id="{fb2f8a0d-8c06-4044-a58b-79ae44e1120d}">
+      <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3daeeb9d-128e-465e-bc11-7525be31476f}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Undefined" Id="{c32c074c-845b-4d27-9a69-8a835bc82c54}">
+      <Declaration><![CDATA[PROPERTY P_Undefined : BOOL]]></Declaration>
+      <Get Name="Get" Id="{d85163cf-2547-4c35-a314-1efd1450a0f7}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

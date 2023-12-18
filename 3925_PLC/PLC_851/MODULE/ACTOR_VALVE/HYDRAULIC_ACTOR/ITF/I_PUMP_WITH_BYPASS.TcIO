@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_PUMP_WITH_BYPASS" Id="{87bb4e59-4d3d-4eca-9708-e001aa95480a}">
+    <Declaration><![CDATA[INTERFACE I_PUMP_WITH_BYPASS EXTENDS I_ENGINE
+]]></Declaration>
+    <Method Name="M_Bypass" Id="{72b254d6-ba26-4dd7-9fb7-0c2af2a167d6}">
+      <Declaration><![CDATA[METHOD M_Bypass : BOOL
+VAR_INPUT
+  bEnable:        BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_BypassState" Id="{c60fc096-cb52-4851-91da-72a141552ee4}">
+      <Declaration><![CDATA[PROPERTY P_BypassState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{f1d3a4af-0061-4814-b5bf-62d2d9a3dde7}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

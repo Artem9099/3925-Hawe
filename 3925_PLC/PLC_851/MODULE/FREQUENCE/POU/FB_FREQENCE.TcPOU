@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_FREQENCE" Id="{510781a9-4147-4dbf-aeb5-c3339f4f05a3}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'reflection'} 
+{attribute 'no_explicit_call' := 'do not call this POU directly'} 
+FUNCTION_BLOCK PUBLIC FB_FREQENCE IMPLEMENTS  I_FREQ_GEN
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	{attribute 'instance-path'} 
+    {attribute 'noinit'} 
+	strInstancePath: STRING;
+	strFullObjectPath: STRING;
+	stEvent: ST_EVENT;
+	bAck: BOOL;
+	
+	iStep:		INT:=0;
+	tonLow:		TON;
+	tonHigh:	TON;
+	tFreq:		TIME;
+	bState:		BOOL;
+	iFreqence:	INT;
+	fTrig:		F_TRIG;
+	rTrig:		R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_Run" Id="{8133a5f8-4210-464d-9315-168070c2de09}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[tFreq := TO_TIME(TO_REAL(1000 * iFreqence) / 2);
+
+CASE iStep OF
+0:;	IF tonLow.Q THEN iStep := 1; END_IF;
+1:;	IF tonHigh.Q THEN iStep := 0; END_IF;
+ELSE
+	iStep := 0;
+END_CASE
+
+tonHigh(IN:=(iStep=1), PT:= tFreq);
+tonLow(IN:= (iStep=0), PT:= tFreq);
+
+bState:=(iStep>=1);
+
+fTrig(CLK:=bState);
+rTrig(CLK:=bState);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetFrequence" Id="{596b1385-b36f-4ea4-abfb-0a8bee147598}">
+      <Declaration><![CDATA[METHOD M_SetFrequence : bool
+VAR_INPUT
+	iFreqence: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetFrequence := TRUE;
+
+THIS^.iFreqence := iFreqence;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{3fa97330-f637-454d-ab34-208e436f6587}">
+      <Declaration><![CDATA[(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{efbe8632-51ce-452e-b2bd-41985404838e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Event:=stEvent;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{066a64fa-2b0e-41da-9181-4ff6bc05a8be}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[stEvent:=P_Event;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FTrig" Id="{38831138-9b5c-4727-a44b-a7ddc44bec41}">
+      <Declaration><![CDATA[PROPERTY P_FTrig : BOOL]]></Declaration>
+      <Get Name="Get" Id="{95bf5b5d-7be9-4be0-9b92-94ced83d0058}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FTrig:=THIS^.fTrig.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{6b59521a-ba75-4570-9347-52b9662e033b}">
+      <Declaration><![CDATA[(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{7e9e73af-19a3-4751-bc6a-740399dd1432}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a43f7944-a90f-49d5-90ac-4c74ddcda2f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{2277e8d3-1a92-440c-a226-39a3963c696d}">
+      <Declaration><![CDATA[(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{2c5eeb5f-e68e-4730-a364-c99e477200c4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Global_Ack:=THIS^.bAck;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{90680d10-bb6d-49c7-ad36-d0ecbe3a4239}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.bAck:=P_Global_Ack;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{277ee437-ea3a-49a0-8d9d-793f003c2f41}">
+      <Declaration><![CDATA[(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{753d1089-7c1d-4c9a-8aca-d882213e5075}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_RTrig" Id="{f2353248-c49b-4331-a365-b6ae5730b28d}">
+      <Declaration><![CDATA[PROPERTY P_RTrig : BOOL]]></Declaration>
+      <Get Name="Get" Id="{642b4df6-5789-4d34-ad04-2f5f95afe320}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_RTrig := THIS^.rTrig.Q;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_State" Id="{33ad68c1-ae3a-45db-afcc-d7144c36aaea}">
+      <Declaration><![CDATA[PROPERTY P_State : BOOL]]></Declaration>
+      <Get Name="Get" Id="{04b80d5c-8133-49f5-903c-e2a159ecf870}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_State:=THIS^.bState;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_FREQENCE">
+      <LineId Id="43" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.M_Run">
+      <LineId Id="8" Count="14" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.M_SetFrequence">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_FTrig.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_RTrig.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_FREQENCE.P_State.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
