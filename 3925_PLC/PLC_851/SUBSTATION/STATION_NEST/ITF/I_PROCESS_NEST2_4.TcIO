@@ -66,6 +66,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Property Name="P_CurrentCycle" Id="{5be5f4b9-f9aa-49d9-9c6c-c493358b6a97}">
+      <Declaration><![CDATA[PROPERTY P_CurrentCycle : UDINT]]></Declaration>
+      <Get Name="Get" Id="{b6a7aad0-83c7-4025-bd65-3007e3bc4182}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_EnableState" Id="{5a8f3172-1a32-470f-a9e7-01d6a343eb69}">
       <Declaration><![CDATA[PROPERTY P_EnableState : BOOL]]></Declaration>
       <Get Name="Get" Id="{700f6fd8-6e5d-4586-a6a4-0457e22d4347}">
@@ -86,6 +92,12 @@ END_VAR
       <Set Name="Set" Id="{ebd5d485-93f0-4e93-8512-cdb1e4a9bcf5}">
         <Declaration><![CDATA[]]></Declaration>
       </Set>
+    </Property>
+    <Property Name="P_Timer" Id="{cc388c17-8d09-4e1b-b6ba-f296872dd93e}">
+      <Declaration><![CDATA[PROPERTY P_Timer : STRING]]></Declaration>
+      <Get Name="Get" Id="{c0306dbc-7672-4513-a910-d0b803799404}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
     </Property>
   </Itf>
 </TcPlcObject>

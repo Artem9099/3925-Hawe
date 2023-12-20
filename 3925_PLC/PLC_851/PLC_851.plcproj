@@ -277,10 +277,13 @@
     <Compile Include="MODULE\DATABASE\DUT\E_SEQ_DATABASE.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MODULE\DATABASE\ITF\I_MYSQL.TcIO">
+    <Compile Include="MODULE\DATABASE\DUT\ST_DB_DATA_RECORD.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MODULE\DATABASE\POU\FB_MYSQL.TcPOU">
+    <Compile Include="MODULE\DATABASE\ITF\I_DATABASE.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\POU\FB_DATABASE.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MODULE\FREQUENCE\ITF\I_FREQ_GEN.TcIO">
@@ -517,6 +520,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="MODULE\DATABASE\DOKU\InfluxDB2 - Datentyp-Mapping.png">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="MODULE\SAFETY\PIC\GateLock.jpg">
       <SubType>Content</SubType>
     </Content>
@@ -673,6 +679,7 @@
     <Folder Include="MODULE\BYTES_TO_WORD\POU" />
     <Folder Include="MODULE\DATABASE\DUT" />
     <Folder Include="MODULE\DATABASE\ITF" />
+    <Folder Include="MODULE\DATABASE\DOKU" />
     <Folder Include="MODULE\DATABASE\POU" />
     <Folder Include="MODULE\FREQUENCE" />
     <Folder Include="MODULE\FREQUENCE\ITF" />

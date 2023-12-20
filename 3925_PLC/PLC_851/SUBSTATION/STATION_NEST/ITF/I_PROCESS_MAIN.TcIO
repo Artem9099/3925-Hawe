@@ -56,6 +56,30 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Property Name="P_CurrentCycleNest1" Id="{43ae66f1-4446-44d6-96b4-7d075e093d7c}">
+      <Declaration><![CDATA[PROPERTY P_CurrentCycleNest1 : UDINT]]></Declaration>
+      <Get Name="Get" Id="{a044333d-3127-40fa-a23d-f7038543626b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest2" Id="{0a76cc3d-5097-46dd-ab20-0b65881c1116}">
+      <Declaration><![CDATA[PROPERTY P_CurrentCycleNest2 : UDINT]]></Declaration>
+      <Get Name="Get" Id="{640f1a8e-d45e-4555-b471-a4d8f96a5b8a}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest3" Id="{c0d8f7cb-7c0e-4360-af28-24759a182bbf}">
+      <Declaration><![CDATA[PROPERTY P_CurrentCycleNest3 : UDINT]]></Declaration>
+      <Get Name="Get" Id="{12284b84-fa1a-4868-80ec-2ef2caef0f10}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest4" Id="{0d1888af-16ae-4347-92b8-3e36975f1328}">
+      <Declaration><![CDATA[PROPERTY P_CurrentCycleNest4 : UDINT]]></Declaration>
+      <Get Name="Get" Id="{adbaccd0-0ae3-40f0-aaa7-5fd45cee6b46}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_ReadyState" Id="{50fdb5df-3fb3-4a15-8f1a-5fca3eb252f8}">
       <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
       <Get Name="Get" Id="{b0865d3a-4a7b-4f7f-9a17-99e400528a52}">

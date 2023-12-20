@@ -1,0 +1,3472 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_DATABASE" Id="{b7fe2415-fd0f-4fd9-9eb7-f2ccb027ecaf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DATABASE IMPLEMENTS I_DATABASE
+VAR //General
+	{attribute 'instance-path'} 
+  {attribute 'noinit'} 
+	strInstancePath:									                      STRING;
+	bInit: 												                          BOOL:=TRUE;
+	strFullObjectPath: 								                      STRING;
+	stEvent:											                          ST_EVENT;
+	bAck:												                            BOOL;
+	
+END_VAR
+VAR   // From FB_init	
+	itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE; 
+END_VAR                                      				
+VAR	// Step chain control                				
+  eSeq, eLastSeq, eNextSeq:					                      E_SEQ_DATABASE; 
+                  				
+  //eActiveSeqState, eLastActiveSeqState:                 E_SEQ_GENERAL;
+	(*
+  iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=0;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+	i:														                          INT;
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
+*)
+i:														                            INT;
+stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;     	
+END_VAR                                             		
+VAR                                                 		
+	bMethodeFromExtStarted:									                BOOL;
+	bMethodeFromExtActive:									                BOOL;
+	bMethodeFromExtDone:									                  BOOL;
+	strTemp:												                        STRING;
+END_VAR   
+VAR
+  fbSQLDatabase:            FB_SQLDatabaseEvt(sNetID := '', tTimeout := T#5S);
+  fbSQLCommand:             FB_SQLCommandEvt(sNetID := '', tTimeout := T#5S);
+  fbPLCDBCmd:               FB_PLCDBCmdEvt(sNetID := '', tTimeout := T#5S);
+  fbPLCDBCreateEvt:         FB_PLCDBCreateEvt(sNetID := '', tTimeout := T#5S);
+  fbPLCDBReadEvt:           FB_PLCDBReadEvt(sNetID:= '', tTimeout:= T#5S);
+  fbPLCDBWriteEvt:          FB_PLCDBWriteEvt(sNetID := '', tTimeout := T#5S);
+  udiDBID:                  UDINT;
+  pDBID:                    POINTER TO UDINT;
+  sCmd:                     STRING(5000);
+  sTableName:               STRING;
+  sDBSymbolName:            STRING;
+  pRecord:                  POINTER TO BYTE;
+  cbRecord:                 UDINT;
+  pValue:                   POINTER TO BYTE;
+  cbValue:                  UDINT;
+  pColumnNames:             POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
+  cbColumnNames:            UDINT;
+  pTableCfg:                POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ColumnInfo;
+  cbTableCfg:               UDINT;
+  sOrderByColumn:           STRING(50);
+  eOrderBy:                 E_OrderColumn;
+  eOrderType:               E_OrderType;
+  nStartIndex:              UDINT;
+  nRecordCount:             UDINT;
+  pData:                    POINTER TO BYTE;
+  pData2:                   POINTER TO ST_StandardRecord;
+  cbData:                   UDINT;
+  pDatabaseConfig:          POINTER TO BYTE;
+  cbDatabaseConfig:         UDINT;
+  bCreateXMLConfig:         BOOL;
+  sColumnNameToUpdate:      STRING;
+  sColumnValToUpdate:       STRING;
+  sColumnNameToSet:         STRING;
+  sNewVal:                  STRING;
+  eDBWriteMode:             E_WriteMode;
+  nRingBuffParameter:       UDINT;
+  stADSDevice:              ST_ADSDevice;
+  stSymbol:                 ST_Symbol;
+  pExpression:              POINTER TO BYTE;
+  cbExpression:             UDINT;
+  pParameter:               POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ExpParameter;
+  cbParameter:              UDINT; 
+  pSQLCmd:                  POINTER TO BYTE;
+  cbSQLCmd:                 UDINT;
+  bResult:                  BOOL;
+END_VAR                  	
+VAR_TEMP                    	
+	iTemp:										INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Set FBs and Interfaces ready after switch internal step
+IF stSeqCtrlGeneral.iInternalSeqStateCase <> stSeqCtrlGeneral.iLastInternalSeqStateCase AND NOT stSeqCtrlGeneral.bExitSetReadyState THEN
+  IF TRUE
+  THEN
+    stSeqCtrlGeneral.bExitSetReadyState := TRUE;
+  ELSE
+    RETURN;
+  END_IF
+END_IF
+
+stSeqCtrlGeneral.strObject := F_CreateObjectName(strInstancePath);
+
+// First method call
+_m_SequenceManager();
+//_m_SaveLastStep();
+
+CASE eSeq OF 
+  E_SEQ_DATABASE.BASE:;
+  
+	E_SEQ_DATABASE.INIT: _m_Seq_INIT();
+		IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+		
+	E_SEQ_DATABASE.SETUP:;
+  
+	// Process
+  E_SEQ_DATABASE.CREATE_DATABASE: _m_Seq_CREATE_DATABASE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+	E_SEQ_DATABASE.CONNECT:         _m_Seq_CONNECT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+    
+  E_SEQ_DATABASE.EXECUTE_SIMPLIFY_CMD:  _m_Seq_EXECUTE_SIMPLIFY_CMD();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.EXECUTE_CMD:     _m_Seq_EXECUTE_CMD();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+    
+  E_SEQ_DATABASE.TABLE_EXIST_CHECK:     _m_Seq_TABLE_EXIST_CHECK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.CREATE_TABLE:    _m_Seq_CREATE_TABLE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.WRITE:           _m_Seq_WRITE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.WRITE_STRUCT:    _m_Seq_WRITE_STRUCT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.WRITE_BY_SYMBOL: _m_Seq_WRITE_BY_SYMBOL();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.OVERWRITE:       _m_Seq_OVERWRITE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.READ:            _m_Seq_READ();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.READ_STRUCT:     _m_Seq_READ_STRUCT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.CLEAR_TABLE:     _m_Seq_CLEAR_TABLE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.DELETE_TABLE:    _m_Seq_DELETE_TABLE();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.DISCONNECT:      _m_Seq_DISCONNECT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+
+  // End
+	E_SEQ_DATABASE.END:;
+	E_SEQ_DATABASE.ERROR_SEQ:;	
+END_CASE
+
+strTemp:=TO_STRING(eSeq);
+]]></ST>
+    </Implementation>
+    <Folder Name="PRIVAT" Id="{77eae440-14ee-4a01-a20b-ca0c26b31af1}" />
+    <Folder Name="SEQUENCE" Id="{4c839544-36cd-4398-aa87-8f3890ce8cd7}" />
+    <Method Name="_m_DebugManager" Id="{dd3d93d7-feee-4971-9218-95f33bc97703}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.stSeqCtrlGeneral.bDebugModeActive 
+AND NOT THIS^.stSeqCtrlGeneral.bActiveStep
+THEN
+
+
+THIS^.stSeqCtrlGeneral.bBreakpointActive:=FALSE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.stSeqCtrlGeneral.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.stSeqCtrlGeneral.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{bef6e6c7-0618-402b-a3a9-843cf008ec86}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bDelayActive:=TRUE;
+THIS^.stSeqCtrlGeneral.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{374c9f7c-e7fb-470a-a7a3-4e0d0924017c}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			    	E_STEP_STATE_TYPE;
+	InfoTextID:					STRING(20);
+	EnableDebug:	   			BOOL;	
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	THIS^.stSeqCtrlGeneral.eStep_Type:=StepType;
+	THIS^.stSeqCtrlGeneral.strExtraInfo:= GenLib.F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='',strTxtLstName:=InfoTextID);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{1952b951-8dc5-4b7d-8c92-88775ddb26f3}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			stSeqCtrlGeneral.listLastSteps[i].strStepName:=stSeqCtrlGeneral.listLastSteps[i-1].strStepName;
+			stSeqCtrlGeneral.listLastSteps[i].tStepTime:=stSeqCtrlGeneral.listLastSteps[i-1].tStepTime;
+			stSeqCtrlGeneral.listLastSteps[i].tDelayTime:=stSeqCtrlGeneral.listLastSteps[i-1].tDelayTime;
+	END_FOR
+	stSeqCtrlGeneral.listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;
+ELSE
+	stSeqCtrlGeneral.listLastSteps[0].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[0].tDelayTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CLEAR_TABLE" Id="{cfb31153-d734-40e5-9ab2-9a6676097045}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CLEAR_TABLE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Connect to database
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+		10:	// Create command
+      IF TRUE 
+			THEN 
+        sCmd := 'DELETE FROM `';
+        sCmd := CONCAT(sCmd, sTableName);
+        sCmd := CONCAT(sCmd, '`');
+        IF fbSQLDatabase.CreateCmd(ADR(fbSQLCommand)) THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;  
+          END_IF
+        END_IF
+			END_IF
+      
+		20: // Execute command
+      IF TRUE 
+			THEN
+        IF fbSQLCommand.Execute(ADR(sCmd), SIZEOF(sCmd)) THEN
+          IF fbSQLCommand.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+          END_IF
+	      END_IF
+			END_IF
+      
+    30:	// Disconnect
+      IF TRUE 
+			THEN 
+        IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CONNECT" Id="{ce23be0b-987c-4134-b509-74ad4192d14b}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CONNECT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Connect
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CREATE_DATABASE" Id="{40f6b643-e211-436a-83a3-1fb2a53a6364}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CREATE_DATABASE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+  stTemp:                     STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:	// Create database
+      IF TRUE 
+			THEN
+        IF fbPLCDBCreateEvt.Database(
+          pDatabaseConfig:= pDatabaseConfig,
+          cbDatabaseConfig:= cbDatabaseConfig,
+          bCreateXMLConfig:= bCreateXMLConfig,
+          pDBID := pDBID)
+        THEN
+          IF fbPLCDBCreateEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+      END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CREATE_TABLE" Id="{825a64fa-baa9-4ff6-b26b-0c89486b4db0}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CREATE_TABLE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+  stTemp:                     STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:	// Create table
+      IF TRUE 
+			THEN
+        IF fbPLCDBCreateEvt.Table(hDBID:= udiDBID,
+                                  sTableName:= sTableName, 
+                                  pTableCfg:= THIS^.pTableCfg, 
+                                  cbTableCfg:= THIS^.cbTableCfg)
+        THEN
+          IF fbPLCDBCreateEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+      END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DELETE_TABLE" Id="{4854d2a3-ceab-445f-bde3-9c2d7e9dc4f6}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DELETE_TABLE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Connect to database
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+		10:	// Create command
+      IF TRUE 
+			THEN 
+        sCmd := 'DROP TABLE `';
+        sCmd := CONCAT(sCmd, sTableName);
+        sCmd := CONCAT(sCmd, '`');
+        IF fbSQLDatabase.CreateCmd(ADR(fbSQLCommand)) THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;  
+          END_IF
+        END_IF
+			END_IF
+      
+		20: // Execute command
+      IF TRUE 
+			THEN
+        IF fbSQLCommand.Execute(ADR(sCmd), SIZEOF(sCmd)) THEN
+          IF fbSQLCommand.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+          END_IF
+	      END_IF
+			END_IF
+      
+    30:	// Disconnect
+      IF TRUE 
+			THEN 
+        IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DISCONNECT" Id="{41316aff-db7b-4e28-aeb2-43e721a92869}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DISCONNECT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Disconnect
+      IF TRUE 
+			THEN 
+        IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_EXECUTE_CMD" Id="{f4bad952-a662-411a-89c0-e3548b299bac}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_EXECUTE_CMD : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:	// Execute command
+      IF TRUE 
+			THEN 
+        IF fbPLCDBCmd.Execute(hDBID:= THIS^.udiDBID, 
+                              pExpression:= pExpression, 
+                              cbExpression:= cbExpression, 
+                              pData:= pData, 
+                              cbData:= cbData, 
+                              pParameter:= pParameter, 
+                              cbParameter:= cbParameter) 
+        THEN
+          IF fbPLCDBWriteEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_EXECUTE_SIMPLIFY_CMD" Id="{95a08db6-feb8-4c67-99ce-4a89ac9b3423}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_EXECUTE_SIMPLIFY_CMD : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Connect to database
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Execute command
+      IF TRUE 
+			THEN 
+        IF fbSQLCommand.Execute(THIS^.pSQLCmd, THIS^.cbSQLCmd) THEN
+          IF fbPLCDBWriteEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+          END_IF
+        END_IF
+			END_IF
+      
+    20:	// Disconnect
+      IF TRUE 
+			THEN 
+        IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_INIT" Id="{f5d10bae-d05a-4d26-9d7f-429eda8d9338}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_INIT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+  
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step
+      IF TRUE
+			THEN 
+				IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_OVERWRITE" Id="{fc194396-9960-4b59-b9a0-24c050f9d091}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_OVERWRITE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	sTableName:                 STRING;
+  sColumnNameToUpdate:        STRING;
+  sColumnValToUpdate:         STRING;
+  sColumnNameToSet:           STRING;
+  sNewVal:                    STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:  // Connect to database
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Create command
+      IF TRUE 
+			THEN 
+        sCmd := 'SET SQL_SAFE_UPDATES = 0; UPDATE `';
+        sCmd := CONCAT(sCmd, THIS^.sTableName);
+        sCmd := CONCAT(sCmd, '` SET ');
+        sCmd := CONCAT(sCmd, THIS^.sColumnNameToSet);
+        sCmd := CONCAT(sCmd, ' = $'');
+        sCmd := CONCAT(sCmd, THIS^.sNewVal);
+        sCmd := CONCAT(sCmd, '$' WHERE ');
+        sCmd := CONCAT(sCmd, THIS^.sColumnNameToUpdate);
+        sCmd := CONCAT(sCmd, ' = $'');
+        sCmd := CONCAT(sCmd, THIS^.sColumnValToUpdate);
+        sCmd := CONCAT(sCmd, '$';');
+        IF fbSQLDatabase.CreateCmd(ADR(fbSQLCommand)) THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;  
+          END_IF
+        END_IF
+			END_IF
+      
+		20: // Execute command
+      IF TRUE 
+			THEN
+        IF fbSQLCommand.Execute(ADR(sCmd), SIZEOF(sCmd)) THEN
+          IF fbSQLCommand.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30;
+          END_IF
+	      END_IF
+			END_IF
+      
+    30:	// Disconnect
+      IF TRUE 
+			THEN 
+        IF fbSQLDatabase.Disconnect() THEN
+          IF fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_READ" Id="{2dca67d9-3231-473a-ae0f-6ef39ca53931}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_READ : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Read struct
+      IF TRUE 
+			THEN 
+        IF fbPLCDBReadEvt.Read(
+          hDBID:= THIS^.udiDBID, 
+          sTableName:= THIS^.sTableName, 
+          sDBSymbolName:= THIS^.sDBSymbolName, 
+          eOrderBy:= THIS^.eOrderBy, 
+          eOrderType:= THIS^.eOrderType, 
+          nStartIndex:= THIS^.nStartIndex, 
+          nRecordCount:= THIS^.nRecordCount, 
+          pData:= THIS^.pData2, 
+          cbData:= THIS^.cbData)
+        THEN
+          IF fbPLCDBReadEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_READ_STRUCT" Id="{be1f2e50-94dc-4e0b-8c28-0cbdfbf35b53}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_READ_STRUCT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Read struct
+      IF TRUE 
+			THEN 
+        IF fbPLCDBReadEvt.ReadStruct(hDBID:= THIS^.udiDBID, 
+                                     sTableName:= THIS^.sTableName, 
+                                     pColumnNames:= THIS^.pColumnNames,
+                                     cbColumnNames:= THIS^.cbColumnNames,
+                                     sOrderByColumn:= THIS^.sOrderByColumn,
+                                     eOrderType:= THIS^.eOrderType, 
+                                     nStartIndex:= THIS^.nStartIndex, 
+                                     nRecordCount:= THIS^.nRecordCount, 
+                                     pData:= THIS^.pData, 
+                                     cbData:= THIS^.cbData) 
+        THEN
+          IF fbPLCDBReadEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TABLE_EXIST_CHECK" Id="{ec44cf2b-2d1c-464d-be32-34173ef836bd}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TABLE_EXIST_CHECK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Connect to database
+      IF TRUE 
+      AND NOT THIS^.fbSQLDatabase.bConnected
+			THEN 
+        IF THIS^.fbSQLDatabase.Connect(THIS^.udiDBID) THEN
+          IF THIS^.fbSQLDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+          END_IF
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Execute command
+      IF TRUE 
+			THEN 
+        IF THIS^.fbSQLCommand.Execute(ADR(THIS^.sCmd), SIZEOF(THIS^.sCmd)) THEN
+          THIS^.bResult := NOT THIS^.fbPLCDBWriteEvt.bError;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+        END_IF
+			END_IF
+      
+    1220:	// Execute command
+      IF TRUE
+      AND fbPLCDBCmd.Execute(hDBID:= THIS^.udiDBID, 
+                              pExpression:= pExpression, 
+                              cbExpression:= cbExpression, 
+                              pData:= pData, 
+                              cbData:= cbData, 
+                              pParameter:= pParameter, 
+                              cbParameter:= cbParameter) 
+      THEN
+        THIS^.bResult := NOT THIS^.fbPLCDBWriteEvt.bError;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+      END_IF
+      
+    20:	// Disconnect
+      IF TRUE 
+			THEN 
+        IF THIS^.fbSQLDatabase.Disconnect() THEN
+          IF THIS^.fbSqlDatabase.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_WRITE" Id="{b176a729-c0d2-401c-98b1-e39b351a83dc}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_WRITE : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+			THEN 
+        IF fbPLCDBWriteEvt.Write(
+          hDBID:= THIS^.udiDBID, 
+          sTableName:= THIS^.sTableName,
+          pValue:= THIS^.pValue, 
+          cbValue:= THIS^.cbValue, 
+          sDBSymbolName:= THIS^.sDBSymbolName, 
+          eDBWriteMode:= THIS^.eDBWriteMode, 
+          nRingBuffParameter:= THIS^.nRingBuffParameter) 
+        THEN
+          IF fbPLCDBWriteEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_WRITE_BY_SYMBOL" Id="{01feeeb7-b293-4447-881f-d0a44db5f2e5}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_WRITE_BY_SYMBOL : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+			THEN 
+        IF fbPLCDBWriteEvt.WriteBySymbol(
+          hDBID:= THIS^.udiDBID, 
+          sTableName:= THIS^.sTableName, 
+          stADSDevice:= THIS^.stADSDevice, 
+          stSymbol:= THIS^.stSymbol, 
+          eDBWriteMode:= THIS^.eDBWriteMode, 
+          nRingBuffParameter:= THIS^.nRingBuffParameter) 
+        THEN
+          IF fbPLCDBWriteEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_WRITE_STRUCT" Id="{1eba4f6f-2b79-4649-878a-8b430b0e8570}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_WRITE_STRUCT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+			THEN 
+        IF fbPLCDBWriteEvt.WriteStruct(hDBID:= THIS^.udiDBID, 
+                                       sTableName:= THIS^.sTableName, 
+                                       pRecord:= THIS^.pRecord, 
+                                       cbRecord:= THIS^.cbRecord, 
+                                       pColumnNames:= THIS^.pColumnNames, 
+                                       cbColumnNames:= THIS^.cbColumnNames)
+        THEN
+          IF fbPLCDBWriteEvt.bError THEN
+            THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; 
+          ELSE
+            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+          END_IF
+        END_IF
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{47e7591e-a7e0-444a-890c-d8a51552f9da}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FALSE
+//AND THIS^.eActiveSeqState=DONE 
+AND eLastSeq<>eSeq
+THEN
+	IF THIS^.stSeqCtrlGeneral.eActiveSeqState<>E_SEQ_GENERAL.EXECUTE THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.READY;
+	END_IF
+END_IF
+
+eSeq := eNextSeq;
+
+//DelayTimer und TimeOut Timer verwalten
+stSeqCtrlGeneral.bActiveStep:=	TRUE
+				AND eLastSeq					=	eSeq
+				AND stSeqCtrlGeneral.eLastActiveSeqState			=	stSeqCtrlGeneral.eActiveSeqState
+				AND	stSeqCtrlGeneral.iLastInternalSeqStateCase	=	stSeqCtrlGeneral.iInternalSeqStateCase
+				;
+			
+IF NOT stSeqCtrlGeneral.bActiveStep THEN
+	stSeqCtrlGeneral.bDelayActive:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveQuit:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveNoQuit:=FALSE;
+  THIS^.stSeqCtrlGeneral.strExtraInfo:='';
+END_IF
+
+_m_SaveLastStep();
+stSeqCtrlGeneral.tonDelay	(IN:=stSeqCtrlGeneral.bActiveStep AND stSeqCtrlGeneral.bDelayActive, 		PT:=stSeqCtrlGeneral.tDelay);
+stSeqCtrlGeneral.tonTimeOut	(IN:=stSeqCtrlGeneral.bActiveStep AND (stSeqCtrlGeneral.bTimeOutActiveNoQuit OR stSeqCtrlGeneral.bTimeOutActiveQuit), 	PT:=stSeqCtrlGeneral.tTimeOut);
+stSeqCtrlGeneral.tonStepTime	(IN:= stSeqCtrlGeneral.bActiveStep, PT:= T#24H);
+
+IF stSeqCtrlGeneral.tonTimeOut.Q  THEN
+	stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.TIME_OUT;
+END_IF
+
+IF stSeqCtrlGeneral.iError<>0 THEN
+	eSeq:=E_SEQ_DATABASE.ERROR_SEQ;
+END_IF
+
+
+
+eLastSeq					:=	eSeq;
+stSeqCtrlGeneral.eLastActiveSeqState			:=	stSeqCtrlGeneral.eActiveSeqState;
+stSeqCtrlGeneral.iLastInternalSeqStateCase	:=	stSeqCtrlGeneral.iInternalSeqStateCase;
+
+// Reset set ready state
+IF THIS^.stSeqCtrlGeneral.bExitSetReadyState THEN
+  THIS^.stSeqCtrlGeneral.bExitSetReadyState := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_TimeOut" Id="{f0daf62a-8d44-443a-8ada-42cde256b100}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_TimeOut : BOOL
+VAR_INPUT
+	bTimeoutActiveToQuit:	BOOL;
+	bTimeOutActiveNoQuit:	BOOL;
+	tTimeOut:				TIME;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit:=	bTimeoutActiveToQuit;
+THIS^.stSeqCtrlGeneral.bTimeOutActiveNoQuit:=	bTimeOutActiveNoQuit;
+THIS^.stSeqCtrlGeneral.tTimeOut:=			tTimeOut;
+_m_TimeOut:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonTimeOut.Q THEN
+	_m_TimeOut:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{5ed07b26-538a-46c4-87e7-7563c89f92d2}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+  itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;  
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
+THIS^.itfOpMode := itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ClearTable" Id="{eeb38742-5f45-4fb9-ba19-fabdcca10c75}">
+      <Declaration><![CDATA[METHOD M_ClearTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:          UDINT;
+  /// Name of the table to be created.
+  sTableName:       STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ClearTable := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.CLEAR_TABLE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Connect" Id="{04647d10-51cf-49cd-a31b-08249cb2e019}">
+      <Declaration><![CDATA[METHOD M_Connect : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                  UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Connect := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.CONNECT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CreateDatabase" Id="{52612ebc-a482-41bb-ae27-c1d855d22bd6}">
+      <Declaration><![CDATA[METHOD M_CreateDatabase : BOOL
+VAR_INPUT
+  /// Address of the database configuration structure
+  pDatabaseConfig:  POINTER TO BYTE;
+  /// Length of the database configuration structure
+  cbDatabaseConfig: UDINT;
+  /// Indicates whether the newly created database should be entered as new configuration entry in the XML file.
+  bCreateXMLConfig: BOOL;
+  /// Returns the hDBID if/when a new configuration entry was created.
+  pDBID:            POINTER TO UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_CreateDatabase := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.pDatabaseConfig :=  pDatabaseConfig;
+THIS^.cbDatabaseConfig := cbDatabaseConfig;
+THIS^.bCreateXMLConfig := bCreateXMLConfig;
+THIS^.pDBID :=            pDBID;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.CREATE_DATABASE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBCreate : FB_PLCDBCreateEvt(sNetID := '', tTimeout := T#5S);
+    stConfigDB    : T_DBConfig_MsCompactSQL;
+    hDBID         : UDINT;
+    tcMessage     : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+stConfigDB.bAuthentification := FALSE;
+stConfigDB.sServer := 'C:\Test.sdf';
+
+IF fbPLCDBCreate.Database(
+    pDatabaseConfig:= ADR(stConfigDB),
+    cbDatabaseConfig := SIZEOF(stConfigDB),
+    bCreateXMLConfig := TRUE,
+    pDBID := ADR(hDBID))
+THEN
+    IF fbPLCDBCreate.bError THEN
+        tcMessage := fbPLCDBCreate.ipTcResult;
+        nState := 255;
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CreateTable" Id="{5211b452-f214-4673-81e2-18c96350ec46}">
+      <Declaration><![CDATA[METHOD M_CreateTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Indicates the pointer address of the table structure array. The individual columns are written in this array.
+  pTableCfg:                  POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ColumnInfo;
+  /// Indicates the length of the array in which the columns are configured.
+  cbTableCfg:                 UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_CreateTable := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID :=    udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.pTableCfg :=  pTableCfg;
+THIS^.cbTableCfg := cbTableCfg;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.CREATE_TABLE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DeleteTable" Id="{8d90bb7c-5f61-4d87-a428-42f33651b164}">
+      <Declaration><![CDATA[METHOD M_DeleteTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:          UDINT;
+  /// Name of the table that is to be read.
+  sTableName:       STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_DeleteTable := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DELETE_TABLE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Disconnect" Id="{22bfe27d-d001-4eea-8d02-0be348300862}">
+      <Declaration><![CDATA[METHOD M_Disconnect : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Disconnect := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DISCONNECT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ExecuteCmd" Id="{069c1e18-0a97-4f42-874e-8aad36adda59}">
+      <Declaration><![CDATA[METHOD M_ExecuteCmd : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:      UDINT;
+  /// Addres of the command
+  pExpression:  POINTER TO BYTE;
+  /// Indicates the number of command.
+  cbExpression: UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData:        POINTER TO BYTE;
+  /// Indicates the size of the structure array in bytes.
+  cbData:       UDINT;
+  /// Address of the structure array.
+  pParameter:   POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ExpParameter;
+  /// Indicates the size of the parameter.
+  cbParameter:  UDINT; 
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ExecuteCmd := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.pExpression := pExpression;
+THIS^.cbExpression := cbExpression;
+THIS^.pData := pData;
+THIS^.cbData := cbData;
+THIS^.pParameter := pParameter;
+THIS^.cbParameter := cbParameter;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.EXECUTE_CMD;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBCmd    : FB_PLCDBCmdEvt(sNetID := '', tTimeout := T#5S);
+    sCmd          : STRING (1000); 
+    myStruct      : ST_DataAll;
+    aPara         : ARRAY[0..14] OF ST_ExpParameter;
+    tcMessage     : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+TYPE ST_DataAll :
+STRUCT
+    colBigInt: LINT;
+    colInteger: DINT;
+    colSmallInt: INT;
+    colTinyInt: BYTE;
+    colBit: BOOL;
+    colMoney: LREAL;
+    colFloat: LREAL;
+    colReal: REAL;
+    colDateTime: DT;
+    colNText: STRING(255);
+    colNChar: STRING(10);
+    colImage: ARRAY[0..255] OF BYTE;
+    colNVarChar: STRING(50);
+    colBinary: ARRAY[0..29] OF BYTE;
+    colVarBinary: ARRAY[0..19] OF BYTE;
+END_STRUCT
+END_TYPE
+
+------------------------------------------------------------------------
+
+// set Parameter configuration
+aPara[0].sParaName := 'colBigInt';    aPara[0].eParaType := E_ExpParameterType.Int64;      aPara[0].nParaSize := 8;
+aPara[1].sParaName := 'colInteger';   aPara[1].eParaType := E_ExpParameterType.Int32;      aPara[1].nParaSize := 4;
+aPara[2].sParaName := 'colSmallInt';  aPara[2].eParaType := E_ExpParameterType.Int16;      aPara[2].nParaSize := 2;
+aPara[3].sParaName := 'colTinyInt';   aPara[3].eParaType := E_ExpParameterType.Byte_;      aPara[3].nParaSize := 1;
+aPara[4].sParaName := 'colBit';       aPara[4].eParaType := E_ExpParameterType.Boolean;    aPara[4].nParaSize := 1;
+aPara[5].sParaName := 'colMoney';     aPara[5].eParaType := E_ExpParameterType.Double64;   aPara[5].nParaSize := 8;
+aPara[6].sParaName := 'colFloat';     aPara[6].eParaType := E_ExpParameterType.Double64;   aPara[6].nParaSize := 8;
+aPara[7].sParaName := 'colReal';      aPara[7].eParaType := E_ExpParameterType.Float32;    aPara[7].nParaSize := 4;
+aPara[8].sParaName := 'colDateTime';  aPara[8].eParaType := E_ExpParameterType.DateTime;   aPara[8].nParaSize := 4;
+aPara[9].sParaName := 'colNText';     aPara[9].eParaType := E_ExpParameterType.STRING_;    aPara[9].nParaSize := 256;
+aPara[10].sParaName:= 'colNChar';     aPara[10].eParaType := E_ExpParameterType.STRING_;   aPara[10].nParaSize := 10;
+aPara[11].sParaName:= 'colImage';     aPara[11].eParaType := E_ExpParameterType.ByteArray; aPara[11].nParaSize := 256;
+aPara[12].sParaName:= 'colNVarChar';  aPara[12].eParaType := E_ExpParameterType.STRING_;   aPara[12].nParaSize := 50;
+aPara[13].sParaName:= 'colBinary';    aPara[13].eParaType := E_ExpParameterType.ByteArray; aPara[13].nParaSize := 30;
+aPara[14].sParaName:= 'colVarBinary'; aPara[14].eParaType := E_ExpParameterType.ByteArray; aPara[14].nParaSize := 20;
+
+// set command
+sCmd := 'INSERT INTO MyTableName (colInteger, colSmallInt, colTinyInt, colBit, colMoney, colFloat, colReal, colDateTime, colNText, colNChar, colImage, colNVarChar, colBinary, colVarBinary) VALUES ({colInteger}, {colSmallInt}, {colTinyInt}, {colBit}, {colMoney}, {colFloat}, {colReal}, {colDateTime}, {colNText}, {colNChar}, {colImage}, {colNVarChar}, {colBinary}, {colVarBinary})';
+
+// call functionblock
+IF fbPLCDBCmd.Execute(
+    hDBID:= 1, 
+    pExpression:= ADR(sCmd), 
+    cbExpression:= SIZEOF(sCmd), 
+    pData:= ADR(myStruct), 
+    cbData:= SIZEOF(myStruct), 
+    pParameter:= ADR(aPara), 
+    cbParameter:= SIZEOF(aPara)) 
+THEN
+    IF fbPLCDBCmd.bError THEN
+        tcMessage := fbPLCDBCmd.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ExecuteSimplifyCmd" Id="{151d8918-025c-451f-9a3e-1dc6db313549}">
+      <Declaration><![CDATA[METHOD M_ExecuteSimplifyCmd : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:      UDINT;
+  /// Indicates the pointer address of a string variable with the SQL command to be executed.
+  pSQLCmd:      POINTER TO BYTE;
+  /// Indicates the length of a SQL command to be executed.
+  cbSQLCmd:     UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ExecuteSimplifyCmd := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.pSQLCmd := pSQLCmd;
+THIS^.cbSQLCmd := cbSQLCmd;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.EXECUTE_SIMPLIFY_CMD;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbSqlCommand : FB_SQLCommandEvt(sNetID := '', tTimeout := T#5S);
+    tcMessage    : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+// you can generate this with the SQL Query Editor 
+sCmd := 'INSERT INTO myTable_Double ( Timestamp, Name, Value) VALUES ( $'2018-01-31 14:59:27$', $'Temperature$', 21.3)';
+
+// call sql command
+IF fbSQLCommand.Execute(ADR(sCmd), SIZEOF(sCmd)) THEN
+    IF fbSQLCommand.bError THEN
+        tcMessage := fbSQLCommand.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := nState+1; 
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Overwrite" Id="{4d00d9a0-7a21-4ae0-abc9-b5753d361c0d}">
+      <Declaration><![CDATA[METHOD M_Overwrite : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Column name of the data to be updated
+  sColumnNameToUpdate:        STRING;
+  /// Column value of the data to be updated
+  sColumnValToUpdate:         STRING;
+  /// Column name to set
+  sColumnNameToSet:           STRING;
+  /// New value
+  sNewVal:                    STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Overwrite := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.sColumnNameToUpdate := sColumnNameToUpdate;
+THIS^.sColumnValToUpdate := sColumnValToUpdate;
+THIS^.sColumnNameToSet := sColumnNameToSet;
+THIS^.sNewVal := sNewVal;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.OVERWRITE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Read" Id="{bb4ebb48-7a6f-41be-a56e-ab61600f1a76}">
+      <Declaration><![CDATA[METHOD M_Read : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Symbol name to be read from the standard table structure.
+  sDBSymbolName:              STRING;
+  /// Sorting column (ID, timestamp, name or value)
+  eOrderBy:                   E_OrderColumn;
+  /// Sorting direction (ASC or DESC)
+  eOrderType:                 E_OrderType;
+  /// Indicates the index of the first record to be read.
+  nStartIndex:                UDINT;
+  /// Indicates the number of records to be read.
+  nRecordCount:               UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData2:                     POINTER TO ST_StandardRecord;
+  /// Indicates the size of the structure array in bytes.
+  cbData:                     UDINT;
+END_VAR
+VAR
+  
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Read := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.sDBSymbolName := sDBSymbolName;
+THIS^.eOrderBy := eOrderBy;
+THIS^.eOrderType := eOrderType;
+THIS^.nStartIndex := nStartIndex;
+THIS^.nRecordCount := nRecordCount;
+THIS^.pData2 := pData2;
+THIS^.cbData := cbData;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.READ;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBRead    : FB_PLCDBReadEvt (sNetID := '', tTimeout := T#5S);
+    ReadStruct     : ST_StandardRecord;
+    tcMessage      : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+IF fbPLCDBRead.Read(
+    hDBID:= 1, 
+    sTableName:= 'MyTable_WithLReal', 
+    sDBSymbolName:= 'MyValue', 
+    eOrderBy:= E_OrderColumn.ID, 
+    eOrderType:= E_OrderType.DESC, 
+    nStartIndex:= 0, 
+    nRecordCount:= 1, 
+    pData:= ADR(ReadStruct), 
+    cbData:= SIZEOF(ReadStruct))
+THEN
+    IF fbPLCDBRead.bError THEN
+        tcMessage := fbPLCDBRead.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ReadStruct" Id="{6a64915f-bfce-4db4-871e-22259bb6f9a5}">
+      <Declaration><![CDATA[METHOD M_ReadStruct : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Address of the array containing the column name to be read.
+  pColumnNames:               POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
+  /// Length of the column name array
+  cbColumnNames:              UDINT;
+  /// Name the sorting column
+  sOrderByColumn:             STRING(50);
+  /// Sorting direction (ASC or DESC)
+  eOrderType:                 E_OrderType;
+  /// Indicates the index of the first record to be read.
+  nStartIndex:                UDINT;
+  /// Indicates the number of records to be read.
+  nRecordCount:               UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData:                      POINTER TO BYTE;
+  /// Indicates the size of the structure array in bytes.
+  cbData:                     UDINT;
+END_VAR
+VAR
+  
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ReadStruct := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.pColumnNames := pColumnNames;
+THIS^.cbColumnNames := cbColumnNames;
+THIS^.sOrderByColumn := sOrderByColumn;
+THIS^.eOrderType := eOrderType;
+THIS^.nStartIndex := nStartIndex;
+THIS^.nRecordCount := nRecordCount;
+THIS^.pData := pData;
+THIS^.cbData := cbData;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.READ_STRUCT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBRead    : FB_PLCDBReadEvt (sNetID := '', tTimeout := T#5S);
+    myCustomStruct : ST_Record;
+    tcMessage      : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+TYPE ST_Record :
+STRUCT
+    nID        : LINT;
+    dtTimestamp: DATE_AND_TIME;
+    sName      : STRING;
+    nSensor1   : LREAL;
+    nSensor2   : LREAL;
+END_STRUCT
+END_TYPE
+
+--------------------------------------------------------------------------
+
+// set columnnames
+ColumnNames[0] := 'ID';
+ColumnNames[1] := 'Timestamp';
+ColumnNames[2] := 'Name';
+ColumnNames[3] := 'Sensor1';
+ColumnNames[4] := 'Sensor2';
+
+IF fbPLCDBRead.ReadStruct(
+    hDBID:= 1, 
+    sTableName:= 'MyTable_Struct', 
+    pColumnNames:= ADR(ColumnNames), 
+    cbColumnNames:= SIZEOF(ColumnNames), 
+    sOrderByColumn:= ColumnNames[0], 
+    eOrderType:= E_OrderType.DESC, 
+    nStartIndex:= 0, 
+    nRecordCount:= 1, 
+    pData:= ADR(myCustomStruct), 
+    cbData:= SIZEOF(myCustomStruct))
+THEN
+    IF fbPLCDBRead.bError THEN
+        tcMessage:= fbPLCDBRead.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{065bf662-87e4-4111-bc25-9d98701c6cb6}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Reset := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.INIT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{842d4384-ed62-4525-9c2c-9fd30b48a03e}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetReady" Id="{5d3ab978-ec33-4b5f-a544-e6ad7de803e9}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TableExistCheck" Id="{67b57dcf-a7ed-4b89-b561-7a38a60e4d5e}">
+      <Declaration><![CDATA[METHOD M_TableExistCheck : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:                    BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_TableExistCheck := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.sCmd := CONCAT('SELECT * FROM $'', sTableName);
+THIS^.sCmd := CONCAT(THIS^.sCmd, '$'');
+THIS^.pSQLCmd := ADR(THIS^.sCmd);
+THIS^.cbSQLCmd := SIZEOF(THIS^.sCmd);
+
+// Assign output
+bResult := THIS^.bResult;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.TABLE_EXIST_CHECK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Write" Id="{92c67dbd-25b5-4276-a9ae-d7371d93e93c}">
+      <Declaration><![CDATA[METHOD M_Write : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:            UDINT;
+  /// Name of the table that is to be write.
+  sTableName:         STRING;
+  /// Address of the variable to be logged in the standard table structure.
+  pValue:             POINTER TO BYTE;
+  /// Length of the variable to be logged.
+  cbValue:            UDINT;
+  /// Name that is logged in the table.
+  sDBSymbolName:      STRING;
+  /// Indicates the write mode. (append, update, ring buffer)
+  eDBWriteMode:       E_WriteMode;
+  /// Additional parameter(s) for the "ring buffer" write mode.
+  nRingBuffParameter: UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Write := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.pValue := pValue;
+THIS^.cbValue := cbValue;
+THIS^.sDBSymbolName := sDBSymbolName;
+THIS^.eDBWriteMode := eDBWriteMode;
+THIS^.nRingBuffParameter := nRingBuffParameter;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.WRITE;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBWrite    : FB_PLCDBWriteEvt(sNetID := '', tTimeout := T#5S);
+    myValue         : LREAL := 43.23;
+    tcMessage       : I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+IF fbPLCDBWrite.Write(
+    hDBID:= 1, 
+    sTableName:= 'myTable_WithLReal',
+    pValue:= ADR(myValue), 
+    cbValue:= SIZEOF(myValue), 
+    sDBSymbolName:= 'MyValue', 
+    eDBWriteMode:= E_WriteMode.eADS_TO_DB_RingBuff_Count, 
+    nRingBuffParameter:= 3) 
+THEN
+    IF fbPLCDBWrite.bError THEN
+        tcMessage := fbPLCDBWrite.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0; 
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_WriteBySymbol" Id="{5b0405f0-c60f-45fe-ac7e-db9d57d30da0}">
+      <Declaration><![CDATA[METHOD M_WriteBySymbol : BOOL
+
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:            UDINT;
+  /// Name of the table that is to be write.
+  sTableName:         STRING;
+  /// ADS device from which a symbol is to be logged in the standard table structure.
+  stADSDevice: ST_ADSDevice;
+  /// Symbol name of the variable to be written
+  stSymbol: ST_Symbol;
+  /// Indicates the write mode. (append, update, ring buffer)
+  eDBWriteMode:       E_WriteMode;
+  /// Additional parameter(s) for the "ring buffer" write mode.
+  nRingBuffParameter: UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_WriteBySymbol := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.stADSDevice := stADSDevice;
+THIS^.stSymbol := stSymbol;
+THIS^.eDBWriteMode := eDBWriteMode;
+THIS^.nRingBuffParameter := nRingBuffParameter;
+
+
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.WRITE_BY_SYMBOL;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBWrite    :  FB_PLCDBWriteEvt(sNetID := '', tTimeout := T#5S);
+    myValue         :  LREAL := 43.23;
+    myAdsDevice     :  ST_ADSDevice;
+    mySymbol        :  ST_Symbol;
+    tcMessage       :  I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+// Set ADSDevice Information
+myAdsDevice.sDevNetID     := '127.0.0.1.1.1';
+myAdsDevice.nDevPort      := 851;
+myAdsDevice.eADSRdWrtMode := E_ADSRdWrtMode.bySymbolName; 
+myAdsDevice.tTimeout      := T#5S; 
+
+// Set Symbol Information
+mySymbol.eDataType        := E_PLCDataType.eType_LREAL;
+mySymbol.sDBSymbolName    := 'MySymbol';
+mySymbol.sSymbolName      := 'MAIN.myValue';
+mySymbol.nBitSize         := 8;
+
+// Call Functionblock
+IF fbPLCDBWrite.WriteBySymbol(
+    hDBID:= 1, 
+    sTableName:= 'myTable_WithLReal', 
+    stADSDevice:= myAdsDevice, 
+    stSymbol:= mySymbol, 
+    eDBWriteMode:= E_WriteMode.eADS_TO_DB_Append, 
+    nRingBuffParameter:= 1) 
+THEN
+    IF fbPLCDBWrite.bError THEN
+        tcMessage := fbPLCDBWrite.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_WriteStruct" Id="{6c3cdfe7-fd26-4fd3-87a1-9bc56447ab7f}">
+      <Declaration><![CDATA[METHOD M_WriteStruct : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:        UDINT;
+  /// Name of the table that is to be write.
+  sTableName:     STRING;
+  /// Address of a structure that is to be logged in a freely selectable table structure.
+  pRecord:        POINTER TO BYTE;
+  /// Length of the structure to be written
+  cbRecord:       UDINT;
+  /// Address of the array containing the column name to be filled.
+  pColumnNames:   POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
+  /// Length of the column name array
+  cbColumnNames:  UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_WriteStruct := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.udiDBID := udiDBID;
+THIS^.sTableName := sTableName;
+THIS^.pRecord := pRecord;
+THIS^.cbRecord := cbRecord;
+THIS^.pColumnNames := pColumnNames;
+THIS^.cbColumnNames := cbColumnNames;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.WRITE_STRUCT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF
+
+// Example
+(*
+VAR
+    fbPLCDBWrite    :  FB_PLCDBWriteEvt(sNetID := '', tTimeout := T#5S);
+    myRecord        :  ST_Record;
+    ColumnNames     :  ARRAY[0..4] OF STRING(50);
+    
+    systime         :  GETSYSTEMTIME;
+    currentTime     :  T_FILETIME;
+    tcMessage       :  I_TcMessage;
+END_VAR
+
+------------------------------------------------------------------------
+
+TYPE ST_Record :
+STRUCT
+    nID        : LINT;
+    dtTimestamp: DATE_AND_TIME;
+    sName      : STRING;
+    nSensor1   : LREAL;
+    nSensor2   : LREAL;
+END_STRUCT
+END_TYPE
+
+------------------------------------------------------------------------
+
+// set Values
+systime(timeLoDw => currentTime.dwLowDateTime, timeHiDW => currentTime.dwHighDateTime );
+myRecord.dtTimestamp := FILETIME_TO_DT(currentTime);
+myRecord.sName       := 'MyStructVal';
+myRecord.nSensor1    := 12.34;
+myRecord.nSensor2    := 102.5;
+
+// set columnnames
+ColumnNames[0] := 'ID';
+ColumnNames[1] := 'Timestamp';
+ColumnNames[2] := 'Name';
+ColumnNames[3] := 'Sensor1';
+ColumnNames[4] := 'Sensor2';
+
+// Call Functionblock
+IF fbPLCDBWrite.WriteStruct(
+    hDBID:= 1, 
+    sTableName:= 'myTable_Struct', 
+    pRecord:= ADR(myRecord), 
+    cbRecord:= SIZEOF(myRecord), 
+    pColumnNames:= ADR(ColumnNames) , 
+    cbColumnNames:= SIZEOF(ColumnNames))
+THEN
+    IF fbPLCDBWrite.bError THEN
+        tcMessage := fbPLCDBWrite.ipTcResult;
+        nState := 255; 
+    ELSE
+        nState := 0;
+    END_IF
+END_IF
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Connected" Id="{41602308-5df3-48bd-9fcb-34a74d6d73ae}">
+      <Declaration><![CDATA[PROPERTY P_Connected : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{720220af-ecc6-4707-be5e-0729ba6a9fde}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Connected := THIS^.fbSQLDatabase.bConnected;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Error" Id="{3219971e-3c14-4fd6-88b1-bc09ecc9cff4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_Error : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{5c546472-572d-4e6d-a5f7-9fba440b1856}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Error := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.ERROR;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{99d74cbf-46d3-45e4-a01f-76465eee7e5e}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{04b3d8f1-2ed5-4845-a84f-17aaf8823b7f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{4bebe9ec-67ba-4083-bed9-7647d888121c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{0a901585-6f45-4d12-bf89-10dd0428105c}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{ac4a3254-dd3d-4664-abdf-578684825a97}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{09754576-5ad6-482d-a64e-2d54c636bbdd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{2e8ef732-946a-4d73-847f-3dd9a1d55662}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{5e212e7d-e07f-43b8-bec2-4652482a1c41}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e1bee061-acf7-468d-9b78-696b248ad008}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{6f8136f7-5d03-4ac5-8a92-6c342736e439}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{fe3190ca-1158-40cc-8cef-30f8929cbef9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_DATABASE">
+      <LineId Id="1361" Count="1" />
+      <LineId Id="1367" Count="5" />
+      <LineId Id="1359" Count="1" />
+      <LineId Id="733" Count="6" />
+      <LineId Id="896" Count="1" />
+      <LineId Id="740" Count="4" />
+      <LineId Id="754" Count="4" />
+      <LineId Id="993" Count="0" />
+      <LineId Id="996" Count="3" />
+      <LineId Id="995" Count="0" />
+      <LineId Id="994" Count="0" />
+      <LineId Id="759" Count="4" />
+      <LineId Id="765" Count="0" />
+      <LineId Id="1203" Count="1" />
+      <LineId Id="1251" Count="3" />
+      <LineId Id="1206" Count="1" />
+      <LineId Id="1205" Count="0" />
+      <LineId Id="1247" Count="3" />
+      <LineId Id="1208" Count="0" />
+      <LineId Id="1352" Count="0" />
+      <LineId Id="1354" Count="4" />
+      <LineId Id="1353" Count="0" />
+      <LineId Id="766" Count="1" />
+      <LineId Id="918" Count="3" />
+      <LineId Id="768" Count="2" />
+      <LineId Id="1243" Count="3" />
+      <LineId Id="1209" Count="2" />
+      <LineId Id="1239" Count="3" />
+      <LineId Id="1212" Count="2" />
+      <LineId Id="1235" Count="3" />
+      <LineId Id="771" Count="1" />
+      <LineId Id="785" Count="0" />
+      <LineId Id="1231" Count="3" />
+      <LineId Id="898" Count="0" />
+      <LineId Id="1006" Count="1" />
+      <LineId Id="1227" Count="3" />
+      <LineId Id="1008" Count="0" />
+      <LineId Id="899" Count="1" />
+      <LineId Id="1223" Count="3" />
+      <LineId Id="901" Count="2" />
+      <LineId Id="1219" Count="3" />
+      <LineId Id="904" Count="2" />
+      <LineId Id="1215" Count="3" />
+      <LineId Id="907" Count="2" />
+      <LineId Id="912" Count="3" />
+      <LineId Id="910" Count="0" />
+      <LineId Id="786" Count="5" />
+      <LineId Id="731" Count="0" />
+      <LineId Id="822" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_GeneralStepSetting">
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_CLEAR_TABLE">
+      <LineId Id="45" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="179" Count="11" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="147" Count="1" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="165" Count="3" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="152" Count="1" />
+      <LineId Id="155" Count="1" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="194" Count="9" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_CONNECT">
+      <LineId Id="221" Count="23" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="298" Count="0" />
+      <LineId Id="301" Count="3" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="308" Count="1" />
+      <LineId Id="269" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_CREATE_DATABASE">
+      <LineId Id="153" Count="21" />
+      <LineId Id="249" Count="1" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="296" Count="4" />
+      <LineId Id="280" Count="2" />
+      <LineId Id="284" Count="2" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="201" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_CREATE_TABLE">
+      <LineId Id="153" Count="21" />
+      <LineId Id="249" Count="1" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="277" Count="5" />
+      <LineId Id="284" Count="2" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="201" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_DELETE_TABLE">
+      <LineId Id="153" Count="21" />
+      <LineId Id="241" Count="12" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="175" Count="2" />
+      <LineId Id="230" Count="1" />
+      <LineId Id="181" Count="20" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="257" Count="9" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="202" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_DISCONNECT">
+      <LineId Id="153" Count="58" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_EXECUTE_CMD">
+      <LineId Id="153" Count="24" />
+      <LineId Id="317" Count="0" />
+      <LineId Id="319" Count="5" />
+      <LineId Id="292" Count="2" />
+      <LineId Id="296" Count="2" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_EXECUTE_SIMPLIFY_CMD">
+      <LineId Id="153" Count="21" />
+      <LineId Id="332" Count="12" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="292" Count="2" />
+      <LineId Id="296" Count="2" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="347" Count="9" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="213" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_INIT">
+      <LineId Id="45" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="145" Count="5" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="14" Count="2" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_OVERWRITE">
+      <LineId Id="153" Count="21" />
+      <LineId Id="268" Count="12" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="232" Count="9" />
+      <LineId Id="180" Count="20" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="283" Count="9" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="201" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_READ">
+      <LineId Id="153" Count="24" />
+      <LineId Id="245" Count="9" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="224" Count="1" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="184" Count="27" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_READ_STRUCT">
+      <LineId Id="153" Count="24" />
+      <LineId Id="212" Count="9" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="224" Count="1" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="184" Count="27" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_TABLE_EXIST_CHECK">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="18" />
+      <LineId Id="358" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="359" Count="1" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="389" Count="4" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="395" Count="1" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="10" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_WRITE">
+      <LineId Id="153" Count="24" />
+      <LineId Id="304" Count="7" />
+      <LineId Id="292" Count="2" />
+      <LineId Id="296" Count="2" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_WRITE_BY_SYMBOL">
+      <LineId Id="153" Count="24" />
+      <LineId Id="317" Count="6" />
+      <LineId Id="292" Count="2" />
+      <LineId Id="296" Count="2" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_Seq_WRITE_STRUCT">
+      <LineId Id="153" Count="24" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="287" Count="7" />
+      <LineId Id="296" Count="2" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="26" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_SequenceManager">
+      <LineId Id="14" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="23" Count="11" />
+      <LineId Id="59" Count="4" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="74" Count="3" />
+      <LineId Id="73" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE._m_TimeOut">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_ClearTable">
+      <LineId Id="24" Count="0" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="80" Count="4" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Connect">
+      <LineId Id="8" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="54" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_CreateDatabase">
+      <LineId Id="5" Count="7" />
+      <LineId Id="96" Count="3" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="4" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="68" Count="15" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="66" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_CreateTable">
+      <LineId Id="78" Count="0" />
+      <LineId Id="115" Count="1" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="117" Count="1" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="143" Count="3" />
+      <LineId Id="68" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_DeleteTable">
+      <LineId Id="27" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="79" Count="3" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Disconnect">
+      <LineId Id="8" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_ExecuteCmd">
+      <LineId Id="27" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="80" Count="6" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="199" Count="3" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="90" Count="1" />
+      <LineId Id="118" Count="5" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="127" Count="18" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="97" Count="2" />
+      <LineId Id="146" Count="35" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="87" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_ExecuteSimplifyCmd">
+      <LineId Id="27" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="80" Count="1" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="229" Count="3" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="90" Count="1" />
+      <LineId Id="206" Count="2" />
+      <LineId Id="96" Count="3" />
+      <LineId Id="209" Count="10" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="87" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Overwrite">
+      <LineId Id="45" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="96" Count="4" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="118" Count="3" />
+      <LineId Id="35" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Read">
+      <LineId Id="94" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="133" Count="2" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="177" Count="2" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="254" Count="3" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="181" Count="2" />
+      <LineId Id="209" Count="3" />
+      <LineId Id="189" Count="3" />
+      <LineId Id="213" Count="16" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="180" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_ReadStruct">
+      <LineId Id="94" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="133" Count="5" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="247" Count="3" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="176" Count="3" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="183" Count="8" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="195" Count="25" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="174" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Reset">
+      <LineId Id="6" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="57" Count="3" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_SetReady">
+      <LineId Id="22" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_TableExistCheck">
+      <LineId Id="14" Count="3" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="24" Count="4" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_Write">
+      <LineId Id="89" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="278" Count="5" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="301" Count="3" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="144" Count="2" />
+      <LineId Id="245" Count="3" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="249" Count="14" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="143" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_WriteBySymbol">
+      <LineId Id="89" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="297" Count="4" />
+      <LineId Id="296" Count="0" />
+      <LineId Id="295" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="350" Count="3" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="144" Count="2" />
+      <LineId Id="302" Count="5" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="308" Count="26" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="143" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.M_WriteStruct">
+      <LineId Id="89" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="137" Count="5" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="144" Count="2" />
+      <LineId Id="172" Count="7" />
+      <LineId Id="152" Count="2" />
+      <LineId Id="183" Count="8" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="192" Count="28" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="143" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Connected.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DATABASE.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

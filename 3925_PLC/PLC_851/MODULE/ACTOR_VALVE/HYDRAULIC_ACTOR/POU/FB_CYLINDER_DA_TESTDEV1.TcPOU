@@ -16,9 +16,11 @@ VAR_INPUT
   lrPistonSurfaceA:                                       LREAL;
   /// Cylinder piston surface B
   lrPistonSurfaceB:                                       LREAL;
-  // Speed regulation
-  rRegulationFactor:                                      REAL;
-  rRegulationTolerance:                                   REAL;
+  // Speed and Pressure regulation
+  rSpeedRegulationFactor:                                 REAL;
+  rSpeedRegulationTolerance:                              REAL;
+  rPressureRegulationFactor:                              REAL;
+  rPressureRegulationTolerance:                           REAL;
 END_VAR
 VAR //General
 	{attribute 'instance-path'} 
@@ -165,10 +167,8 @@ VAR // Recording
   iCorrectedPressureAsValue:                              INT;
   bPressureRegulationTrigger:                             BOOL;
   bPressureRegulationBusy:                                BOOL;
-  rPressureRegulationTolerance:                           REAL := 100;
   bPressureCorrectionTrigger:                             BOOL;
   uiPressureRegulationSeq:                                UINT := 0;
-  rPressureRegulationFactor:                              REAL := 0.005;
   bPressureRegulation:                                    BOOL;
 END_VAR                   	
 VAR_TEMP                    	
@@ -2456,9 +2456,9 @@ AND THIS^.rCorrectedSpeedPercent < 100
 AND THIS^.bRegulationTrigger
 AND NOT THIS^.bRegulationBusy
 THEN
-  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > THIS^.rRegulationTolerance THEN
+  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > THIS^.rSpeedRegulationTolerance THEN
     //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + 0.25;
-    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rSpeedRegulationFactor);
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 ELSIF TRUE
@@ -2467,9 +2467,9 @@ AND THIS^.rCorrectedSpeedPercent > -100
 AND THIS^.bRegulationTrigger
 AND NOT THIS^.bRegulationBusy
 THEN
-  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > THIS^.rRegulationTolerance THEN
+  IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > THIS^.rSpeedRegulationTolerance THEN
     //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - 0.25;
-    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rSpeedRegulationFactor);
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 END_IF
@@ -3063,6 +3063,24 @@ IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_ActiveDirection" Id="{bb177c56-5bf4-456b-bd35-4110bf2c0b6b}">
+      <Declaration><![CDATA[PROPERTY P_ActiveDirection : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{81862fc7-8740-48d6-aabb-750d3f4aa01e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF THIS^.itfValve_CylCtrl.P_CurrentVal < - 100 THEN
+  P_ActiveDirection := 'Moove to home position';
+ELSIF THIS^.itfValve_CylCtrl.P_CurrentVal > 100 THEN
+  P_ActiveDirection := 'Moove to work position';
+ELSE
+  P_ActiveDirection := 'Stop';
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_ActiveVolumeFlow" Id="{946f3b6b-b04f-4592-a5d6-37e4a19507d5}">
       <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
 PROPERTY P_ActiveVolumeFlow : REAL
@@ -4452,6 +4470,14 @@ END_VAR
       <LineId Id="75" Count="1" />
       <LineId Id="141" Count="2" />
       <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV1.P_ActiveDirection.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="6" Count="0" />
     </LineIds>
     <LineIds Name="FB_CYLINDER_DA_TESTDEV1.P_ActiveVolumeFlow.Get">
       <LineId Id="2" Count="0" />

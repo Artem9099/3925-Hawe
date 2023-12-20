@@ -12,81 +12,117 @@
 
   <div id="TcHmiGrid_Settings_1" data-tchmi-type="TcHmi.Controls.System.TcHmiGrid" data-tchmi-height="720" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="48" data-tchmi-top-unit="px" data-tchmi-width="100" data-tchmi-width-unit="%" data-tchmi-height-mode="Content">
     <script data-tchmi-target-attribute="data-tchmi-column-options" type="application/json">
-      [
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      },
-      {
-      "width": 1.0,
-      "widthUnit": "factor",
-      "widthMode": "Value",
-      "maxWidthUnit": "px",
-      "minWidth": 320.0,
-      "minWidthUnit": "px",
-      "overflow": false
-      }
-      ]
-    </script>
+[
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  },
+  {
+    "width": 1.0,
+    "widthUnit": "factor",
+    "widthMode": "Value",
+    "maxWidthUnit": "px",
+    "minWidth": 320.0,
+    "minWidthUnit": "px",
+    "overflow": false
+  }
+]
+</script>
     <script data-tchmi-target-attribute="data-tchmi-row-options" type="application/json">
       [
       {
@@ -110,7 +146,7 @@
         ]
       </script>
 
-      <div id="TcHmiTextblock_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="%l%L_Localization%/l%" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center">
+      <div id="TcHmiTextblock_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="Lokation/Thema">
 
 
         <script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
@@ -120,7 +156,7 @@
         </script>
       </div>
 
-      <div id="TcHmiLocalizationSelect_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiLocalizationSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center">
+      <div id="TcHmiLocalizationSelect_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiLocalizationSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center">
         <script data-tchmi-target-attribute="data-tchmi-localization-mapping" type="application/json">
           [
           {
@@ -144,7 +180,18 @@
 
       </div>
 
-    </div>
+    <div id="TcHmiThemeSelect_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiThemeSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-drop-down-vertical-alignment="Center">
+<script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
+          {
+          "top": 3,
+          "right": 3,
+          "bottom": 3,
+          "left": 3
+          }
+        </script>
+
+      </div>
+</div>
 
     <div data-tchmi-grid-column-index="1" id="TcHmiContainer_Settings_2" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0">
 
@@ -155,7 +202,7 @@
         ]
       </script>
       
-      <div id="TcHmiTextblock_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="%l%L_Theme%/l%" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True">
+      <div id="TcHmiTextblock_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True" data-tchmi-text="Druckregelung">
 
 
         <script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
@@ -164,18 +211,32 @@
           ]
         </script>
       </div>
-      
-      <div id="TcHmiThemeSelect_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiThemeSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-drop-down-vertical-alignment="Center">
-        <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
-          {
-          "top": 3,
-          "right": 3,
-          "bottom": 3,
-          "left": 3
-          }
-        </script>
+<div id="TcHmiTextblock_284" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Fehlertoleranz (val)" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
+</div>
+<div id="TcHmiTextblock_285" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Proportionalfaktor" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
+</div>
+<div id="TcHmiSpinboxInput_76" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="1000" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true">
+<script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
+{
+  "top": 3,
+  "right": 3,
+  "bottom": 3,
+  "left": 3
+}
+</script>
 
-      </div>
+</div>
+<div id="TcHmiSpinboxInput_77" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="0.1" data-tchmi-min-value="0.01" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.01">
+<script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
+{
+  "top": 3,
+  "right": 3,
+  "bottom": 3,
+  "left": 3
+}
+</script>
+
+</div>
 </div>
 
     <div data-tchmi-grid-column-index="2" id="TcHmiContainer_Settings_3" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center">
@@ -306,17 +367,266 @@
         "background-container"
         ]
       </script>
+</div>
 
-    <div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="TcHmiTextblock_GeneralSettings_Theme_49" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="Sonstiges">
+
+    <script data-tchmi-target-attribute="data-tchmi-cell-options" type="application/json">
+[
+  {
+    "columnIndex": 0,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 1,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 2,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 3,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 4,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 5,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 6,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 7,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 8,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 9,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 10,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  },
+  {
+    "columnIndex": 11,
+    "rowIndex": 0,
+    "padding": {
+      "left": 16,
+      "right": 16,
+      "top": 16,
+      "bottom": 16,
+      "leftUnit": "px",
+      "rightUnit": "px",
+      "topUnit": "px",
+      "bottomUnit": "px"
+    },
+    "backgroundImageWidthUnit": "px",
+    "backgroundImageHeightUnit": "px",
+    "backgroundImageHorizontalAlignment": "Center",
+    "backgroundImageVerticalAlignment": "Center"
+  }
+]
+</script>
+<div data-tchmi-grid-column-index="8" data-tchmi-grid-row-index="0" id="TcHmiContainer_Settings_42" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0">
+<script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
+        [
+        "background-container"
+        ]
+      </script>
+
+    </div>
+<div data-tchmi-grid-column-index="9" data-tchmi-grid-row-index="0" id="TcHmiContainer_Settings_43" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0">
+<script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
+        [
+        "background-container"
+        ]
+      </script>
+</div>
+<div data-tchmi-grid-column-index="10" data-tchmi-grid-row-index="0" id="TcHmiContainer_Settings_44" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0">
+<script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
+        [
+        "background-container"
+        ]
+      </script>
+</div>
+<div data-tchmi-grid-column-index="11" data-tchmi-grid-row-index="0" id="TcHmiContainer_Settings_45" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width-unit="px" data-tchmi-right-unit="px" data-tchmi-right="0" data-tchmi-bottom="0">
+<script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
+        [
+        "background-container"
+        ]
+      </script>
+
+    <div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="TcHmiTextblock_GeneralSettings_Theme_49" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="9" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="True" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="Sonstiges">
 <script data-tchmi-target-attribute="data-tchmi-class-names" type="application/json">
           [
           "headline-3"
           ]
         </script>
       </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnCloseHMI_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="HMI beenden">
-
-
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnCloseHMI_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="45" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="HMI beenden">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -338,9 +648,7 @@
 ]
 </script>
 </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnRestart_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="106" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC neustarten">
-
-
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnRestart_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="105" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC neustarten">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -362,9 +670,7 @@
 ]
 </script>
 </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnShutdown_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="166" data-tchmi-top-unit="px" data-tchmi-width="268" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC herunterfahren">
-
-
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnShutdown_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="165" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC herunterfahren">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -387,155 +693,5 @@
 </script>
 </div>
 </div>
-
-
-    <script data-tchmi-target-attribute="data-tchmi-cell-options" type="application/json">
-      [
-      {
-      "columnIndex": 0,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 1,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 2,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 3,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 4,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 5,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 6,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      },
-      {
-      "columnIndex": 7,
-      "rowIndex": 0,
-      "padding": {
-      "left": 16,
-      "right": 16,
-      "top": 16,
-      "bottom": 16,
-      "leftUnit": "px",
-      "rightUnit": "px",
-      "topUnit": "px",
-      "bottomUnit": "px"
-      },
-      "backgroundImageWidthUnit": "px",
-      "backgroundImageHeightUnit": "px",
-      "backgroundImageHorizontalAlignment": "Center",
-      "backgroundImageVerticalAlignment": "Center"
-      }
-      ]
-    </script>
-  </div>
+</div>
 </div>

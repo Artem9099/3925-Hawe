@@ -40,6 +40,10 @@
       {
         "name": "Kalibrierung",
         "content": "Pages/Settings/CylinderCalibration/CylinderCalibration.content"
+      },
+      {
+        "name": "Grafana",
+        "content": "Pages/Settings/Grafana.content"
       }
     ]
   }

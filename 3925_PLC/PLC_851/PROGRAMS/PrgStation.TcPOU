@@ -237,26 +237,26 @@ VAR
   fbValve43_CounterCyl4_Retract:                  FB_BINARY_OUTPUT; // Hydraulic plan: 11.25
 {endregion}
 {region 'Converted values'}
-  iPressureConverted_TestCyl1:                    INT;
-  iPressureConverted_TestCyl1_A:                  INT;
-  iPressureConverted_TestCyl1_B:                  INT;
-  iPressureConverted_CounterCyl1:                 INT;
-  iPressureConverted_LowPressure:                 INT;
-  iPressureConverted_TestCyl1_BreakPressure_A:    INT;
-  iPressureConverted_TestCyl1_BreakPressure_B:    INT;
-  iPressureConverted_TestCyl1_PressureReservoir:  INT;
-  iPressureConverted_TestCyl2:                    INT;
-  iPressureConverted_TestCyl2_A:                  INT;
-  iPressureConverted_TestCyl2_B:                  INT;
-  iPressureConverted_CounterCyl2:                 INT;
-  iPressureConverted_TestCyl3:                    INT;
-  iPressureConverted_TestCyl3_A:                  INT;
-  iPressureConverted_TestCyl3_B:                  INT;
-  iPressureConverted_CounterCyl3:                 INT;
-  iPressureConverted_TestCyl4:                    INT;
-  iPressureConverted_TestCyl4_A:                  INT;
-  iPressureConverted_TestCyl4_B:                  INT;
-  iPressureConverted_CounterCyl4:                 INT;
+  rPressureConverted_TestCyl1:                    REAL;
+  rPressureConverted_TestCyl1_A:                  REAL;
+  rPressureConverted_TestCyl1_B:                  REAL;
+  rPressureConverted_CounterCyl1:                 REAL;
+  rPressureConverted_LowPressure:                 REAL;
+  rPressureConverted_TestCyl1_BreakPressure_A:    REAL;
+  rPressureConverted_TestCyl1_BreakPressure_B:    REAL;
+  rPressureConverted_TestCyl1_PressureReservoir:  REAL;
+  rPressureConverted_TestCyl2:                    REAL;
+  rPressureConverted_TestCyl2_A:                  REAL;
+  rPressureConverted_TestCyl2_B:                  REAL;
+  rPressureConverted_CounterCyl2:                 REAL;
+  rPressureConverted_TestCyl3:                    REAL;
+  rPressureConverted_TestCyl3_A:                  REAL;
+  rPressureConverted_TestCyl3_B:                  REAL;
+  rPressureConverted_CounterCyl3:                 REAL;
+  rPressureConverted_TestCyl4:                    REAL;
+  rPressureConverted_TestCyl4_A:                  REAL;
+  rPressureConverted_TestCyl4_B:                  REAL;
+  rPressureConverted_CounterCyl4:                 REAL;
 {endregion}
   
 {region 'Components'}
@@ -642,6 +642,10 @@ END_VAR
 
 VAR PERSISTENT
   stSettings:                                     ST_SETTINGS;
+  sTestCyl1SNo:                                   STRING := '0001';
+  sTestCyl2SNo:                                   STRING := '0002';
+  sTestCyl3SNo:                                   STRING := '0003';
+  sTestCyl4SNo:                                   STRING := '0004';
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -652,26 +656,26 @@ fbTimerNest1();
 fbTimerNest2();
 fbTimerNest3();
 fbTimerNest4();
-iPressureConverted_TestCyl1 := TO_INT(TO_REAL(iPressureSensor_TestCyl1) * 0.025);
-iPressureConverted_TestCyl1_A := TO_INT(TO_REAL(iPressureSensor_TestCyl1_A) * 0.025);
-iPressureConverted_TestCyl1_B := TO_INT(TO_REAL(iPressureSensor_TestCyl1_B) * 0.025);
-iPressureConverted_CounterCyl1 := TO_INT(TO_REAL(iPressureSensor_CounterCyl1) * 0.025);
-iPressureConverted_LowPressure := TO_INT(TO_REAL(iPressureSensor_LowPressure) * 0.001);
-iPressureConverted_TestCyl1_BreakPressure_A := TO_INT(TO_REAL(iPressureSensor_TestCyl1_BreakPressure_A) * 0.025);
-iPressureConverted_TestCyl1_BreakPressure_B := TO_INT(TO_REAL(iPressureSensor_TestCyl1_BreakPressure_B) * 0.025);
-iPressureConverted_TestCyl1_PressureReservoir := TO_INT(TO_REAL(iPressureSensor_TestCyl1_PressureReservoir) * 0.025);
-iPressureConverted_TestCyl2 := TO_INT(TO_REAL(iPressureSensor_TestCyl2) * 0.025);
-iPressureConverted_TestCyl2_A := TO_INT(TO_REAL(iPressureSensor_TestCyl2_A) * 0.025);
-iPressureConverted_TestCyl2_B := TO_INT(TO_REAL(iPressureSensor_TestCyl2_B) * 0.025);
-iPressureConverted_CounterCyl2 := TO_INT(TO_REAL(iPressureSensor_CounterCyl2) * 0.025);
-iPressureConverted_TestCyl3 := TO_INT(TO_REAL(iPressureSensor_TestCyl3) * 0.025);
-iPressureConverted_TestCyl3_A := TO_INT(TO_REAL(iPressureSensor_TestCyl3_A) * 0.025);
-iPressureConverted_TestCyl3_B := TO_INT(TO_REAL(iPressureSensor_TestCyl3_B) * 0.025);
-iPressureConverted_CounterCyl3 := TO_INT(TO_REAL(iPressureSensor_CounterCyl3) * 0.025);
-iPressureConverted_TestCyl4 := TO_INT(TO_REAL(iPressureSensor_TestCyl4) * 0.025);
-iPressureConverted_TestCyl4_A := TO_INT(TO_REAL(iPressureSensor_TestCyl4_A) * 0.025);
-iPressureConverted_TestCyl4_B := TO_INT(TO_REAL(iPressureSensor_TestCyl4_B) * 0.025);
-iPressureConverted_CounterCyl4 := TO_INT(TO_REAL(iPressureSensor_CounterCyl4) * 0.025);
+rPressureConverted_TestCyl1 := TO_REAL(iPressureSensor_TestCyl1) * 0.025;
+rPressureConverted_TestCyl1_A := TO_REAL(iPressureSensor_TestCyl1_A) * 0.025;
+rPressureConverted_TestCyl1_B := TO_REAL(iPressureSensor_TestCyl1_B) * 0.025;
+rPressureConverted_CounterCyl1 := TO_REAL(iPressureSensor_CounterCyl1) * 0.025;
+rPressureConverted_LowPressure := TO_REAL(iPressureSensor_LowPressure) * 0.001;
+rPressureConverted_TestCyl1_BreakPressure_A := TO_REAL(iPressureSensor_TestCyl1_BreakPressure_A) * 0.001;
+rPressureConverted_TestCyl1_BreakPressure_B := TO_REAL(iPressureSensor_TestCyl1_BreakPressure_B) * 0.001;
+rPressureConverted_TestCyl1_PressureReservoir := TO_REAL(iPressureSensor_TestCyl1_PressureReservoir) * 0.025;
+rPressureConverted_TestCyl2 := TO_REAL(iPressureSensor_TestCyl2) * 0.025;
+rPressureConverted_TestCyl2_A := TO_REAL(iPressureSensor_TestCyl2_A) * 0.025;
+rPressureConverted_TestCyl2_B := TO_REAL(iPressureSensor_TestCyl2_B) * 0.025;
+rPressureConverted_CounterCyl2 := TO_REAL(iPressureSensor_CounterCyl2) * 0.025;
+rPressureConverted_TestCyl3 := TO_REAL(iPressureSensor_TestCyl3) * 0.025;
+rPressureConverted_TestCyl3_A := TO_REAL(iPressureSensor_TestCyl3_A) * 0.025;
+rPressureConverted_TestCyl3_B := TO_REAL(iPressureSensor_TestCyl3_B) * 0.025;
+rPressureConverted_CounterCyl3 := TO_REAL(iPressureSensor_CounterCyl3) * 0.025;
+rPressureConverted_TestCyl4 := TO_REAL(iPressureSensor_TestCyl4) * 0.025;
+rPressureConverted_TestCyl4_A := TO_REAL(iPressureSensor_TestCyl4_A) * 0.025;
+rPressureConverted_TestCyl4_B := TO_REAL(iPressureSensor_TestCyl4_B) * 0.025;
+rPressureConverted_CounterCyl4 := TO_REAL(iPressureSensor_CounterCyl4) * 0.025;
 
 
   // - Pmps/Engines
@@ -740,54 +744,70 @@ fbValve_SensorBreakPressure_A_Add();
 fbValve_SensorBreakPressure_B_Add();
 
   // - Cylinders
-fbCounterCyl1(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl1), 
-              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl1_Active);
-fbCounterCyl2(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl2), 
-              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl2_Active);
-fbCounterCyl3(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl3), 
-              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl3_Active);
-fbCounterCyl4(rCurrentPressureInBar:= TO_REAL(iPressureConverted_CounterCyl4), 
-              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl4_Active);
+fbCounterCyl1(rCurrentPressureInBar:= rPressureConverted_CounterCyl1, 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl1_Active,
+              rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+              rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
+fbCounterCyl2(rCurrentPressureInBar:= rPressureConverted_CounterCyl2, 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl2_Active,
+              rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+              rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
+fbCounterCyl3(rCurrentPressureInBar:= rPressureConverted_CounterCyl3, 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl3_Active,
+              rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+              rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
+fbCounterCyl4(rCurrentPressureInBar:= rPressureConverted_CounterCyl4, 
+              bJogActive:= PrgVisu.fbVisuOPMode.P_JogCounterCyl4_Active,
+              rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+              rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
 fbTestCyl1( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
             lrCurrentPosAbs:= TO_LREAL(diTestCyl1_Distance), 
-            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl1),
-            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl1_A),
-            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl1_B),
-            rCurrentLowPressureInBar:= TO_REAL(iPressureConverted_LowPressure),
-            rCurrentLowPressureInBarA:= TO_REAL(iPressureConverted_TestCyl1_BreakPressure_A),
-            rCurrentLowPressureInBarB:= TO_REAL(iPressureConverted_TestCyl1_BreakPressure_B),
-            rCurrentReservoirPressureInBar:= TO_REAL(iPressureConverted_TestCyl1_PressureReservoir),
+            rCurrentPressureInBar:= rPressureConverted_TestCyl1,
+            rCurrentPressureInBarA:= rPressureConverted_TestCyl1_A,
+            rCurrentPressureInBarB:= rPressureConverted_TestCyl1_B,
+            rCurrentLowPressureInBar:= rPressureConverted_LowPressure,
+            rCurrentLowPressureInBarA:= rPressureConverted_TestCyl1_BreakPressure_A,
+            rCurrentLowPressureInBarB:= rPressureConverted_TestCyl1_BreakPressure_B,
+            rCurrentReservoirPressureInBar:= rPressureConverted_TestCyl1_PressureReservoir,
             lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
             lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
-            rRegulationFactor:= stSettings.rRegulationFactor,
-            rRegulationTolerance:= stSettings.rRegulationTolerance);
+            rSpeedRegulationFactor:= stSettings.rSpeedRegulationFactor,
+            rSpeedRegulationTolerance:= stSettings.rSpeedRegulationTolerance,
+            rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+            rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
 fbTestCyl2( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
             lrCurrentPosAbs:= TO_REAL(diTestCyl2_Distance), 
-            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl2),
-            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl2_A),
-            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl2_B),
+            rCurrentPressureInBar:= rPressureConverted_TestCyl2,
+            rCurrentPressureInBarA:= rPressureConverted_TestCyl2_A,
+            rCurrentPressureInBarB:= rPressureConverted_TestCyl2_B,
             lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
             lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
-            rRegulationFactor:= stSettings.rRegulationFactor,
-            rRegulationTolerance:= stSettings.rRegulationTolerance);
+            rSpeedRegulationFactor:= stSettings.rSpeedRegulationFactor,
+            rSpeedRegulationTolerance:= stSettings.rSpeedRegulationTolerance,
+            rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+            rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
 fbTestCyl3( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
             lrCurrentPosAbs:= TO_REAL(diTestCyl3_Distance), 
-            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl3),
-            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl3_A),
-            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl3_B),
+            rCurrentPressureInBar:= rPressureConverted_TestCyl3,
+            rCurrentPressureInBarA:= rPressureConverted_TestCyl3_A,
+            rCurrentPressureInBarB:= rPressureConverted_TestCyl3_B,
             lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
             lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
-            rRegulationFactor:= stSettings.rRegulationFactor,
-            rRegulationTolerance:= stSettings.rRegulationTolerance);
+            rSpeedRegulationFactor:= stSettings.rSpeedRegulationFactor,
+            rSpeedRegulationTolerance:= stSettings.rSpeedRegulationTolerance,
+            rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+            rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
 fbTestCyl4( bDoableActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
             lrCurrentPosAbs:= TO_REAL(diTestCyl4_Distance), 
-            rCurrentPressureInBar:= TO_REAL(iPressureConverted_TestCyl4),
-            rCurrentPressureInBarA:= TO_REAL(iPressureConverted_TestCyl4_A),
-            rCurrentPressureInBarB:= TO_REAL(iPressureConverted_TestCyl4_B),
+            rCurrentPressureInBar:= rPressureConverted_TestCyl4,
+            rCurrentPressureInBarA:= rPressureConverted_TestCyl4_A,
+            rCurrentPressureInBarB:= rPressureConverted_TestCyl4_B,
             lrPistonSurfaceA:= stRecipeParams.stRecipeCyl.lrPistonSurfaceA,
             lrPistonSurfaceB:= stRecipeParams.stRecipeCyl.lrPistonSurfaceB,
-            rRegulationFactor:= stSettings.rRegulationFactor,
-            rRegulationTolerance:= stSettings.rRegulationTolerance);
+            rSpeedRegulationFactor:= stSettings.rSpeedRegulationFactor,
+            rSpeedRegulationTolerance:= stSettings.rSpeedRegulationTolerance,
+            rPressureRegulationFactor:= stSettings.rPressureRegulationFactor,
+            rPressureRegulationTolerance:= stSettings.rPressureRegulationTolerance);
 
   // - Main process
 fbNest1(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
@@ -812,7 +832,39 @@ fbNest4(bDoubleActing:= stRecipeParams.stRecipeCyl.bDoubleActing,
         uiRecordDelay:= stSettings.uiRecordDelay);
 fbMainProcess();
 
-// Fbs init
+// Actions
+A_010_InputToBNC();
+A_020_SetObjectPath();
+
+
+]]></ST>
+    </Implementation>
+    <Action Name="A_010_InputToBNC" Id="{9cdb3998-b9c4-4809-8c31-7ce75cadd940}">
+      <Implementation>
+        <ST><![CDATA[iBNCSocket_TestCyl1_A_Pressure := TO_INT(rPressureConverted_TestCyl1_A);
+iBNCSocket_TestCyl1_B_Pressure := TO_INT(rPressureConverted_TestCyl1_B);
+iBNCSocket_CounterCyl1_Pressure := TO_INT(rPressureConverted_CounterCyl1);
+iBNCSocket_TestCyl1_Distance := TO_INT(diTestCyl1_Distance);
+iBNCSocket_TestCyl1_A_BreakPressure := iPressureSensor_TestCyl1_BreakPressure_A;
+iBNCSocket_TestCyl1_B_BreakPressure := iPressureSensor_TestCyl1_BreakPressure_B;
+iBNCSocket_TestingCyl1_PressureReservoir := TO_INT(rPressureConverted_TestCyl1_PressureReservoir);
+iBNCSocket_TestCyl2_A_Pressure := TO_INT(rPressureConverted_TestCyl2_A);
+iBNCSocket_TestCyl2_B_Pressure := TO_INT(rPressureConverted_TestCyl2_B);
+iBNCSocket_CounterCyl2_Pressure := TO_INT(rPressureConverted_CounterCyl2);
+iBNCSocket_TestCyl2_Distance := TO_INT(diTestCyl2_Distance);
+iBNCSocket_TestCyl3_A_Pressure := TO_INT(rPressureConverted_TestCyl3_A);
+iBNCSocket_TestCyl3_B_Pressure := TO_INT(rPressureConverted_TestCyl3_B);
+iBNCSocket_CounterCyl3_Pressure := TO_INT(rPressureConverted_CounterCyl3);
+iBNCSocket_TestCyl3_Distance := TO_INT(diTestCyl3_Distance);
+iBNCSocket_TestCyl4_A_Pressure := TO_INT(rPressureConverted_TestCyl4_A);
+iBNCSocket_TestCyl4_B_Pressure := TO_INT(rPressureConverted_TestCyl4_B);
+iBNCSocket_CounterCyl4_Pressure := TO_INT(rPressureConverted_CounterCyl4);
+iBNCSocket_TestCyl4_Distance := TO_INT(diTestCyl4_Distance);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_020_SetObjectPath" Id="{1c6a07bd-68ef-49b1-88f1-c54752aacef6}">
+      <Implementation>
+        <ST><![CDATA[// Fbs init
 fbCounterCyl1.P_FullObjectPath := 'PrgStation.fbCounterCyl1';
 fbCounterCyl2.P_FullObjectPath := 'PrgStation.fbCounterCyl2';
 fbCounterCyl3.P_FullObjectPath := 'PrgStation.fbCounterCyl3';
@@ -820,74 +872,28 @@ fbCounterCyl4.P_FullObjectPath := 'PrgStation.fbCounterCyl4';
 fbTestCyl1.P_FullObjectPath := 'PrgStation.fbTestCyl1';
 fbTestCyl2.P_FullObjectPath := 'PrgStation.fbTestCyl2';
 fbTestCyl3.P_FullObjectPath := 'PrgStation.fbTestCyl3';
-fbTestCyl4.P_FullObjectPath := 'PrgStation.fbTestCyl4';
-
-
-]]></ST>
-    </Implementation>
+fbTestCyl4.P_FullObjectPath := 'PrgStation.fbTestCyl4';]]></ST>
+      </Implementation>
+    </Action>
     <LineIds Name="PrgStation">
-      <LineId Id="38599" Count="1" />
-      <LineId Id="38605" Count="0" />
-      <LineId Id="47766" Count="3" />
-      <LineId Id="42606" Count="0" />
-      <LineId Id="42610" Count="6" />
-      <LineId Id="42618" Count="1" />
-      <LineId Id="42617" Count="0" />
-      <LineId Id="42609" Count="0" />
-      <LineId Id="42621" Count="2" />
-      <LineId Id="42620" Count="0" />
-      <LineId Id="42624" Count="2" />
-      <LineId Id="42608" Count="0" />
-      <LineId Id="42607" Count="0" />
-      <LineId Id="38606" Count="67" />
-      <LineId Id="43940" Count="0" />
-      <LineId Id="43942" Count="5" />
-      <LineId Id="38677" Count="0" />
-      <LineId Id="46492" Count="0" />
-      <LineId Id="38678" Count="0" />
-      <LineId Id="43272" Count="1" />
-      <LineId Id="43283" Count="0" />
-      <LineId Id="43274" Count="2" />
-      <LineId Id="38679" Count="1" />
-      <LineId Id="45847" Count="1" />
-      <LineId Id="38681" Count="0" />
-      <LineId Id="46493" Count="0" />
-      <LineId Id="43277" Count="1" />
-      <LineId Id="38682" Count="1" />
-      <LineId Id="45849" Count="1" />
-      <LineId Id="38684" Count="1" />
-      <LineId Id="46494" Count="0" />
-      <LineId Id="43279" Count="1" />
-      <LineId Id="38686" Count="1" />
-      <LineId Id="45851" Count="1" />
-      <LineId Id="38688" Count="1" />
-      <LineId Id="46495" Count="0" />
-      <LineId Id="43281" Count="1" />
-      <LineId Id="38690" Count="1" />
-      <LineId Id="45853" Count="1" />
-      <LineId Id="38692" Count="3" />
-      <LineId Id="45209" Count="0" />
-      <LineId Id="45856" Count="0" />
-      <LineId Id="45214" Count="0" />
-      <LineId Id="47128" Count="0" />
-      <LineId Id="38696" Count="0" />
-      <LineId Id="45210" Count="0" />
-      <LineId Id="45857" Count="0" />
-      <LineId Id="45215" Count="0" />
-      <LineId Id="47129" Count="0" />
-      <LineId Id="45858" Count="1" />
-      <LineId Id="38697" Count="0" />
-      <LineId Id="45216" Count="0" />
-      <LineId Id="47130" Count="0" />
-      <LineId Id="45860" Count="1" />
-      <LineId Id="38698" Count="0" />
-      <LineId Id="45217" Count="0" />
-      <LineId Id="47131" Count="0" />
-      <LineId Id="38699" Count="9" />
-      <LineId Id="40007" Count="0" />
-      <LineId Id="44574" Count="0" />
-      <LineId Id="44573" Count="0" />
+      <LineId Id="48622" Count="187" />
       <LineId Id="42580" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgStation.A_010_InputToBNC">
+      <LineId Id="2" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="2" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgStation.A_020_SetObjectPath">
+      <LineId Id="2" Count="7" />
+      <LineId Id="1" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

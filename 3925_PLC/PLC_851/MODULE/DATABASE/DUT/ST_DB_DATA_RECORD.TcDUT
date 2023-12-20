@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_DB_DATA_RECORD" Id="{747294ec-98f0-45a2-a883-500944c36880}">
+    <Declaration><![CDATA[TYPE ST_DB_DATA_RECORD :
+STRUCT
+  sTimeStamp:                         STRING;
+  sTestingType:                       STRING;
+  sTimer:                             STRING;
+  liTargetCycles:                     LINT;
+  liActiveCycle:                      LINT;
+  sTestDirection:                     STRING;
+  lrTargetTestPressureInBar:          LREAL;
+  lrCurrentTestPressureInBar:         LREAL;
+  lrTargetTestForceInKN:              LREAL;
+  lrCurrentTestForceInKN:             LREAL;
+  lrTestPressureAInBar:               LREAL;
+  lrTestPressureBInBar:               LREAL;
+  lrBreakawayPressureInBar:           LREAL;
+  lrBreakawayPressureAInBar:          LREAL;
+  lrBreakawayPressureBInBar:          LREAL;
+  lrReservoirPressureInBar:           LREAL;
+  lrTargetCounterPressureInBar:       LREAL;
+  lrCurrentCounterPressureInBar:      LREAL;
+  lrTargetCounterForceInKN:           LREAL;
+  lrCurrentCounterForceInKN:          LREAL;
+  lrPosition:                         LREAL;
+  lrPositionMin:                      LREAL;
+  lrPositionMax:                      LREAL;
+  lrCylStrokeLength:                  LREAL;
+  lrTemperature:                      LREAL;
+  lrCylPistonSurfaceA:                LREAL;
+  lrCylPistonSurfaceB:                LREAL;
+  lrLeakageInMm:                      LREAL;
+  lrLeakageInMl:                      LREAL;
+  lrTargetSpeedInMmPerS:              LREAL;
+  lrCurrentSpeedInMmPerS:             LREAL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

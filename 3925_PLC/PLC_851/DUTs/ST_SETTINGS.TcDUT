@@ -10,8 +10,12 @@ STRUCT
   bShowWinKeyboard:               BOOL;
   // Speed regulation and max speed efficiency
   rSpeedEfficiencyFactor:         REAL;
-  rRegulationFactor:              REAL;
-  rRegulationTolerance:           REAL;
+  rSpeedRegulationFactor:         REAL;
+  rSpeedRegulationTolerance:      REAL;
+  // Pressure regulation
+  rPressureRegulationFactor:      REAL;
+  rPressureRegulationTolerance:   REAL;
+  
   // Recording
   uiRecordDelay:                  UINT;
 END_STRUCT

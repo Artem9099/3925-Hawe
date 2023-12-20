@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_DATABASE" Id="{3ffe1783-80c6-4cbf-9999-70e0c2d01a9d}">
+    <Declaration><![CDATA[INTERFACE I_DATABASE EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_ClearTable" Id="{24d1aa89-12ce-4410-b33d-808cdd2fcce4}">
+      <Declaration><![CDATA[METHOD M_ClearTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:          UDINT;
+  /// Name of the table to be created.
+  sTableName:       STRING;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Connect" Id="{2c1611fb-bb67-4b90-a47b-98988b824ab7}">
+      <Declaration><![CDATA[METHOD M_Connect : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                  UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_CreateDatabase" Id="{00fe3d08-145c-49d9-9ead-98a8cb557749}">
+      <Declaration><![CDATA[METHOD M_CreateDatabase : BOOL
+VAR_INPUT
+  /// Address of the database configuration structure
+  pDatabaseConfig:  POINTER TO BYTE;
+  /// Length of the database configuration structure
+  cbDatabaseConfig: UDINT;
+  /// Indicates whether the newly created database should be entered as new configuration entry in the XML file.
+  bCreateXMLConfig: BOOL;
+  /// Returns the hDBID if/when a new configuration entry was created.
+  pDBID:            POINTER TO UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_CreateTable" Id="{083b50c3-9ff8-451d-ad72-6eca5071fd6e}">
+      <Declaration><![CDATA[METHOD M_CreateTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Indicates the pointer address of the table structure array. The individual columns are written in this array.
+  pTableCfg:                  POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ColumnInfo;
+  /// Indicates the length of the array in which the columns are configured.
+  cbTableCfg:                 UDINT;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_DeleteTable" Id="{2561bbcd-ea7f-4cd1-aeba-b538ac00e29e}">
+      <Declaration><![CDATA[METHOD M_DeleteTable : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:          UDINT;
+  /// Name of the table that is to be read.
+  sTableName:       STRING;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Disconnect" Id="{b58e8c1e-1313-4446-92a3-078de7211553}">
+      <Declaration><![CDATA[METHOD M_Disconnect : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ExecuteCmd" Id="{4486c954-2dbc-4ec5-8939-0173c36c27c7}">
+      <Declaration><![CDATA[METHOD M_ExecuteCmd : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:      UDINT;
+  /// Addres of the command
+  pExpression:  POINTER TO BYTE;
+  /// Indicates the number of command.
+  cbExpression: UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData:        POINTER TO BYTE;
+  /// Indicates the size of the structure array in bytes.
+  cbData:       UDINT;
+  /// Address of the structure array.
+  pParameter:   POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ExpParameter;
+  /// Indicates the size of the parameter.
+  cbParameter:  UDINT; 
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ExecuteSimplifyCmd" Id="{31b54563-23c0-4023-a7c2-d3484d2eeff4}">
+      <Declaration><![CDATA[METHOD M_ExecuteSimplifyCmd : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:      UDINT;
+  /// Indicates the pointer address of a string variable with the SQL command to be executed.
+  pSQLCmd:      POINTER TO BYTE;
+  /// Indicates the length of a SQL command to be executed.
+  cbSQLCmd:     UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Overwrite" Id="{e7d6fe0e-415a-4382-92d9-d6abacdef6af}">
+      <Declaration><![CDATA[METHOD M_Overwrite : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Column name of the data to be updated
+  sColumnNameToUpdate:        STRING;
+  /// Column value of the data to be updated
+  sColumnValToUpdate:         STRING;
+  /// Column name to set
+  sColumnNameToSet:           STRING;
+  /// New value
+  sNewVal:                    STRING;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Read" Id="{b30065d4-cc7e-4fa3-b24b-d15757564856}">
+      <Declaration><![CDATA[METHOD M_Read : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Symbol name to be read from the standard table structure.
+  sDBSymbolName:              STRING;
+  /// Sorting column (ID, timestamp, name or value)
+  eOrderBy:                   E_OrderColumn;
+  /// Sorting direction (ASC or DESC)
+  eOrderType:                 E_OrderType;
+  /// Indicates the index of the first record to be read.
+  nStartIndex:                UDINT;
+  /// Indicates the number of records to be read.
+  nRecordCount:               UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData2:                     POINTER TO ST_StandardRecord;
+  /// Indicates the size of the structure array in bytes.
+  cbData:                     UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ReadStruct" Id="{5264bbaa-44c2-47ee-b317-b1fbf57a16e1}">
+      <Declaration><![CDATA[METHOD M_ReadStruct : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+  /// Address of the array containing the column name to be read.
+  pColumnNames:               POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
+  /// Length of the column name array
+  cbColumnNames:              UDINT;
+  /// Name the sorting column
+  sOrderByColumn:             STRING(50);
+  /// Sorting direction (ASC or DESC)
+  eOrderType:                 E_OrderType;
+  /// Indicates the index of the first record to be read.
+  nStartIndex:                UDINT;
+  /// Indicates the number of records to be read.
+  nRecordCount:               UDINT;
+  /// Address of the structure array into which the records are to be written.
+  pData:                      POINTER TO BYTE;
+  /// Indicates the size of the structure array in bytes.
+  cbData:                     UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{8e3bfb53-d27c-4e1b-ad82-e33f9a44df1f}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{a79f1917-21cd-408b-8264-f5b0bebd4781}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_TableExistCheck" Id="{efda19b6-f8df-48e0-8175-c6036b26eaca}">
+      <Declaration><![CDATA[METHOD M_TableExistCheck : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:                    UDINT;
+  /// Name of the table that is to be read.
+  sTableName:                 STRING;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:                    BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Write" Id="{94fcf822-c5dc-4e3d-ac90-988c63af7aaf}">
+      <Declaration><![CDATA[METHOD M_Write : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:            UDINT;
+  /// Name of the table that is to be write.
+  sTableName:         STRING;
+  /// Address of the variable to be logged in the standard table structure.
+  pValue:             POINTER TO BYTE;
+  /// Length of the variable to be logged.
+  cbValue:            UDINT;
+  /// Name that is logged in the table.
+  sDBSymbolName:      STRING;
+  /// Indicates the write mode. (append, update, ring buffer)
+  eDBWriteMode:       E_WriteMode;
+  /// Additional parameter(s) for the "ring buffer" write mode.
+  nRingBuffParameter: UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_WriteBySymbol" Id="{36298291-c6ba-411e-b5e0-9a172149b0d4}">
+      <Declaration><![CDATA[METHOD M_WriteBySymbol : BOOL
+VAR_INput
+  /// Indicates the ID of the database to be used.
+  udiDBID:            UDINT;
+  /// Name of the table that is to be write.
+  sTableName:         STRING;
+  /// ADS device from which a symbol is to be logged in the standard table structure.
+  stADSDevice: ST_ADSDevice;
+  /// Symbol name of the variable to be written
+  stSymbol: ST_Symbol;
+  /// Indicates the write mode. (append, update, ring buffer)
+  eDBWriteMode:       E_WriteMode;
+  /// Additional parameter(s) for the "ring buffer" write mode.
+  nRingBuffParameter: UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_WriteStruct" Id="{ae2fb903-5a81-4fba-8e35-e2439c42a389}">
+      <Declaration><![CDATA[METHOD M_WriteStruct : BOOL
+VAR_INPUT
+  /// Indicates the ID of the database to be used.
+  udiDBID:        UDINT;
+  /// Name of the table that is to be write.
+  sTableName:     STRING;
+  /// Address of a structure that is to be logged in a freely selectable table structure.
+  pRecord:        POINTER TO BYTE;
+  /// Length of the structure to be written
+  cbRecord:       UDINT;
+  /// Address of the array containing the column name to be filled.
+  pColumnNames:   POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
+  /// Length of the column name array
+  cbColumnNames:  UDINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_Connected" Id="{4dc5f999-255b-440f-ac7c-8a02e13cc020}">
+      <Declaration><![CDATA[PROPERTY P_Connected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{28995eb0-d3b2-4839-b80c-f74abb75b68b}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Error" Id="{d68cd33a-87c9-4c38-af56-ff09e0bcaf2d}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{b8df46e5-a273-49b3-8cd7-89e0f34c4ec3}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

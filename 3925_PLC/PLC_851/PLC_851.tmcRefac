@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedSymbol>
+      <Type guid="7cea8bf1-c942-49b5-be8f-3059d77d0bfb">FB_PROCESS_MAIN</Type>
+      <From>udiCurrentCycles</From>
+      <To>udiCurrentCyclesNest1</To>
+    </RenamedSymbol>
+  </Renames>
+</Refactors>

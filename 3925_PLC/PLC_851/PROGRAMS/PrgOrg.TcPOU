@@ -139,17 +139,18 @@ END_VAR]]></Declaration>
 fbOpMode();
 fbUserMng();
 
-
-IF NOT fbSafetyRun.P_State THEN
-  fbSafetyRun.M_Set();
-END_IF
-
-IF fbOpMode.P_EMERGANCY_STOP OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR THEN
-  bInitOk := FALSE;
-  fbLockDoor.M_Reset();
-END_IF
-
-IF bAck THEN
+// Actions
+A_010_Ack();
+A_040_BypassPumpAndOilCooler();
+A_030_SetReady();
+A_020_EStopAndErrorHandling();
+A_050_InitAndAutomatic();
+A_070_ResetModeSelection();
+A_060_StopHandling();]]></ST>
+    </Implementation>
+    <Action Name="A_010_Ack" Id="{f0436991-81ef-4c69-a70c-5e070e2af3d5}">
+      <Implementation>
+        <ST><![CDATA[IF bAck THEN
   CASE uiAckSeq OF
     0:
       fbErrorACK.M_Set();
@@ -171,28 +172,18 @@ IF bAck THEN
         bAck := FALSE;
 	    END_IF
 	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_020_EStopAndErrorHandling" Id="{ba4794b9-c929-400d-8163-d23b4b97b537}">
+      <Implementation>
+        <ST><![CDATA[IF NOT fbSafetyRun.P_State THEN
+  fbSafetyRun.M_Set();
 END_IF
 
-// Bypass and oil cooler control
-IF TRUE
-AND NOT PrgStation.fbOilCooler.P_State 
-THEN
-  PrgStation.fbOilCooler.M_On();
-END_IF
-IF TRUE
-AND NOT PrgStation.fbBypassPump.P_State
-THEN
-  PrgStation.fbBypassPump.M_On();
-END_IF
-
-// OP-Mode selection
-IF TRUE
-AND (fbOpMode.P_OP_MODE_STATE = OP_MODE.CONTROL_ON OR fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
-AND NOT PrgStation.fbMainProcess.P_ReadyState
-AND NOT bStop
-THEN
-  PrgStation.fbMainProcess.M_SetReady();
-  uiOpStep := 0;
+IF fbOpMode.P_EMERGANCY_STOP OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR THEN
+  bInitOk := FALSE;
+  fbLockDoor.M_Reset();
 END_IF
 
 // Safety
@@ -213,9 +204,39 @@ THEN
         uiOpStep := 0;
 	    END_IF
 	END_CASE
-END_IF
-
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_030_SetReady" Id="{3604e0fa-4680-40b0-8f2f-ab5cc5fafc2a}">
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND (fbOpMode.P_OP_MODE_STATE = OP_MODE.CONTROL_ON OR fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
+AND NOT PrgStation.fbMainProcess.P_ReadyState
+AND NOT bStop
+THEN
+  PrgStation.fbMainProcess.M_SetReady();
+  uiOpStep := 0;
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_040_BypassPumpAndOilCooler" Id="{9c41afdc-4e65-41b2-861b-9faa1a5360a0}">
+      <Implementation>
+        <ST><![CDATA[// Bypass and oil cooler control
 IF TRUE
+AND NOT PrgStation.fbOilCooler.P_State 
+THEN
+  PrgStation.fbOilCooler.M_On();
+END_IF
+IF TRUE
+AND NOT PrgStation.fbBypassPump.P_State
+THEN
+  PrgStation.fbBypassPump.M_On();
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_050_InitAndAutomatic" Id="{46255bae-9a31-4529-83fc-3249f3d41398}">
+      <Implementation>
+        <ST><![CDATA[IF TRUE
 AND bInitRestart
 THEN
   bInitRestart := FALSE;
@@ -253,9 +274,12 @@ THEN
       bResetModeSelectionTrigger := TRUE;
 		END_IF
 	END_IF
-END_IF
-
-IF TRUE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_060_StopHandling" Id="{bc9f315e-7fb3-49b2-abe0-c3dc2d962ebb}">
+      <Implementation>
+        <ST><![CDATA[IF TRUE
 AND bStop
 THEN
   CASE uiOpStep OF
@@ -271,9 +295,12 @@ THEN
         uiOpStep := 0;
 	    END_IF
 	END_CASE
-END_IF
-
-IF bResetModeSelectionTrigger THEN
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_070_ResetModeSelection" Id="{1a929c2c-679c-443a-85c1-d016ae96ca89}">
+      <Implementation>
+        <ST><![CDATA[IF bResetModeSelectionTrigger THEN
   fbOpMode.M_OP_MODE_OFF();
   IF PrgVisu.fbVisuOPMode.M_ResetModeSelection() THEN
     bResetModeSelectionTrigger := FALSE;
@@ -283,63 +310,42 @@ IF bResetModeSelectionTrigger THEN
       fbOpMode.P_INIT_OK := FALSE;
 		END_IF
   END_IF
-END_IF
-
-
-
-
-
-]]></ST>
-    </Implementation>
+END_IF]]></ST>
+      </Implementation>
+    </Action>
     <LineIds Name="PrgOrg">
-      <LineId Id="4743" Count="9" />
-      <LineId Id="5510" Count="0" />
-      <LineId Id="4753" Count="25" />
-      <LineId Id="4787" Count="13" />
-      <LineId Id="4919" Count="0" />
-      <LineId Id="4918" Count="0" />
-      <LineId Id="5236" Count="1" />
-      <LineId Id="4923" Count="0" />
-      <LineId Id="4921" Count="0" />
-      <LineId Id="5068" Count="0" />
-      <LineId Id="4920" Count="0" />
-      <LineId Id="5070" Count="8" />
-      <LineId Id="5509" Count="0" />
-      <LineId Id="5079" Count="3" />
-      <LineId Id="5101" Count="1" />
-      <LineId Id="5083" Count="2" />
-      <LineId Id="5069" Count="0" />
-      <LineId Id="4917" Count="0" />
-      <LineId Id="4801" Count="3" />
-      <LineId Id="5508" Count="0" />
-      <LineId Id="4805" Count="16" />
-      <LineId Id="4832" Count="0" />
-      <LineId Id="4897" Count="0" />
-      <LineId Id="4894" Count="0" />
-      <LineId Id="4898" Count="0" />
-      <LineId Id="4900" Count="0" />
-      <LineId Id="4902" Count="0" />
-      <LineId Id="4899" Count="0" />
-      <LineId Id="4904" Count="1" />
-      <LineId Id="4907" Count="0" />
-      <LineId Id="4903" Count="0" />
-      <LineId Id="4910" Count="1" />
-      <LineId Id="4913" Count="1" />
-      <LineId Id="4858" Count="5" />
-      <LineId Id="5091" Count="6" />
-      <LineId Id="5104" Count="0" />
-      <LineId Id="5513" Count="0" />
-      <LineId Id="5103" Count="0" />
-      <LineId Id="5099" Count="1" />
-      <LineId Id="4915" Count="0" />
-      <LineId Id="4881" Count="2" />
-      <LineId Id="5369" Count="0" />
-      <LineId Id="4884" Count="1" />
-      <LineId Id="5505" Count="1" />
-      <LineId Id="5511" Count="1" />
-      <LineId Id="5507" Count="0" />
-      <LineId Id="4886" Count="6" />
-      <LineId Id="4034" Count="0" />
+      <LineId Id="5736" Count="10" />
+      <LineId Id="5653" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_010_Ack">
+      <LineId Id="2" Count="21" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_020_EStopAndErrorHandling">
+      <LineId Id="2" Count="6" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="10" Count="18" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_030_SetReady">
+      <LineId Id="2" Count="6" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_040_BypassPumpAndOilCooler">
+      <LineId Id="2" Count="9" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_050_InitAndAutomatic">
+      <LineId Id="2" Count="37" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_060_StopHandling">
+      <LineId Id="2" Count="15" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_070_ResetModeSelection">
+      <LineId Id="2" Count="9" />
+      <LineId Id="1" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

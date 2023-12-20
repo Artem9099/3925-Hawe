@@ -12,9 +12,11 @@ VAR_INPUT
   lrPistonSurfaceA:                                       LREAL;
   /// Cylinder piston surface B
   lrPistonSurfaceB:                                       LREAL;
-  // Speed regulation
-  rRegulationFactor:                                      REAL;
-  rRegulationTolerance:                                   REAL;
+  // Speed and Pressure regulation
+  rSpeedRegulationFactor:                                 REAL;
+  rSpeedRegulationTolerance:                              REAL;
+  rPressureRegulationFactor:                              REAL;
+  rPressureRegulationTolerance:                           REAL;
 END_VAR
 VAR //General
 	{attribute 'instance-path'} 
@@ -129,10 +131,8 @@ VAR // Recording
   iCorrectedPressureAsValue:                              INT;
   bPressureRegulationTrigger:                             BOOL;
   bPressureRegulationBusy:                                BOOL;
-  rPressureRegulationTolerance:                           REAL := 100;
   bPressureCorrectionTrigger:                             BOOL;
   uiPressureRegulationSeq:                                UINT := 0;
-  rPressureRegulationFactor:                              REAL := 0.005;
   bPressureRegulation:                                    BOOL;
 END_VAR                	
 VAR_TEMP                    	
@@ -1652,7 +1652,7 @@ AND NOT THIS^.bRegulationBusy
 THEN
   IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > 1 THEN
     //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + 0.25;
-    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent + ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rSpeedRegulationFactor);
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 ELSIF TRUE
@@ -1663,7 +1663,7 @@ AND NOT THIS^.bRegulationBusy
 THEN
   IF ABS(THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) > 1 THEN
     //THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - 0.25;
-    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rRegulationFactor);
+    THIS^.rCorrectedSpeedPercent := THIS^.rCorrectedSpeedPercent - ABS((THIS^.rCurrentSpeedInMmPerS - THIS^.rSpeedInMmPerSToSet) * THIS^.rSpeedRegulationFactor);
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 END_IF
@@ -2094,6 +2094,24 @@ IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_ActiveDirection" Id="{d1d63849-d280-4181-864f-ef6f2b0ba811}">
+      <Declaration><![CDATA[PROPERTY P_ActiveDirection : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{24ba67c3-5f38-41af-bd11-26b17c7f287b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF THIS^.itfValve_CylCtrl.P_CurrentVal < - 100 THEN
+  P_ActiveDirection := 'Moove to home position';
+ELSIF THIS^.itfValve_CylCtrl.P_CurrentVal > 100 THEN
+  P_ActiveDirection := 'Moove to work position';
+ELSE
+  P_ActiveDirection := 'Stop';
+END_IF]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_CurrentForceInKN" Id="{1d02f2e1-3409-4c3a-aaab-7f8ea3fd07ce}">
       <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
 PROPERTY P_CurrentForceInKN : REAL
@@ -3083,6 +3101,10 @@ END_VAR
       <LineId Id="75" Count="1" />
       <LineId Id="145" Count="2" />
       <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_ActiveDirection.Get">
+      <LineId Id="5" Count="5" />
+      <LineId Id="2" Count="0" />
     </LineIds>
     <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.P_CurrentForceInKN.Get">
       <LineId Id="5" Count="1" />

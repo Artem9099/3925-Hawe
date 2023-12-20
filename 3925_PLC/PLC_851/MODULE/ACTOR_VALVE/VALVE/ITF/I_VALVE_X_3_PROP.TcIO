@@ -31,6 +31,12 @@ VAR_INPUT
   tDelay:                 TIME;
 END_VAR]]></Declaration>
     </Method>
+    <Property Name="P_CurrentVal" Id="{57f5179d-bffe-438e-a222-7ba8ed0c67bc}">
+      <Declaration><![CDATA[PROPERTY P_CurrentVal : INT]]></Declaration>
+      <Get Name="Get" Id="{2a66c2da-683b-4968-9132-85a149a5cb59}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_ReadyState" Id="{980b83af-b5bd-4179-9629-ed20b41bed47}">
       <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
       <Get Name="Get" Id="{e7c50d73-1400-490e-90ef-f258ec9af096}">

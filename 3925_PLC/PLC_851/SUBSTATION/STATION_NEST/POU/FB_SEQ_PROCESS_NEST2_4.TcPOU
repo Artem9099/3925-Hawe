@@ -1888,6 +1888,20 @@ IF stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_CurrentCycle" Id="{7e7b6d0c-46d9-44b3-90b2-b1b8d9411306}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycle : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{484f93f9-a02a-4cc9-8f92-e1c5332c7211}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycle := THIS^.udiCurrentCycle;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_EnableState" Id="{5a409c5d-aea0-4100-9620-30f1298d2c34}">
       <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
 PROPERTY P_EnableState : BOOL
@@ -2030,6 +2044,20 @@ END_VAR
 ]]></ST>
         </Implementation>
       </Set>
+    </Property>
+    <Property Name="P_Timer" Id="{23ba6cf6-6810-47e4-8309-4748a3d917c2}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_Timer : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{61aec4b3-9486-4421-9bd4-6d0e08a9c5f3}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Timer := THIS^.sTimer;
+]]></ST>
+        </Implementation>
+      </Get>
     </Property>
     <LineIds Name="FB_SEQ_PROCESS_NEST2_4">
       <LineId Id="493" Count="2" />
@@ -2518,6 +2546,10 @@ END_VAR
       <LineId Id="53" Count="2" />
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST2_4.P_CurrentCycle.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST2_4.P_EnableState.Get">
       <LineId Id="5" Count="0" />
       <LineId Id="2" Count="0" />
@@ -2551,6 +2583,10 @@ END_VAR
       <LineId Id="2" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST2_4.P_SerialNr.Set">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST2_4.P_Timer.Get">
       <LineId Id="5" Count="0" />
       <LineId Id="2" Count="0" />
     </LineIds>

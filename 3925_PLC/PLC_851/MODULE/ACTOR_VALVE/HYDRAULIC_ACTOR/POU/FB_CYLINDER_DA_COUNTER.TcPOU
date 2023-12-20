@@ -6,6 +6,8 @@ VAR_INPUT
   //lrCurrentPosAbs:                                        LREAL;
   rCurrentPressureInBar:                                  REAL;
   bJogActive:                                             BOOL;
+  rPressureRegulationFactor:                              REAL;
+  rPressureRegulationTolerance:                           REAL;
 END_VAR
 VAR //General
 	{attribute 'instance-path'} 
@@ -95,10 +97,8 @@ VAR
   iCorrectedPressureAsValue:                              INT;
   bRegulationTrigger:                                     BOOL;
   bRegulationBusy:                                        BOOL;
-  rRegulationTolerance:                                   REAL := 100;
   bCorrectionTrigger:                                     BOOL;
   uiRegulationSeq:                                        UINT := 0;
-  rRegulationFactor:                                      REAL := 0.02;
   bRegulation:                                            BOOL;
 END_VAR                  	
 VAR_TEMP                    	
@@ -425,9 +425,9 @@ AND THIS^.iCorrectedPressureAsValue < 32768
 AND THIS^.bRegulationTrigger
 AND NOT THIS^.bRegulationBusy
 THEN
-  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rRegulationTolerance THEN
+  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rPressureRegulationTolerance THEN
     //THIS^.iCorrectedPressureAsValue := THIS^.iCorrectedPressureAsValue + 100;
-    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue + ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rRegulationFactor));
+    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue + ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rPressureRegulationFactor));
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 ELSIF TRUE
@@ -436,9 +436,9 @@ AND THIS^.iCorrectedPressureAsValue > 0
 AND THIS^.bRegulationTrigger
 AND NOT THIS^.bRegulationBusy
 THEN
-  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rRegulationTolerance THEN
+  IF ABS(THIS^.rCurrentForceInN - THIS^.rActiveForce) > THIS^.rPressureRegulationTolerance THEN
     //THIS^.iCorrectedPressureAsValue := THIS^.iCorrectedPressureAsValue - 100;
-    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue - ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rRegulationFactor));
+    THIS^.iCorrectedPressureAsValue := TO_INT(THIS^.iCorrectedPressureAsValue - ABS((THIS^.rCurrentForceInN - THIS^.rActiveForce) * THIS^.rPressureRegulationFactor));
     THIS^.bCorrectionTrigger := TRUE;
   END_IF
 END_IF

@@ -3137,6 +3137,20 @@ IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_CurrentCycle" Id="{ff0b7470-a290-4887-9a48-05edf7daffda}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycle : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{1d5b16ba-da1c-42c3-8581-372c4d9c4ca7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycle := THIS^.udiCurrentCycle;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_EnableState" Id="{73a142f6-adc4-4f02-b56b-701569ae4b60}">
       <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
 PROPERTY P_EnableState : BOOL
@@ -3318,6 +3332,20 @@ END_VAR
 ]]></Declaration>
         <Implementation>
           <ST><![CDATA[P_SpeedEfficiencyFactor := THIS^.rSpeedEfficiencyFactor;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Timer" Id="{67958d1a-7f5f-4a98-8849-3d0e9e1414c0}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_Timer : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{d936384b-9516-45af-9eb6-6ebf4df0bc63}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Timer := THIS^.sTimer;
 ]]></ST>
         </Implementation>
       </Get>
@@ -4390,6 +4418,10 @@ END_VAR
       <LineId Id="53" Count="2" />
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.P_CurrentCycle.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.P_EnableState.Get">
       <LineId Id="2" Count="0" />
       <LineId Id="5" Count="0" />
@@ -4435,6 +4467,10 @@ END_VAR
       <LineId Id="2" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.P_SpeedEfficiencyFactor.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.P_Timer.Get">
       <LineId Id="2" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>

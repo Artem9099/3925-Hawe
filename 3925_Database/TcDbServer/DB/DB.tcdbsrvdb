@@ -2,34 +2,34 @@
 <Database>
   <ID>1</ID>
   <Name>DB</Name>
-  <ServerName>localhost</ServerName>
-  <DatabaseName>resultdb</DatabaseName>
+  <ServerName>http://localhost:8086</ServerName>
+  <DatabaseName>test</DatabaseName>
   <TableName />
   <Authentication>True</Authentication>
-  <UserID>root</UserID>
+  <UserID />
   <Password>vWYs6pUuUU/y0U9mNiM5eQ==</Password>
   <Driver />
   <Provider />
-  <Port>3306</Port>
+  <Port>8086</Port>
   <Protocol />
-  <Scheme />
+  <Scheme>d999be4c0ea9d906</Scheme>
   <Sequence />
   <SystemDB />
   <FireBird_ClientDLLPath />
   <OLDASCIIFormat>False</OLDASCIIFormat>
-  <ASCIISeparator />
+  <ASCIISeparator>;</ASCIISeparator>
   <DBValueType>NONE</DBValueType>
-  <DBType>NET_MySQL</DBType>
+  <DBType>InfluxDb2</DBType>
   <OdbcSubType>Unknown</OdbcSubType>
   <Temporary>False</Temporary>
-  <Disabled>True</Disabled>
+  <Disabled>False</Disabled>
   <Description />
   <FailOverDBID>0</FailOverDBID>
   <AdditionalParameter />
-  <AuthenticationMechanism>None</AuthenticationMechanism>
+  <AuthenticationMechanism>Token</AuthenticationMechanism>
   <SslCa />
   <SslCertificateFilePath />
   <SslCertificatePassword />
-  <Token />
+  <Token>kzscms6cJ1Woq0joXuW3HcwP8MDpj9+M2UvtL5eWYByEHouW8v/K8EqzyxhA+/IZjTJ4yzPE2Tq2LdydA1mavF7cXLeRv+//GDd4OotMzVb1YH/9z3IXknSAwwKHrjc+</Token>
   <ConnectionStringType />
 </Database>

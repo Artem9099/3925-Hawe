@@ -654,6 +654,9 @@
     <Content Include="Pages\Settings\CylinderCalibration\CylinderCalibration.content">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Pages\Settings\Grafana.content">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="Pages\Settings\RecipeManagement.content">
       <SubType>Content</SubType>
     </Content>

@@ -58,11 +58,11 @@ VAR	// Step chain control
 	bBreakpointActive:										                  BOOL;
 	bDebugResume:											                      BOOL;   
 	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
-*)
-i:														                            INT;
-stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;  
-strSeq:                                                   STRING;   	
-uiRequestId:                                              UINT;
+  *)
+  i:														                            INT;
+  stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;  
+  strSeq:                                                   STRING;   	
+  uiRequestId:                                              UINT;
 END_VAR                                             		
 VAR                                                 		
 	bMethodeFromExtStarted:									                BOOL;
@@ -71,6 +71,10 @@ VAR
 	strTemp:												                        STRING;
 END_VAR   
 VAR
+  udiCurrentCyclesNest1:                                  UDINT := 0;
+  udiCurrentCyclesNest2:                                  UDINT := 0;
+  udiCurrentCyclesNest3:                                  UDINT := 0;
+  udiCurrentCyclesNest4:                                  UDINT := 0;
   udiCyclesPerLoop:                                       UDINT := 0;
   udiLoops:                                               UDINT := 0;
   uiCurrentLoop:                                          UINT := 1;
@@ -512,6 +516,10 @@ E_SEQ_GENERAL.BUSY:;
         THIS^.uiCurrentLoop := THIS^.uiCurrentLoop + 1;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
 			END_IF
+      THIS^.udiCurrentCyclesNest1 := THIS^.udiCyclesPerLoop * (THIS^.uiCurrentLoop - 1) + THIS^.itfNest1.P_CurrentCycle;
+      THIS^.udiCurrentCyclesNest2 := THIS^.udiCyclesPerLoop * (THIS^.uiCurrentLoop - 1) + THIS^.itfNest2.P_CurrentCycle;
+      THIS^.udiCurrentCyclesNest3 := THIS^.udiCyclesPerLoop * (THIS^.uiCurrentLoop - 1) + THIS^.itfNest3.P_CurrentCycle;
+      THIS^.udiCurrentCyclesNest4 := THIS^.udiCyclesPerLoop * (THIS^.uiCurrentLoop - 1) + THIS^.itfNest4.P_CurrentCycle;
       
     60:  // Choice step
       IF TRUE
@@ -1501,6 +1509,62 @@ IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_CurrentCycleNest1" Id="{131e9b6f-9049-4b03-85c5-bd9439f3fb6a}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycleNest1 : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{5e97c001-6589-4db5-957b-66aee716381e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycleNest1 := THIS^.udiCurrentCyclesNest1;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest2" Id="{9482527d-9936-4eb1-b052-fc636235b448}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycleNest2 : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{af54279a-7608-4a72-8a8d-e1543aadace6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycleNest2 := THIS^.udiCurrentCyclesNest2;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest3" Id="{8e6ae9c9-9823-4d3f-979f-127298c241b5}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycleNest3 : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{f48f7b80-78b8-4155-ae6d-3cd1e990c593}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycleNest3 := THIS^.udiCurrentCyclesNest3;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_CurrentCycleNest4" Id="{55490af6-5db3-45a7-9ad0-6df259631363}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentCycleNest4 : UDINT
+]]></Declaration>
+      <Get Name="Get" Id="{831bacf7-ee9d-48a7-8745-11bad436360e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_CurrentCycleNest4 := THIS^.udiCurrentCyclesNest4;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_Event" Id="{6bf2a264-2653-4937-8a4a-e49e7c3b4fef}">
       <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
 (*=== Property: P_Event  ============================================
@@ -1858,6 +1922,7 @@ END_VAR
       <LineId Id="384" Count="0" />
       <LineId Id="212" Count="0" />
       <LineId Id="272" Count="0" />
+      <LineId Id="497" Count="3" />
       <LineId Id="385" Count="0" />
       <LineId Id="387" Count="3" />
       <LineId Id="393" Count="0" />
@@ -2349,6 +2414,22 @@ END_VAR
       <LineId Id="5" Count="1" />
       <LineId Id="42" Count="2" />
       <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PROCESS_MAIN.P_CurrentCycleNest1.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PROCESS_MAIN.P_CurrentCycleNest2.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PROCESS_MAIN.P_CurrentCycleNest3.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PROCESS_MAIN.P_CurrentCycleNest4.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
     </LineIds>
     <LineIds Name="FB_PROCESS_MAIN.P_Event.Get">
       <LineId Id="2" Count="0" />
