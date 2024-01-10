@@ -9,7 +9,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:          UDINT;
   /// Name of the table to be created.
-  sTableName:       STRING;
+  sTableName:       T_MaxString;
 END_VAR
 ]]></Declaration>
     </Method>
@@ -41,7 +41,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:                    UDINT;
   /// Name of the table that is to be read.
-  sTableName:                 STRING;
+  sTableName:                 T_MaxString;
   /// Indicates the pointer address of the table structure array. The individual columns are written in this array.
   pTableCfg:                  POINTER TO ARRAY[0..MAX_DBCOLUMNS] OF ST_ColumnInfo;
   /// Indicates the length of the array in which the columns are configured.
@@ -54,7 +54,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:          UDINT;
   /// Name of the table that is to be read.
-  sTableName:       STRING;
+  sTableName:       T_MaxString;
 END_VAR
 ]]></Declaration>
     </Method>
@@ -102,7 +102,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:                    UDINT;
   /// Name of the table that is to be read.
-  sTableName:                 STRING;
+  sTableName:                 T_MaxString;
   /// Column name of the data to be updated
   sColumnNameToUpdate:        STRING;
   /// Column value of the data to be updated
@@ -120,7 +120,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:                    UDINT;
   /// Name of the table that is to be read.
-  sTableName:                 STRING;
+  sTableName:                 T_MaxString;
   /// Symbol name to be read from the standard table structure.
   sDBSymbolName:              STRING;
   /// Sorting column (ID, timestamp, name or value)
@@ -144,7 +144,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:                    UDINT;
   /// Name of the table that is to be read.
-  sTableName:                 STRING;
+  sTableName:                 T_MaxString;
   /// Address of the array containing the column name to be read.
   pColumnNames:               POINTER TO ARRAY [0..MAX_DBCOLUMNS] OF STRING(50);
   /// Length of the column name array
@@ -182,7 +182,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:                    UDINT;
   /// Name of the table that is to be read.
-  sTableName:                 STRING;
+  sTableName:                 T_MaxString;
 END_VAR
 VAR_OUTPUT
   /// Result
@@ -196,7 +196,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:            UDINT;
   /// Name of the table that is to be write.
-  sTableName:         STRING;
+  sTableName:         T_MaxString;
   /// Address of the variable to be logged in the standard table structure.
   pValue:             POINTER TO BYTE;
   /// Length of the variable to be logged.
@@ -216,7 +216,7 @@ VAR_INput
   /// Indicates the ID of the database to be used.
   udiDBID:            UDINT;
   /// Name of the table that is to be write.
-  sTableName:         STRING;
+  sTableName:         T_MaxString;
   /// ADS device from which a symbol is to be logged in the standard table structure.
   stADSDevice: ST_ADSDevice;
   /// Symbol name of the variable to be written
@@ -234,7 +234,7 @@ VAR_INPUT
   /// Indicates the ID of the database to be used.
   udiDBID:        UDINT;
   /// Name of the table that is to be write.
-  sTableName:     STRING;
+  sTableName:     T_MaxString;
   /// Address of a structure that is to be logged in a freely selectable table structure.
   pRecord:        POINTER TO BYTE;
   /// Length of the structure to be written

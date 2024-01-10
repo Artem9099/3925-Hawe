@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_INFLUXDB_ADS" Id="{36104397-a43f-4b81-b638-271868415494}">
+    <Declaration><![CDATA[INTERFACE I_INFLUXDB_ADS EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_BucketExistCheck" Id="{d0fa881f-3de0-4c5a-8233-22e7dc743627}">
+      <Declaration><![CDATA[METHOD M_BucketExistCheck : BOOL
+VAR_INPUT
+  /// Name of the table that is to be read.
+  sBucketName:                T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:                    BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ClearMeasurement" Id="{dc135dc0-c001-48a7-a86a-9add3729f568}">
+      <Declaration><![CDATA[METHOD M_ClearMeasurement : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Name of the measure to clear
+  sMeasurementName:     T_MaxString;
+  /// From date time (Range)
+  dtFrom:               DT;
+  /// To date time (Range)
+  dtTo:                 DT;
+END_VAR
+VAR_OUTPUT
+	/// Result
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_DeleteAllMeasurements" Id="{f2dc2a94-b9e8-4b34-8895-4dbc6fe39456}">
+      <Declaration><![CDATA[METHOD M_DeleteAllMeasurements : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+END_VAR
+VAR_OUTPUT
+	/// Result
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_DeleteField" Id="{0ecbf110-a404-4085-9681-c0c2596ad7ab}">
+      <Declaration><![CDATA[METHOD M_DeleteField : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Measurement Name
+  sMeasurementName:     T_MaxString;
+  /// Tag Name
+  sTagName:             T_MaxString;
+  /// Field Name
+  sFieldName:           T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_DeleteMeasurement" Id="{c1b7daa6-4e94-43c6-9dd1-3b33e13c06da}">
+      <Declaration><![CDATA[METHOD M_DeleteMeasurement : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Name of the measure to delete.
+  sMeasurementName:     T_MaxString;
+END_VAR
+VAR_OUTPUT
+	/// Result
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_DeleteTag" Id="{eeb750fe-0780-4ad6-8029-ad5c8f489a2b}">
+      <Declaration><![CDATA[METHOD M_DeleteTag : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Measurement Name
+  sMeasurementName:     T_MaxString;
+  /// Tag Name
+  sTagName:             T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Method Name="M_FieldExistCheck" Id="{788a0671-6798-4f19-a721-950e7abec066}">
+      <Declaration><![CDATA[METHOD M_FieldExistCheck : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Measurement Name
+  sMeasurementName:     T_MaxString;
+  /// Tag Name
+  sTagName:             T_MaxString;
+  /// Field Name
+  sFieldName:           T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_MeasurementExistCheck" Id="{6bcb11f7-77bd-4d3b-9d3d-74f084faf46c}">
+      <Declaration><![CDATA[METHOD M_MeasurementExistCheck : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Name of the table that is to be read.
+  sMeasurementName:     T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{59c2e65f-e4aa-4f14-9820-a6d87d890064}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_SetReady" Id="{48e70524-8888-4774-8246-dc992dda1d28}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_TagExistCheck" Id="{77be6f17-e11f-4c2c-a323-95e172763d09}">
+      <Declaration><![CDATA[METHOD M_TagExistCheck : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Measurement Name
+  sMeasurementName:     T_MaxString;
+  /// Tag Name
+  sTagName:             T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_WriteStruct" Id="{8e259580-aad4-4463-ba27-cb8cf68a3c7a}">
+      <Declaration><![CDATA[METHOD M_WriteStruct : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Name of the table that is to be read.
+  sMeasurementName:     T_MaxString;
+  /// Tag name
+  sTagName:                 T_MaxString;
+  /// Field names list
+  arrFieldNames:        ARRAY [0..99] OF T_MaxString;
+  /// Field datatype list
+  arrFieldDatatypes:    ARRAY [0..99] OF T_MaxString;
+  /// Field values list
+  arrFieldValues:       ARRAY [0..99] OF ST_DATABASE_RECORD;
+END_VAR
+VAR_OUTPUT
+	/// Result
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+    </Method>
+    <Property Name="P_Connected" Id="{bb335fe8-81c2-467f-ba49-82e913a6c96c}">
+      <Declaration><![CDATA[PROPERTY P_Connected : BOOL]]></Declaration>
+      <Get Name="Get" Id="{b404539a-8b5c-4587-b77a-23449b126251}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_Error" Id="{82258349-f26f-450c-a51f-732909dddf4e}">
+      <Declaration><![CDATA[PROPERTY P_Error : BOOL]]></Declaration>
+      <Get Name="Get" Id="{88add42a-6233-42a5-a7b2-0b5718793b8e}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_LifeBit" Id="{917d3f54-babb-4154-b8ad-57d8f4d1db23}">
+      <Declaration><![CDATA[PROPERTY P_LifeBit : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7c183ad5-35c8-46eb-98c6-25c8406720ae}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

@@ -547,9 +547,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_ENGINE.BASE;
 
-THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;]]></ST>
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+THIS^.eNextSeq := E_SEQ_ENGINE.BASE;]]></ST>
       </Implementation>
     </Method>
     <Property Name="P_Busy" Id="{8b196493-34a1-4fd3-a11c-652c3fdc5b66}">
@@ -826,7 +829,7 @@ END_VAR
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_PUMP.M_SetReady">
-      <LineId Id="26" Count="1" />
+      <LineId Id="31" Count="4" />
       <LineId Id="6" Count="0" />
     </LineIds>
     <LineIds Name="FB_PUMP.P_Busy.Get">

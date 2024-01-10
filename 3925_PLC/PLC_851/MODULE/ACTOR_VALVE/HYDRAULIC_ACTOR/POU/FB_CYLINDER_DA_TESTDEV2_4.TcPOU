@@ -1816,10 +1816,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_CYLINDER.BASE;
 
 THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
-]]></ST>
+THIS^.eNextSeq := E_SEQ_CYLINDER.BASE;]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_SetWorkPressure" Id="{0d7061f5-c55e-4e7d-bdb4-23fde1282b6d}">
@@ -3001,8 +3003,7 @@ END_VAR
       <LineId Id="4" Count="0" />
     </LineIds>
     <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetReady">
-      <LineId Id="26" Count="1" />
-      <LineId Id="7" Count="0" />
+      <LineId Id="31" Count="4" />
       <LineId Id="6" Count="0" />
     </LineIds>
     <LineIds Name="FB_CYLINDER_DA_TESTDEV2_4.M_SetWorkPressure">

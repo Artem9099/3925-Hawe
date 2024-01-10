@@ -1,0 +1,2326 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_INFLUX_DB_ADS" Id="{737bb810-17d3-41b2-ad6b-a6b9cc0fb535}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_INFLUX_DB_ADS IMPLEMENTS I_INFLUXDB_ADS
+VAR_IN_OUT
+  bResult:                                                BOOL;
+END_VAR
+VAR_INPUT
+  bLifeBit:                                               BOOL;
+  bAdsConnected:                                          BOOL;
+  bReady:                                                 BOOL;
+  bBusy:                                                  BOOL;
+END_VAR
+VAR //General
+	{attribute 'instance-path'} 
+  {attribute 'noinit'} 
+	strInstancePath:									                      STRING;
+	bInit: 												                          BOOL:=TRUE;
+	strFullObjectPath: 								                      STRING;
+	stEvent:											                          ST_EVENT;
+	bAck:												                            BOOL;
+	
+END_VAR
+VAR   // From FB_init	
+	itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE; 
+END_VAR                                      				
+VAR	// Step chain control                				
+  eSeq, eLastSeq, eNextSeq:					                      E_SEQ_DATABASE; 
+                  				
+  //eActiveSeqState, eLastActiveSeqState:                 E_SEQ_GENERAL;
+	(*
+  iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=0;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+	i:														                          INT;
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
+*)
+i:														                            INT;
+stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;     	
+END_VAR                                             		
+VAR                                                 		
+	bMethodeFromExtStarted:									                BOOL;
+	bMethodeFromExtActive:									                BOOL;
+	bMethodeFromExtDone:									                  BOOL;
+	strTemp:												                        STRING;
+END_VAR   
+VAR
+  // From ADS
+  bDBLifeBit:                                             BOOL;
+  // Trigger to ADS
+  bGetBucketExist:                                        BOOL;
+  sBucketName:                                            T_MaxString;
+  bGetMeasurementExist:                                   BOOL;
+  sMeasurementName:                                       T_MaxString;
+  bDeleteMeasurement:                                     BOOL;
+  bDeleteAllMeasurements:                                 BOOL;
+  bWriteStructData:                                       BOOL;
+  sTagName:                                               T_MaxString;
+  sFieldName:                                             T_MaxString;
+  arrFieldNames:                                          ARRAY [0..99] OF T_MaxString;
+  arrFieldValues:                                         ARRAY [0..99] OF LREAL;
+  dtFrom:                                                 DT;
+  dtTo:                                                   DT;
+  sFieldNameExistCheck:                                   T_MaxString;
+  bGetTagExist:                                           BOOL;
+  bGetFieldExist:                                         BOOL;
+  bClearMeasurement:                                      BOOL;
+  bDeleteTag:                                             BOOL;
+  bDeleteField:                                           BOOL;
+END_VAR                  	
+VAR_TEMP                    	
+	iTemp:										                              INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Set FBs and Interfaces ready after switch internal step
+IF stSeqCtrlGeneral.iInternalSeqStateCase <> stSeqCtrlGeneral.iLastInternalSeqStateCase AND NOT stSeqCtrlGeneral.bExitSetReadyState THEN
+  IF TRUE
+  THEN
+    stSeqCtrlGeneral.bExitSetReadyState := TRUE;
+  ELSE
+    RETURN;
+  END_IF
+END_IF
+
+stSeqCtrlGeneral.strObject := F_CreateObjectName(strInstancePath);
+
+// First method call
+_m_SequenceManager();
+//_m_SaveLastStep();
+
+CASE eSeq OF 
+  E_SEQ_DATABASE.BASE:;
+  
+	E_SEQ_DATABASE.INIT: _m_Seq_INIT();
+		IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+		
+	E_SEQ_DATABASE.SETUP:;
+  
+	// Process
+  E_SEQ_DATABASE.BUCKET_EXIST_CHECK: _m_Seq_BUCKET_EXIST_CHECK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+	E_SEQ_DATABASE.MEASUREMENT_EXIST_CHECK:         _m_Seq_MEASUREMENT_EXIST_CHECK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+    
+  E_SEQ_DATABASE.WRITE_STRUCT:  _m_Seq_WRITE_STRUCT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.TAG_EXIST_CHECK:     _m_Seq_TAG_EXIST_CHECK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+    
+  E_SEQ_DATABASE.FIELD_EXIST_CHECK:     _m_Seq_FIELD_EXIST_CHECK();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.DELETE_TAG:    _m_Seq_DELETE_TAG();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+  
+  E_SEQ_DATABASE.DELETE_FIELD:           _m_Seq_DELETE_FIELD();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_DATABASE.BASE;
+		END_IF
+
+  // End
+	E_SEQ_DATABASE.END:;
+	E_SEQ_DATABASE.ERROR_SEQ:;	
+END_CASE
+
+strTemp:=TO_STRING(eSeq);
+]]></ST>
+    </Implementation>
+    <Folder Name="ACTIONS" Id="{0a706a70-b10d-4937-b0fe-eb1d297f5b0d}" />
+    <Folder Name="PRIVAT" Id="{04526e9c-1367-468a-9725-50f7bcef8cff}" />
+    <Folder Name="SEQUENCE" Id="{5a90cded-5971-42c2-9668-0b858782d80f}" />
+    <Method Name="_m_DebugManager" Id="{f060f21f-c204-4398-89fd-4c195c9da6a2}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.stSeqCtrlGeneral.bDebugModeActive 
+AND NOT THIS^.stSeqCtrlGeneral.bActiveStep
+THEN
+
+
+THIS^.stSeqCtrlGeneral.bBreakpointActive:=FALSE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.stSeqCtrlGeneral.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.stSeqCtrlGeneral.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{fb17f725-cb65-4789-8c5a-5a0a1fa45055}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bDelayActive:=TRUE;
+THIS^.stSeqCtrlGeneral.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{4ae7e319-36c6-45ef-90c1-5f8bdda48041}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			    	E_STEP_STATE_TYPE;
+	InfoTextID:					STRING(20);
+	EnableDebug:	   			BOOL;	
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	THIS^.stSeqCtrlGeneral.eStep_Type:=StepType;
+	THIS^.stSeqCtrlGeneral.strExtraInfo:= GenLib.F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='',strTxtLstName:=InfoTextID);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{eb38dcf2-f9cd-4646-8def-1027668199c7}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			stSeqCtrlGeneral.listLastSteps[i].strStepName:=stSeqCtrlGeneral.listLastSteps[i-1].strStepName;
+			stSeqCtrlGeneral.listLastSteps[i].tStepTime:=stSeqCtrlGeneral.listLastSteps[i-1].tStepTime;
+			stSeqCtrlGeneral.listLastSteps[i].tDelayTime:=stSeqCtrlGeneral.listLastSteps[i-1].tDelayTime;
+	END_FOR
+	stSeqCtrlGeneral.listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;
+ELSE
+	stSeqCtrlGeneral.listLastSteps[0].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[0].tDelayTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_BUCKET_EXIST_CHECK" Id="{4e475998-cbfd-430a-856a-fdb3281ac526}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_BUCKET_EXIST_CHECK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bGetBucketExist := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bGetBucketExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bGetBucketExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CLEAR_MEASUREMENT" Id="{b92cf6ef-876b-49e9-bde6-775be015f5af}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CLEAR_MEASUREMENT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bClearMeasurement := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bClearMeasurement
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bClearMeasurement
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DELETE_ALL_MEASUREMENTS" Id="{9868a3f2-9899-4ba5-8b91-09d47c1fec7e}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DELETE_ALL_MEASUREMENTS : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bDeleteAllMeasurements := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bDeleteAllMeasurements
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bDeleteAllMeasurements
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DELETE_FIELD" Id="{226fd484-7c1a-4bb0-8131-f214c1586370}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DELETE_FIELD : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bDeleteField := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bDeleteField
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bDeleteField
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DELETE_MEASUREMENT" Id="{e0b18201-b710-43fc-8564-6a27e4c0747b}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DELETE_MEASUREMENT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bDeleteMeasurement := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bDeleteMeasurement
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bDeleteMeasurement
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_DELETE_TAG" Id="{0d551c7e-a4bb-4575-b494-3b749ab42118}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_DELETE_TAG : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bDeleteTag := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bDeleteTag
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bDeleteTag
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_FIELD_EXIST_CHECK" Id="{2c2c8c0a-30f8-4ef7-a0bd-8564c914a89d}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_FIELD_EXIST_CHECK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bGetFieldExist := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bGetFieldExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bGetFieldExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_INIT" Id="{1a4092c0-069d-44a5-9015-ede7594fe692}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_INIT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step
+      IF TRUE
+			THEN 
+        THIS^.bResult := FALSE;
+        THIS^.bGetBucketExist := FALSE;
+        THIS^.sBucketName := '';
+        THIS^.bGetMeasurementExist := FALSE;
+        THIS^.sMeasurementName := '';
+        THIS^.bDeleteMeasurement := FALSE;
+        THIS^.bDeleteAllMeasurements := FALSE;
+        THIS^.bWriteStructData := FALSE;
+        THIS^.sTagName := '';
+        THIS^.sFieldName := '';
+        FOR THIS^.i := 0 TO TO_INT(SIZEOF(arrFieldNames)) BY 1 DO
+          THIS^.arrFieldNames[i] := '';
+          THIS^.arrFieldDatatypes[i] := '';
+          THIS^.arrFieldValues[i] := 0.0;
+        END_FOR
+        THIS^.dtFrom := DT#1970-1-1-0:0:0;
+        THIS^.dtTo := DT#1970-1-1-0:0:0;
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000:	// Exit step
+      IF TRUE
+			THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+      END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_MEASUREMENT_EXIST_CHECK" Id="{ee65c0c1-175c-4046-a8fb-e4ae7eb1120b}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_MEASUREMENT_EXIST_CHECK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bGetMeasurementExist := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bGetMeasurementExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bGetMeasurementExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_TAG_EXIST_CHECK" Id="{bd2960d4-1656-40ee-a3df-dd762425b886}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_TAG_EXIST_CHECK : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bGetTagExist := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bGetTagExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bGetTagExist
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_WRITE_STRUCT" Id="{f470c48c-229c-48c8-b99b-8a20c064ba52}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_WRITE_STRUCT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+    THIS^.bResult := FALSE;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step --> Create command
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bWriteStructData := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+      
+    10:	// Wait for busy
+      IF TRUE 
+      AND THIS^.bBusy
+      AND THIS^.bWriteStructData
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20;
+			END_IF
+      
+    20:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bWriteStructData
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{f06585bc-454f-440c-a615-f294a1de9843}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FALSE
+//AND THIS^.eActiveSeqState=DONE 
+AND eLastSeq<>eSeq
+THEN
+	IF THIS^.stSeqCtrlGeneral.eActiveSeqState<>E_SEQ_GENERAL.EXECUTE THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.READY;
+	END_IF
+END_IF
+
+eSeq := eNextSeq;
+
+//DelayTimer und TimeOut Timer verwalten
+stSeqCtrlGeneral.bActiveStep:=	TRUE
+				AND eLastSeq					=	eSeq
+				AND stSeqCtrlGeneral.eLastActiveSeqState			=	stSeqCtrlGeneral.eActiveSeqState
+				AND	stSeqCtrlGeneral.iLastInternalSeqStateCase	=	stSeqCtrlGeneral.iInternalSeqStateCase
+				;
+			
+IF NOT stSeqCtrlGeneral.bActiveStep THEN
+	stSeqCtrlGeneral.bDelayActive:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveQuit:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveNoQuit:=FALSE;
+  THIS^.stSeqCtrlGeneral.strExtraInfo:='';
+END_IF
+
+_m_SaveLastStep();
+stSeqCtrlGeneral.tonDelay	(IN:=stSeqCtrlGeneral.bActiveStep AND stSeqCtrlGeneral.bDelayActive, 		PT:=stSeqCtrlGeneral.tDelay);
+stSeqCtrlGeneral.tonTimeOut	(IN:=stSeqCtrlGeneral.bActiveStep AND (stSeqCtrlGeneral.bTimeOutActiveNoQuit OR stSeqCtrlGeneral.bTimeOutActiveQuit), 	PT:=stSeqCtrlGeneral.tTimeOut);
+stSeqCtrlGeneral.tonStepTime	(IN:= stSeqCtrlGeneral.bActiveStep, PT:= T#24H);
+
+IF stSeqCtrlGeneral.tonTimeOut.Q  THEN
+	stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.TIME_OUT;
+END_IF
+
+IF stSeqCtrlGeneral.iError<>0 THEN
+	eSeq:=E_SEQ_DATABASE.ERROR_SEQ;
+END_IF
+
+
+
+eLastSeq					:=	eSeq;
+stSeqCtrlGeneral.eLastActiveSeqState			:=	stSeqCtrlGeneral.eActiveSeqState;
+stSeqCtrlGeneral.iLastInternalSeqStateCase	:=	stSeqCtrlGeneral.iInternalSeqStateCase;
+
+// Reset set ready state
+IF THIS^.stSeqCtrlGeneral.bExitSetReadyState THEN
+  THIS^.stSeqCtrlGeneral.bExitSetReadyState := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_TimeOut" Id="{6aca30a3-ccc2-46d4-951f-6b9d8fd454f9}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_TimeOut : BOOL
+VAR_INPUT
+	bTimeoutActiveToQuit:	BOOL;
+	bTimeOutActiveNoQuit:	BOOL;
+	tTimeOut:				TIME;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit:=	bTimeoutActiveToQuit;
+THIS^.stSeqCtrlGeneral.bTimeOutActiveNoQuit:=	bTimeOutActiveNoQuit;
+THIS^.stSeqCtrlGeneral.tTimeOut:=			tTimeOut;
+_m_TimeOut:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonTimeOut.Q THEN
+	_m_TimeOut:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{aeb12498-62e3-4e82-a75b-5428c8304956}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+  itfLogEvents: 										                      I_HANDLE_EVENTS;
+  itfOpMode:											                        I_OP_MODE;  
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
+THIS^.itfOpMode := itfOpMode;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_BucketExistCheck" Id="{263a11c2-ac1d-4257-a335-5278c769983c}">
+      <Declaration><![CDATA[METHOD M_BucketExistCheck : BOOL
+VAR_INPUT
+	(* Name of the table that is to be read.*)
+	sBucketName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_BucketExistCheck := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.BUCKET_EXIST_CHECK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ClearMeasurement" Id="{8228e032-68a4-4513-8c36-fdc91174af11}">
+      <Declaration><![CDATA[METHOD M_ClearMeasurement : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Name of the measure to clear*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* From date time (Range)*)
+	dtFrom	: DATE_AND_TIME;
+	(* To date time (Range)*)
+	dtTo	: DATE_AND_TIME;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_ClearMeasurement := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.dtFrom := dtFrom;
+THIS^.dtTo := dtTo;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.CLEAR_MEASUREMENT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DeleteAllMeasurements" Id="{d1caf4f7-5e50-4d34-8cc3-b2287255f86d}">
+      <Declaration><![CDATA[METHOD M_DeleteAllMeasurements : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_DeleteAllMeasurements := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DELETE_ALL_MEASUREMENTS;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DeleteField" Id="{718bec70-73e6-4142-b061-f1f2292b6d6c}">
+      <Declaration><![CDATA[METHOD M_DeleteField : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Measurement Name*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* Tag Name*)
+	sTagName	: Tc2_System.T_MaxString;
+	(* Field Name*)
+	sFieldName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_DeleteField := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.sTagName := sTagName;
+THIS^.sFieldNameExistCheck := sFieldName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DELETE_FIELD;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DeleteMeasurement" Id="{a48ed3a1-2962-44da-8ccd-93cc8d663b07}">
+      <Declaration><![CDATA[METHOD M_DeleteMeasurement : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Name of the measure to delete.*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_DeleteMeasurement := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DELETE_MEASUREMENT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DeleteTag" Id="{ac9ac39d-706b-48d8-bb99-aaf8c40192ea}">
+      <Declaration><![CDATA[METHOD M_DeleteTag : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Measurement Name*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* Tag Name*)
+	sTagName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_DeleteTag := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.sTagName := sTagName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.DELETE_TAG;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_FieldExistCheck" Id="{61ded7b2-bc3b-45d4-b751-239631cc30e8}">
+      <Declaration><![CDATA[METHOD M_FieldExistCheck : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Measurement Name*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* Tag Name*)
+	sTagName	: Tc2_System.T_MaxString;
+	(* Field Name*)
+	sFieldName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_FieldExistCheck := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.sTagName := sTagName;
+THIS^.sFieldNameExistCheck := sFieldName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.FIELD_EXIST_CHECK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MeasurementExistCheck" Id="{fe04a21d-bbe3-4e97-a2f1-a5ffdb114224}">
+      <Declaration><![CDATA[METHOD M_MeasurementExistCheck : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Name of the table that is to be read.*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_MeasurementExistCheck := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.MEASUREMENT_EXIST_CHECK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{6a213e47-6369-4f7b-b2fa-5c224c780f2c}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Reset := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.INIT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{1f2b263a-9e93-4bf6-847b-1d760edaedae}">
+      <Declaration><![CDATA[(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetReady" Id="{b722e4e8-f5ee-43b9-888d-7efba6cba399}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_DATABASE.BASE;
+
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+THIS^.eNextSeq := E_SEQ_DATABASE.BASE;
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TagExistCheck" Id="{a8a6bfdd-08ab-406d-ab58-01415266b01b}">
+      <Declaration><![CDATA[METHOD M_TagExistCheck : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Measurement Name*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* Tag Name*)
+	sTagName	: Tc2_System.T_MaxString;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_TagExistCheck := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.sTagName := sTagName;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.TAG_EXIST_CHECK;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_WriteStruct" Id="{13475132-cd21-4d84-a07b-671cc309bb75}">
+      <Declaration><![CDATA[METHOD M_WriteStruct : BOOL
+VAR_INPUT
+	(* Bucket name*)
+	sBucketName	: Tc2_System.T_MaxString;
+	(* Name of the table that is to be read.*)
+	sMeasurementName	: Tc2_System.T_MaxString;
+	(* Tag name*)
+	sTagName	: Tc2_System.T_MaxString;
+	(* Field names list*)
+	arrFieldNames	: ARRAY [0..99] OF Tc2_System.T_MaxString;
+  /// Field datatype list
+  arrFieldDatatypes:    ARRAY [0..99] OF T_MaxString;
+	(* Field values list*)
+	arrFieldValues	: ARRAY [0..99] OF ST_DATABASE_RECORD;
+END_VAR
+VAR_OUTPUT
+	(* Result*)
+	bResult	: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Output
+bResult := THIS^.bResult;
+
+M_WriteStruct := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Input
+THIS^.sBucketName := sBucketName;
+THIS^.sMeasurementName := sMeasurementName;
+THIS^.sTagName := sTagName;
+THIS^.arrFieldNames := arrFieldNames;
+THIS^.arrFieldValues := arrFieldValues;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_DATABASE.WRITE_STRUCT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Connected" Id="{e2a34010-e364-4b55-b704-962cbf3f9556}">
+      <Declaration><![CDATA[PROPERTY P_Connected : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{c91dfbfb-fb05-48d4-ab70-06073ef043f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Connected := false;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Error" Id="{7213f8e5-eb43-44b7-896d-a75911420df4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_Error : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{391d443c-624a-4ad9-a747-2168458efc85}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Error := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.ERROR;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Event" Id="{599a7f30-377c-4160-9921-65502e4028a7}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{339a6a8d-cb15-4679-a50d-3bde1faf7afa}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{6e14c6d9-48cb-4f90-a4fe-de51ba05bc69}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{4bce0f63-8592-4d9a-9cea-3c9a77ec1fd4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{7609d32b-79b2-4714-adf7-f62bf9c4ac7d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_FullObjectPath:= THIS^.strFullObjectPath;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{10de4671-7ae8-429c-82ff-7e5ae3ce9c72}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[THIS^.strFullObjectPath:=P_FullObjectPath;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{51f9b3cd-90ba-4d57-bc68-fcc641f328ac}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{ebeec235-a651-4ff8-9090-403c5e7b7a33}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{78768363-d530-4a9f-a494-cc3888a36754}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{5d6734d4-07cc-40b8-9f91-16b18999f2e6}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{58ddb13c-6848-4224-87aa-f535c7f33dce}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GlobalID:= THIS^.strInstancePath;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_LifeBit" Id="{c8e364f7-26c0-445c-959d-95b6cb55f542}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_LifeBit : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{5e4c036e-c94d-49d8-88ba-f4534eb77348}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_LifeBit := THIS^.bDBLifeBit;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_INFLUX_DB_ADS">
+      <LineId Id="2173" Count="13" />
+      <LineId Id="2190" Count="61" />
+      <LineId Id="2308" Count="7" />
+      <LineId Id="822" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_GeneralStepSetting">
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_BUCKET_EXIST_CHECK">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_CLEAR_MEASUREMENT">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="170" Count="6" />
+      <LineId Id="305" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="331" Count="2" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="334" Count="3" />
+      <LineId Id="316" Count="3" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="320" Count="7" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="213" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_DELETE_ALL_MEASUREMENTS">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="170" Count="6" />
+      <LineId Id="305" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="331" Count="2" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="334" Count="3" />
+      <LineId Id="316" Count="3" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="320" Count="7" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="213" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_DELETE_FIELD">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_DELETE_MEASUREMENT">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="170" Count="6" />
+      <LineId Id="305" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="331" Count="2" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="334" Count="3" />
+      <LineId Id="316" Count="3" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="320" Count="7" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="213" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_DELETE_TAG">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_FIELD_EXIST_CHECK">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_INIT">
+      <LineId Id="45" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="160" Count="8" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="178" Count="1" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="14" Count="2" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_MEASUREMENT_EXIST_CHECK">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_TAG_EXIST_CHECK">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="10" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="170" Count="4" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="4" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_Seq_WRITE_STRUCT">
+      <LineId Id="153" Count="16" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="170" Count="6" />
+      <LineId Id="305" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="331" Count="2" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="334" Count="3" />
+      <LineId Id="316" Count="3" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="320" Count="7" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="213" Count="25" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_SequenceManager">
+      <LineId Id="14" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="23" Count="11" />
+      <LineId Id="59" Count="4" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="74" Count="3" />
+      <LineId Id="73" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS._m_TimeOut">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_BucketExistCheck">
+      <LineId Id="27" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="14" Count="4" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_ClearMeasurement">
+      <LineId Id="37" Count="0" />
+      <LineId Id="35" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="39" Count="2" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="16" Count="4" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_DeleteAllMeasurements">
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="10" Count="4" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_DeleteField">
+      <LineId Id="19" Count="14" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_DeleteMeasurement">
+      <LineId Id="29" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="12" Count="4" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_DeleteTag">
+      <LineId Id="17" Count="13" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_FieldExistCheck">
+      <LineId Id="42" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="44" Count="3" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="20" Count="4" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_MeasurementExistCheck">
+      <LineId Id="23" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="16" Count="4" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_Reset">
+      <LineId Id="6" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="57" Count="3" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_SetReady">
+      <LineId Id="22" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="6" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_TagExistCheck">
+      <LineId Id="38" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="18" Count="4" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.M_WriteStruct">
+      <LineId Id="48" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="23" Count="6" />
+      <LineId Id="18" Count="4" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Connected.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Error.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_INFLUX_DB_ADS.P_LifeBit.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

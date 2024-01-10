@@ -3089,9 +3089,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[M_SetReady := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_PROCESS.BASE;
 
-THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;]]></ST>
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+THIS^.eNextSeq := E_SEQ_PROCESS.BASE;]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Stop" Id="{96ee87e0-486c-476e-9185-9dfde7315e1e}">
@@ -3282,6 +3285,34 @@ END_VAR
 ]]></Declaration>
         <Implementation>
           <ST><![CDATA[P_MaxSpeedInMmPerSWP := THIS^.rMaxSpeedInMmPerSWP;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_NokDifference" Id="{49ae5344-d1a4-4e46-8ed8-d2a3b89d03f3}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_NokDifference : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{2e1d7168-fbd7-43b6-a48c-881131ce4010}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_NokDifference := THIS^.rCurrentNokDifference;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_NokLimitInPercent" Id="{4c96e887-4967-42e8-9022-669592634d03}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_NokLimitInPercent : UINT
+]]></Declaration>
+      <Get Name="Get" Id="{d2f28ecf-2c6a-44af-add0-31638f82d289}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_NokLimitInPercent := THIS^.uiCurrentNokLimitInPercent;
 ]]></ST>
         </Implementation>
       </Get>
@@ -4398,7 +4429,7 @@ END_VAR
       <LineId Id="7" Count="1" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_SetReady">
-      <LineId Id="26" Count="1" />
+      <LineId Id="31" Count="4" />
       <LineId Id="6" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_Stop">
@@ -4454,6 +4485,14 @@ END_VAR
     <LineIds Name="FB_SEQ_PROCESS_NEST1.P_MaxSpeedInMmPerSWP.Get">
       <LineId Id="5" Count="0" />
       <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.P_NokDifference.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.P_NokLimitInPercent.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.P_ReadyState.Get">
       <LineId Id="2" Count="0" />

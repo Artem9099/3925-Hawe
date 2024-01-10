@@ -528,9 +528,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[M_SetReady := stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY;
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_VALVE.BASE;
 
-THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;]]></ST>
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+THIS^.eNextSeq := E_SEQ_VALVE.BASE;]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_ToHP" Id="{039e0944-1ad4-4125-9fa1-ed4834f1e71b}">
@@ -822,7 +825,7 @@ END_VAR
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_VALVE_X_2.M_SetReady">
-      <LineId Id="26" Count="1" />
+      <LineId Id="31" Count="4" />
       <LineId Id="6" Count="0" />
     </LineIds>
     <LineIds Name="FB_VALVE_X_2.M_ToHP">

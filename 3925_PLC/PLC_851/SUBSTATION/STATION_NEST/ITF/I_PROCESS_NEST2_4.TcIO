@@ -78,6 +78,18 @@ END_VAR
         <Declaration><![CDATA[]]></Declaration>
       </Get>
     </Property>
+    <Property Name="P_NokDifference" Id="{3ee0d4f6-8bb2-4809-8cb0-0b0e55290687}">
+      <Declaration><![CDATA[PROPERTY P_NokDifference : REAL]]></Declaration>
+      <Get Name="Get" Id="{6559f1de-cae7-4ddc-9d9e-817c4609fff3}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_NokLimitInPercent" Id="{eb5f006f-8c83-4461-8d15-305d1e73ffd6}">
+      <Declaration><![CDATA[PROPERTY P_NokLimitInPercent : UINT]]></Declaration>
+      <Get Name="Get" Id="{8aa00b9a-eafb-429a-a6a0-770f86da1cc1}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_ReadyState" Id="{2ad007eb-173e-41f1-8228-f61cd49a53b8}">
       <Declaration><![CDATA[PROPERTY P_ReadyState : BOOL]]></Declaration>
       <Get Name="Get" Id="{e59d8284-0a56-4adc-83b7-924c13874db0}">

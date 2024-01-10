@@ -3,273 +3,102 @@
   <POU Name="PrgMeasure" Id="{863d4cd8-1269-4ff0-9112-1a4520e9c307}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM PrgMeasure
 VAR
-  uiNest1Seq, uiNest2Seq, uiNest3Seq, uiNest4Seq:             UINT := 0;
-  fbNest1_db:                                                 FB_DATABASE(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
-  fbNest2_db:                                                 FB_DATABASE(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
-  fbNest3_db:                                                 FB_DATABASE(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
-  fbNest4_db:                                                 FB_DATABASE(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
-  bNest1ConnectTrigger:                                       BOOL;
-  bNest2ConnectTrigger:                                       BOOL;
-  bNest3ConnectTrigger:                                       BOOL;
-  bNest4ConnectTrigger:                                       BOOL;
-  bNest1DisconnectTrigger:                                    BOOL;
-  bNest2DisconnectTrigger:                                    BOOL;
-  bNest3DisconnectTrigger:                                    BOOL;
-  bNest4DisconnectTrigger:                                    BOOL;
-  bCreateNest1TableTrigger:                                   BOOL;
-  bCreateNest2TableTrigger:                                   BOOL;
-  bCreateNest3TableTrigger:                                   BOOL;
-  bCreateNest4TableTrigger:                                   BOOL;
-  bDeleteNest1TableTrigger:                                   BOOL;
-  bDeleteNest2TableTrigger:                                   BOOL;
-  bDeleteNest3TableTrigger:                                   BOOL;
-  bDeleteNest4TableTrigger:                                   BOOL;
-  bNest1TableExist:                                           BOOL;
-  bNest2TableExist:                                           BOOL;
-  bNest3TableExist:                                           BOOL;
-  bNest4TableExist:                                           BOOL;
-  bNest1SaveTrigger:                                          BOOL;
-  bNest2SaveTrigger:                                          BOOL;
-  bNest3SaveTrigger:                                          BOOL;
-  bNest4SaveTrigger:                                          BOOL;
+  uiSeq:                                                      UINT := 0;
 END_VAR
 VAR
-  fbLocalSystemTime:                                          FB_LocalSystemTime(sNetID:= '',
-                                                                                 bEnable:= TRUE,
-                                                                                 dwCycle:= T#1S,
-                                                                                 dwOpt:= 1,
-                                                                                 tTimeout:= T#10S);
+  fbLocalSystemTime:                                          FB_LocalSystemTime := ( bEnable := TRUE, dwCycle := 1 );
   systemTime:                                                 TIMESTRUCT;
   sCurrentDateTime:                                           STRING;
-  myRecord:                                                   ST_DB_DATA_RECORD;
-  ColumnNames:                                                ARRAY[1..31] OF STRING(50);
-  ColumnInfo:                                                 ARRAY [1..31] OF ST_ColumnInfo;
+  stNest1Record:                                              ST_DATABASE_RECORD;
+  stNest2Record:                                              ST_DATABASE_RECORD;
+  stNest3Record:                                              ST_DATABASE_RECORD;
+  stNest4Record:                                              ST_DATABASE_RECORD;
+  ColumnNames:                                                ARRAY [1..3] OF STRING(50);
+  ColumnInfo:                                                 ARRAY [1..3] OF ST_ColumnInfo;
+  sCmd:                                                       STRING(5000);
+END_VAR
+VAR // TwincatADSGateway parameter
+  bDeleteMeasureFromDB:                                       BOOL;
+  bDeleteFeedback:                                            BOOL;
+END_VAR
+VAR
+  bLifeBit:                                                   BOOL;
+  bAdsConnected:                                              BOOL;
+  bReady:                                                     BOOL;
+  bBusy:                                                      BOOL;
+  bResult:                                                    BOOL;
+  bOpenKeyboard:                                              BOOL;
+  bCloseHMI:                                                  BOOL;
+  bShutdownPc:                                                BOOL;
+  bRestartPc:                                                 BOOL;
+  sLog:                                                       T_MaxString;
+  bGetDBExist:                                                BOOL;
+  sDBName:                                                    T_MaxString := 'test';
+  bGetMeasurementExist:                                       BOOL;
+  sMeasurementName:                                           T_MaxString := 'Art123';
+  bDeleteMeasurement:                                         BOOL;
+  bDeleteAllMeasurements:                                     BOOL;
+  bWriteStructData:                                           BOOL;
+  sKeyName:                                                   T_MaxString := 'Dauerlauf';
+  arrFieldNames:                                              ARRAY [0..99] OF T_MaxString;
+  arrFieldValues:                                             ARRAY [0..99] OF LREAL;
+  dtStartTime:                                                DT;
+  dtEndTime:                                                  DT;
+  
+  fbInfluxDB:                                                 FB_INFLUX_DB_ADS(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
+  bTest:                                                      BOOL;
+  uiDBSeq:                                                    UINT := 0;
+  bRes:                                                       BOOL;
+  liTest:                                                     ULINT;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// FBs call
+      <ST><![CDATA[// FBs
+fbInfluxDB(bResult:= bResult,
+           bLifeBit:= bLifeBit,
+           bAdsConnected:= bAdsConnected,
+           bReady:= bReady,
+           bBusy:= bBusy);
+
+// Init
+arrFieldNames[0] := 'Pressure';
+arrFieldNames[1] := 'Force';
+arrFieldNames[2] := 'Temperature';
+arrFieldValues[0] := 100;
+arrFieldValues[1] := 10;
+arrFieldValues[2] := 33;
+
+IF bTest THEN
+  CASE uiDBSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+        uiDBSeq := 1;
+      END_IF
+      
+    1:
+      IF fbInfluxDB.M_FieldExistCheck(sBucketName:= 'test', 
+                                  sMeasurementName:= 'Art123', 
+                                  sTagName:= 'Dauerlauf',
+                                  sFieldName:= 'Force',
+                                  bResult=> bRes) 
+      THEN
+        bTest := FALSE;
+        uiDBSeq := 0;
+  		END_IF
+  END_CASE
+END_IF
+
+// FBs call
 fbLocalSystemTime(systemTime=> systemTime);
-fbNest1_db();
-fbNest2_db();
-fbNest3_db();
-fbNest4_db();
+//fbNest1_db();
+//fbNest2_db();
+//fbNest3_db();
+//fbNest4_db();
 
 // Save data to MySQL Server
-A_010_DBInit();
-A_020_DBNest1();
-(*
-CASE uiNest2Seq OF
-  0:  // Set ready
-    IF TRUE
-    AND fbNest2_db.M_SetReady()
-    THEN
-      uiNest2Seq := 10;
-    END_IF
-    
-  10:  // Choice step
-    IF bNest2ConnectTrigger THEN
-      uiNest2Seq := 20;
-    ELSIF bNest2DisconnectTrigger THEN
-      uiNest2Seq := 30;
-    ELSIF bCreateNest2TableTrigger THEN
-      uiNest2Seq := 40;
-    ELSIF bDeleteNest2TableTrigger THEN
-      uiNest2Seq := 50;
-    ELSIF bNest2SaveTrigger THEN
-      uiNest2Seq := 60;
-    END_IF
-    
-  20:  // Connect
-    IF TRUE
-    AND fbNest2_db.M_Connect(udiDBID:= 1)
-    THEN
-      bNest2ConnectTrigger := FALSE;
-      uiNest2Seq := 0;
-    END_IF
-    
-  30:  // Disconnect
-    IF TRUE
-    AND fbNest2_db.M_Disconnect()
-    THEN
-      bNest2DisconnectTrigger := FALSE;
-      uiNest2Seq := 0;
-    END_IF
-    
-  40:  // Create nest 2 table
-    IF TRUE
-    AND fbNest2_db.M_CreateTable(udiDBID:= 1,
-                                 sTableName:= '',
-                                 pTableCfg:= ,
-                                 cbTableCfg:= SIZEOF())
-    THEN
-      bCreateNest2TableTrigger := FALSE;
-      uiNest2Seq := 0;
-    END_IF
-    
-  50:  // Delete nest 2 table
-    IF TRUE
-    AND fbNest2_db.M_DeleteTable(udiDBID:= 1, sTableName:= '')
-    THEN
-      bDeleteNest2TableTrigger := FALSE;
-      uiNest2Seq := 0;
-    END_IF
-    
-  60: // Save struct
-    IF TRUE
-    AND fbNest2_db.M_WriteStruct(udiDBID:= 1,
-                                 sTableName:= ,
-                                 pRecord:= ADR(),
-                                 cbRecord:= SIZEOF(),
-                                 pColumnNames:= ,
-                                 cbColumnNames:= SIZEOF())
-    THEN
-      bNest2SaveTrigger := FALSE;
-      uiNest2Seq := 0;
-    END_IF
-END_CASE
-
-  // Nest 3
-CASE uiNest3Seq OF
-  0:  // Set ready
-    IF TRUE
-    AND fbNest3_db.M_SetReady()
-    THEN
-      uiNest3Seq := 10;
-    END_IF
-    
-  10:  // Choice step
-    IF bNest3ConnectTrigger THEN
-      uiNest3Seq := 20;
-    ELSIF bNest3DisconnectTrigger THEN
-      uiNest3Seq := 30;
-    ELSIF bCreateNest3TableTrigger THEN
-      uiNest3Seq := 40;
-    ELSIF bDeleteNest3TableTrigger THEN
-      uiNest3Seq := 50;
-    ELSIF bNest3SaveTrigger THEN
-      uiNest3Seq := 60;
-    END_IF
-    
-  20:  // Connect
-    IF TRUE
-    AND fbNest3_db.M_Connect(udiDBID:= 1)
-    THEN
-      bNest3ConnectTrigger := FALSE;
-      uiNest3Seq := 0;
-    END_IF
-    
-  30:  // Disconnect
-    IF TRUE
-    AND fbNest3_db.M_Disconnect()
-    THEN
-      bNest3DisconnectTrigger := FALSE;
-      uiNest3Seq := 0;
-    END_IF
-    
-  40:  // Create nest 3 table
-    IF TRUE
-    AND fbNest3_db.M_CreateTable(udiDBID:= 1,
-                                 sTableName:= '',
-                                 pTableCfg:= ,
-                                 cbTableCfg:= SIZEOF())
-    THEN
-      bCreateNest3TableTrigger := FALSE;
-      uiNest3Seq := 0;
-    END_IF
-    
-  50:  // Delete nest 3 table
-    IF TRUE
-    AND fbNest3_db.M_DeleteTable(udiDBID:= 1, sTableName:= '')
-    THEN
-      bDeleteNest3TableTrigger := FALSE;
-      uiNest3Seq := 0;
-    END_IF
-    
-  60: // Save struct
-    IF TRUE
-    AND fbNest3_db.M_WriteStruct(udiDBID:= 1,
-                                 sTableName:= ,
-                                 pRecord:= ADR(),
-                                 cbRecord:= SIZEOF(),
-                                 pColumnNames:= ,
-                                 cbColumnNames:= SIZEOF())
-    THEN
-      bNest3SaveTrigger := FALSE;
-      uiNest3Seq := 0;
-    END_IF
-END_CASE
-
-  // Nest 4
-CASE uiNest1Seq OF
-  0:  // Set ready
-    IF TRUE
-    AND fbNest4_db.M_SetReady()
-    THEN
-      uiNest4Seq := 10;
-    END_IF
-    
-  10:  // Choice step
-    IF bNest4ConnectTrigger THEN
-      uiNest4Seq := 20;
-    ELSIF bNest4DisconnectTrigger THEN
-      uiNest4Seq := 30;
-    ELSIF bCreateNest4TableTrigger THEN
-      uiNest4Seq := 40;
-    ELSIF bDeleteNest4TableTrigger THEN
-      uiNest4Seq := 50;
-    ELSIF bNest4SaveTrigger THEN
-      uiNest4Seq := 60;
-    END_IF
-    
-  20:  // Connect
-    IF TRUE
-    AND fbNest4_db.M_Connect(udiDBID:= 1)
-    THEN
-      bNest4ConnectTrigger := FALSE;
-      uiNest4Seq := 0;
-    END_IF
-    
-  30:  // Disconnect
-    IF TRUE
-    AND fbNest4_db.M_Disconnect()
-    THEN
-      bNest4DisconnectTrigger := FALSE;
-      uiNest4Seq := 0;
-    END_IF
-    
-  40:  // Create nest 4 table
-    IF TRUE
-    AND fbNest4_db.M_CreateTable(udiDBID:= 1,
-                                 sTableName:= '',
-                                 pTableCfg:= ,
-                                 cbTableCfg:= SIZEOF())
-    THEN
-      bCreateNest4TableTrigger := FALSE;
-      uiNest4Seq := 0;
-    END_IF
-    
-  50:  // Delete nest 4 table
-    IF TRUE
-    AND fbNest4_db.M_DeleteTable(udiDBID:= 1, sTableName:= '')
-    THEN
-      bDeleteNest4TableTrigger := FALSE;
-      uiNest4Seq := 0;
-    END_IF
-    
-  60: // Save struct
-    IF TRUE
-    AND fbNest4_db.M_WriteStruct(udiDBID:= 1,
-                                 sTableName:= ,
-                                 pRecord:= ADR(),
-                                 cbRecord:= SIZEOF(),
-                                 pColumnNames:= ,
-                                 cbColumnNames:= SIZEOF())
-    THEN
-      bNest4SaveTrigger := FALSE;
-      uiNest4Seq := 0;
-    END_IF
-END_CASE
-*)]]></ST>
+//A_010_DBInit();
+//A_020_DBNest1();
+]]></ST>
     </Implementation>
     <Action Name="A_010_DBInit" Id="{6bf0f23b-ec9b-4edc-a183-4c73385e1f55}">
       <Implementation>
@@ -293,37 +122,42 @@ ColumnInfo[14].sName := 'colVarBinary'; ColumnInfo[14].eType := E_ColumnType.Var
 *)
 
 // Define header
-ColumnInfo[1].sName := 'sZeitstempel';                              ColumnInfo[1].eType := E_ColumnType.NText;     ColumnInfo[1].nLength := 256;    ColumnInfo[1].sProperty := 'IDENTITY(1,1)';
-ColumnInfo[2].sName := 'sPrüfart';                                  ColumnInfo[2].eType := E_ColumnType.NText;     ColumnInfo[2].nLength := 256;
-ColumnInfo[3].sName := 'sTimer';                                    ColumnInfo[3].eType := E_ColumnType.NText;     ColumnInfo[3].nLength := 256;
-ColumnInfo[4].sName := 'liSollZyklen';                              ColumnInfo[4].eType := E_ColumnType.BigInt;    ColumnInfo[4].nLength := 8;
-ColumnInfo[5].sName := 'liAktiverZyklus';                           ColumnInfo[5].eType := E_ColumnType.BigInt;    ColumnInfo[5].nLength := 8;
-ColumnInfo[6].sName := 'sPrüfrichtung';                             ColumnInfo[6].eType := E_ColumnType.NText;     ColumnInfo[6].nLength := 256;
-ColumnInfo[7].sName := 'lrSollPrüfdruckInBar';                      ColumnInfo[7].eType := E_ColumnType.REAL_;     ColumnInfo[7].nLength := 4;
-ColumnInfo[8].sName := 'lrIstPrüfdruckInBar';                       ColumnInfo[8].eType := E_ColumnType.REAL_;     ColumnInfo[8].nLength := 4;
-ColumnInfo[9].sName := 'lrSollPrüfkraftInKN';                       ColumnInfo[9].eType := E_ColumnType.REAL_;     ColumnInfo[9].nLength := 4;
-ColumnInfo[10].sName := 'lrIstPrüfkraftInKN';                       ColumnInfo[10].eType := E_ColumnType.REAL_;    ColumnInfo[10].nLength := 4;
-ColumnInfo[11].sName := 'lrPrüfdruckAInBar';                        ColumnInfo[11].eType := E_ColumnType.REAL_;    ColumnInfo[11].nLength := 4;
-ColumnInfo[12].sName := 'lrPrüfdruckBInBar';                        ColumnInfo[12].eType := E_ColumnType.REAL_;    ColumnInfo[12].nLength := 4;
-ColumnInfo[13].sName := 'lrLosbrechdruckInBar';                     ColumnInfo[13].eType := E_ColumnType.REAL_;    ColumnInfo[13].nLength := 4;
-ColumnInfo[14].sName := 'lrLosbrechdruckAInBar';                    ColumnInfo[14].eType := E_ColumnType.REAL_;    ColumnInfo[14].nLength := 4;
-ColumnInfo[15].sName := 'lrLosbrechdruckBInBar';                    ColumnInfo[15].eType := E_ColumnType.REAL_;    ColumnInfo[15].nLength := 4;
-ColumnInfo[16].sName := 'lrSpeicherdruckInBar';                     ColumnInfo[16].eType := E_ColumnType.REAL_;    ColumnInfo[16].nLength := 4;
-ColumnInfo[17].sName := 'lrSollGegenhaltedruckInBar';               ColumnInfo[17].eType := E_ColumnType.REAL_;    ColumnInfo[17].nLength := 4;
-ColumnInfo[18].sName := 'lrIstGegenhaltedruckInBar';                ColumnInfo[18].eType := E_ColumnType.REAL_;    ColumnInfo[18].nLength := 4;
-ColumnInfo[19].sName := 'lrSollGegenhaltekraftInKN';                ColumnInfo[19].eType := E_ColumnType.REAL_;    ColumnInfo[19].nLength := 4;
-ColumnInfo[20].sName := 'lrIstGegenhaltekraftInKN';                 ColumnInfo[20].eType := E_ColumnType.REAL_;    ColumnInfo[20].nLength := 4;
-ColumnInfo[21].sName := 'lrPosition';                               ColumnInfo[21].eType := E_ColumnType.REAL_;    ColumnInfo[21].nLength := 4;
-ColumnInfo[22].sName := 'lrPositionMin';                            ColumnInfo[22].eType := E_ColumnType.REAL_;    ColumnInfo[22].nLength := 4;
-ColumnInfo[23].sName := 'lrPositionMax';                            ColumnInfo[23].eType := E_ColumnType.REAL_;    ColumnInfo[23].nLength := 4;
-ColumnInfo[24].sName := 'lrKolbenlänge';                            ColumnInfo[24].eType := E_ColumnType.REAL_;    ColumnInfo[24].nLength := 4;
-ColumnInfo[25].sName := 'lrTemperatur';                             ColumnInfo[25].eType := E_ColumnType.REAL_;    ColumnInfo[25].nLength := 4;
-ColumnInfo[26].sName := 'lrKolbenflächeA';                          ColumnInfo[26].eType := E_ColumnType.REAL_;    ColumnInfo[26].nLength := 8;
-ColumnInfo[27].sName := 'lrKolbenflächeB';                          ColumnInfo[27].eType := E_ColumnType.REAL_;    ColumnInfo[27].nLength := 8;
-ColumnInfo[28].sName := 'lrLeckageInMm';                            ColumnInfo[28].eType := E_ColumnType.REAL_;    ColumnInfo[28].nLength := 4;
-ColumnInfo[29].sName := 'lrLeckageInMl';                            ColumnInfo[29].eType := E_ColumnType.REAL_;    ColumnInfo[29].nLength := 4;
-ColumnInfo[30].sName := 'lrSollGeschwindigkeitInMmProS';            ColumnInfo[30].eType := E_ColumnType.REAL_;    ColumnInfo[30].nLength := 4;
-ColumnInfo[31].sName := 'lrIstGeschwindigkeitInMmProS';             ColumnInfo[31].eType := E_ColumnType.REAL_;    ColumnInfo[31].nLength := 4;
+ColumnNames[1] :=  ColumnInfo[1].sName := 'sZeitstempel';                              ColumnInfo[1].eType := E_ColumnType.NText;     ColumnInfo[1].nLength := 256;
+ColumnNames[2] :=  ColumnInfo[2].sName := 'sPruefart';                                 ColumnInfo[2].eType := E_ColumnType.NText;     ColumnInfo[2].nLength := 256;
+ColumnNames[3] :=  ColumnInfo[3].sName := 'sTimer';                                    ColumnInfo[3].eType := E_ColumnType.NText;     ColumnInfo[3].nLength := 256;
+//ColumnNames[4] :=  ColumnInfo[4].sName := 'liSollzyklen';                              ColumnInfo[4].eType := E_ColumnType.BigInt;    ColumnInfo[4].nLength := 8;
+//ColumnNames[5] :=  ColumnInfo[5].sName := 'liAktiverZyklus';                           ColumnInfo[5].eType := E_ColumnType.BigInt;    ColumnInfo[5].nLength := 8;
+//ColumnNames[6] :=  ColumnInfo[6].sName := 'sPrüfrichtung';                             ColumnInfo[6].eType := E_ColumnType.NText;     ColumnInfo[6].nLength := 256;
+//ColumnNames[7] :=  ColumnInfo[7].sName := 'lrSollprüfdruck_bar_A';                     ColumnInfo[7].eType := E_ColumnType.REAL_;     ColumnInfo[7].nLength := 4;
+//ColumnNames[8] :=  ColumnInfo[8].sName := 'lrSollprüfdruck_bar_B';                     ColumnInfo[8].eType := E_ColumnType.REAL_;     ColumnInfo[8].nLength := 4;
+//ColumnNames[9] :=  ColumnInfo[9].sName := 'lrIstprüfdruck_bar';                        ColumnInfo[9].eType := E_ColumnType.REAL_;     ColumnInfo[9].nLength := 4;
+//ColumnNames[10] := ColumnInfo[10].sName := 'lrSollprüfkraft_KN_A';                     ColumnInfo[10].eType := E_ColumnType.REAL_;    ColumnInfo[10].nLength := 4;
+//ColumnNames[11] := ColumnInfo[11].sName := 'lrSollprüfkraft_KN_B';                     ColumnInfo[11].eType := E_ColumnType.REAL_;    ColumnInfo[11].nLength := 4;
+//ColumnNames[12] := ColumnInfo[12].sName := 'lrIstprüfkraft_KN';                        ColumnInfo[12].eType := E_ColumnType.REAL_;    ColumnInfo[12].nLength := 4;
+//ColumnNames[13] := ColumnInfo[13].sName := 'lrPrüfdruck_bar_A';                        ColumnInfo[13].eType := E_ColumnType.REAL_;    ColumnInfo[13].nLength := 4;
+//ColumnNames[14] := ColumnInfo[14].sName := 'lrPrüfdruck_bar_B';                        ColumnInfo[14].eType := E_ColumnType.REAL_;    ColumnInfo[14].nLength := 4;
+//ColumnNames[15] := ColumnInfo[15].sName := 'lrLosbrechdruck_bar';                      ColumnInfo[15].eType := E_ColumnType.REAL_;    ColumnInfo[15].nLength := 4;
+//ColumnNames[16] := ColumnInfo[16].sName := 'lrLosbrechdruck_bar_A';                    ColumnInfo[16].eType := E_ColumnType.REAL_;    ColumnInfo[16].nLength := 4;
+//ColumnNames[17] := ColumnInfo[17].sName := 'lrLosbrechdruck_bar_B';                    ColumnInfo[17].eType := E_ColumnType.REAL_;    ColumnInfo[17].nLength := 4;
+//ColumnNames[18] := ColumnInfo[18].sName := 'lrSpeicherdruck_bar';                      ColumnInfo[18].eType := E_ColumnType.REAL_;    ColumnInfo[18].nLength := 4;
+//ColumnNames[19] := ColumnInfo[19].sName := 'lrSollgegenhaltedruck_bar_A';              ColumnInfo[19].eType := E_ColumnType.REAL_;    ColumnInfo[19].nLength := 4;
+//ColumnNames[20] := ColumnInfo[20].sName := 'lrSollgegenhaltedruck_bar_B';              ColumnInfo[20].eType := E_ColumnType.REAL_;    ColumnInfo[20].nLength := 4;
+//ColumnNames[21] := ColumnInfo[21].sName := 'lrIstgegenhaltedruck_bar';                 ColumnInfo[21].eType := E_ColumnType.REAL_;    ColumnInfo[21].nLength := 4;
+//ColumnNames[22] := ColumnInfo[22].sName := 'lrSollgegenhaltekraft_KN_A';               ColumnInfo[22].eType := E_ColumnType.REAL_;    ColumnInfo[22].nLength := 4;
+//ColumnNames[23] := ColumnInfo[23].sName := 'lrSollgegenhaltekraft_KN_B';               ColumnInfo[23].eType := E_ColumnType.REAL_;    ColumnInfo[23].nLength := 4;
+//ColumnNames[24] := ColumnInfo[24].sName := 'lrIstgegenhaltekraft_KN';                  ColumnInfo[24].eType := E_ColumnType.REAL_;    ColumnInfo[24].nLength := 4;
+//ColumnNames[25] := ColumnInfo[25].sName := 'lrPosition';                               ColumnInfo[25].eType := E_ColumnType.REAL_;    ColumnInfo[25].nLength := 4;
+//ColumnNames[26] := ColumnInfo[26].sName := 'lrPosition_Min';                           ColumnInfo[26].eType := E_ColumnType.REAL_;    ColumnInfo[26].nLength := 4;
+//ColumnNames[27] := ColumnInfo[27].sName := 'lrPosition_Max';                           ColumnInfo[27].eType := E_ColumnType.REAL_;    ColumnInfo[27].nLength := 4;
+//ColumnNames[28] := ColumnInfo[28].sName := 'lrKolbenlänge';                            ColumnInfo[28].eType := E_ColumnType.REAL_;    ColumnInfo[28].nLength := 4;
+//ColumnNames[29] := ColumnInfo[29].sName := 'lrTemperatur';                             ColumnInfo[29].eType := E_ColumnType.REAL_;    ColumnInfo[29].nLength := 4;
+//ColumnNames[30] := ColumnInfo[30].sName := 'lrKolbenfläche_A';                         ColumnInfo[30].eType := E_ColumnType.REAL_;    ColumnInfo[30].nLength := 4;
+//ColumnNames[31] := ColumnInfo[31].sName := 'lrKolbenfläche_B';                         ColumnInfo[31].eType := E_ColumnType.REAL_;    ColumnInfo[31].nLength := 4;
+//ColumnNames[32] := ColumnInfo[32].sName := 'lrNokUnterschied';                         ColumnInfo[32].eType := E_ColumnType.REAL_;    ColumnInfo[32].nLength := 4;
+//ColumnNames[33] := ColumnInfo[33].sName := 'lrNokLimit_Prozent';                       ColumnInfo[33].eType := E_ColumnType.REAL_;    ColumnInfo[33].nLength := 4;
+//ColumnNames[34] := ColumnInfo[34].sName := 'lrSollgeschwindigkeit_mmProS_A';           ColumnInfo[34].eType := E_ColumnType.REAL_;    ColumnInfo[34].nLength := 4;
+//ColumnNames[35] := ColumnInfo[35].sName := 'lrSollgeschwindigkeit_mmProS_B';           ColumnInfo[35].eType := E_ColumnType.REAL_;    ColumnInfo[35].nLength := 4;
+//ColumnNames[36] := ColumnInfo[36].sName := 'lrIstgeschwindigkeit_mmProS';              ColumnInfo[36].eType := E_ColumnType.REAL_;    ColumnInfo[36].nLength := 4;
 
 // Current Timestamp
 sCurrentDateTime := CONCAT(TO_STRING(systemTime.wYear), '_');
@@ -342,133 +176,36 @@ sCurrentDateTime := CONCAT(sCurrentDateTime, TO_STRING(systemTime.wSecond));
     </Action>
     <Action Name="A_020_DBNest1" Id="{aecf5f8e-87ac-46d9-ad92-8292f5baf49e}">
       <Implementation>
-        <ST><![CDATA[// Nest 1 - Set values (real time data)
-myRecord.sTimeStamp := sCurrentDateTime;
-myRecord.sTestingType := 'Dauerlauf'; //PrgVisu.fbVisuOPMode.;
-myRecord.sTimer := PrgStation.fbNest1.P_Timer;
-myRecord.liTargetCycles := PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles;
-myRecord.liActiveCycle := PrgStation.fbMainProcess.P_CurrentCycleNest1;
-myRecord.sTestDirection := PrgStation.fbTestCyl1.P_ActiveDirection;
-myRecord.lrTargetTestPressureInBar := PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP;
-myRecord.lrCurrentTestPressureInBar := PrgStation.fbTestCyl1.P_WorkPressure;
-myRecord.lrTargetTestForceInKN := ;
-myRecord.lrCurrentTestForceInKN := ;
-myRecord.lrTestPressureAInBar := ;
-myRecord.lrTestPressureBInBar := ;
-myRecord.lrBreakawayPressureInBar := ;
-myRecord.lrBreakawayPressureAInBar := ;
-myRecord.lrBreakawayPressureBInBar := ;
-myRecord.lrReservoirPressureInBar := ;
-myRecord.lrTargetCounterPressureInBar := ;
-myRecord.lrCurrentCounterPressureInBar := ;
-myRecord.lrTargetCounterForceInKN := ;
-myRecord.lrCurrentCounterForceInKN := ;
-myRecord.lrPosition := ;
-myRecord.lrPositionMin := ;
-myRecord.lrPositionMax := ;
-myRecord.lrCylStrokeLength := ;
-myRecord.lrTemperature := ;
-myRecord.lrCylPistonSurfaceA := ;
-myRecord.lrCylPistonSurfaceB := ;
-myRecord.lrLeakageInMm := ;
-myRecord.lrLeakageInMl := ;
-myRecord.lrTargetSpeedInMmPerS := ;
-myRecord.lrCurrentSpeedInMmPerS := ;
-
-// Nest 1 - Database control
-CASE uiNest1Seq OF
-  0:  // Set ready
-    IF TRUE
-    AND fbNest1_db.M_SetReady()
-    THEN
-      uiNest1Seq := 10;
-    END_IF
-    
-  10:  // Choice step
-    IF bNest1ConnectTrigger THEN
-      uiNest1Seq := 20;
-    ELSIF bNest1DisconnectTrigger THEN
-      uiNest1Seq := 30;
-    ELSIF bCreateNest1TableTrigger THEN
-      uiNest1Seq := 40;
-    ELSIF bDeleteNest1TableTrigger THEN
-      uiNest1Seq := 50;
-    ELSIF bNest1SaveTrigger THEN
-      uiNest1Seq := 60;
-    END_IF
-    
-  20:  // Connect
-    IF TRUE
-    AND fbNest1_db.M_Connect(udiDBID:= 1)
-    THEN
-      bNest1ConnectTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-    
-  30:  // Disconnect
-    IF TRUE
-    AND fbNest1_db.M_Disconnect()
-    THEN
-      bNest1DisconnectTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-    
-  41110: // Check possibility
-    IF TRUE
-    AND PrgStation.sTestCyl1SNo <> ''
-    THEN
-      IF TRUE
-      AND fbNest1_db.M_TableExistCheck(udiDBID:= 1,
-                                       sTableName:= 'er_nest1_record',
-                                       bResult=> bNest1TableExist)
-      THEN
-        IF bNest1TableExist THEN
-          bCreateNest1TableTrigger := FALSE;
-          uiNest1Seq := 0;  // Error: table exist
-        ELSE
-          uiNest1Seq := 41;
-				END_IF
-			END_IF
-    ELSE
-      bCreateNest1TableTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-    
-  40:  // Create nest 1 table
-    IF TRUE
-    AND fbNest1_db.M_CreateTable(udiDBID:= 1,
-                                 sTableName:= 'test2',
-                                 pTableCfg:= ADR(ColumnInfo),
-                                 cbTableCfg:= SIZEOF(ColumnInfo))
-    THEN
-      bCreateNest1TableTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-    
-  50:  // Delete nest 1 table
-    IF TRUE
-    AND fbNest1_db.M_DeleteTable(udiDBID:= 1, sTableName:= '')
-    THEN
-      bDeleteNest1TableTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-    
-  60: // Save struct
-    IF TRUE
-    AND fbNest1_db.M_WriteStruct(udiDBID:= 1,
-                                 sTableName:= 'test',
-                                 pRecord:= ADR(myRecord),
-                                 cbRecord:= SIZEOF(myRecord),
-                                 pColumnNames:= ADR(ColumnNames),
-                                 cbColumnNames:= SIZEOF(ColumnNames))
-    THEN
-      bNest1SaveTrigger := FALSE;
-      uiNest1Seq := 0;
-    END_IF
-END_CASE]]></ST>
+        <ST><![CDATA[]]></ST>
       </Implementation>
     </Action>
     <LineIds Name="PrgMeasure">
+      <LineId Id="1732" Count="0" />
+      <LineId Id="1628" Count="0" />
+      <LineId Id="1731" Count="0" />
+      <LineId Id="1724" Count="2" />
+      <LineId Id="1733" Count="0" />
+      <LineId Id="1629" Count="0" />
+      <LineId Id="1518" Count="0" />
+      <LineId Id="1520" Count="4" />
+      <LineId Id="1624" Count="0" />
+      <LineId Id="1606" Count="1" />
+      <LineId Id="1612" Count="0" />
+      <LineId Id="1614" Count="0" />
+      <LineId Id="1616" Count="0" />
+      <LineId Id="1627" Count="0" />
+      <LineId Id="1619" Count="0" />
+      <LineId Id="1617" Count="0" />
+      <LineId Id="1620" Count="0" />
+      <LineId Id="1630" Count="1" />
+      <LineId Id="1730" Count="0" />
+      <LineId Id="1728" Count="0" />
+      <LineId Id="1634" Count="0" />
+      <LineId Id="1626" Count="0" />
+      <LineId Id="1622" Count="1" />
+      <LineId Id="1613" Count="0" />
+      <LineId Id="1608" Count="0" />
+      <LineId Id="1519" Count="0" />
       <LineId Id="1068" Count="0" />
       <LineId Id="1295" Count="0" />
       <LineId Id="1069" Count="2" />
@@ -476,8 +213,8 @@ END_CASE]]></ST>
       <LineId Id="1309" Count="0" />
       <LineId Id="1074" Count="0" />
       <LineId Id="1288" Count="0" />
-      <LineId Id="1075" Count="212" />
-      <LineId Id="590" Count="0" />
+      <LineId Id="1075" Count="0" />
+      <LineId Id="1440" Count="0" />
     </LineIds>
     <LineIds Name="PrgMeasure.A_010_DBInit">
       <LineId Id="2" Count="0" />
@@ -492,19 +229,24 @@ END_CASE]]></ST>
       <LineId Id="53" Count="0" />
       <LineId Id="41" Count="0" />
       <LineId Id="56" Count="0" />
+      <LineId Id="81" Count="0" />
       <LineId Id="32" Count="0" />
       <LineId Id="57" Count="0" />
+      <LineId Id="82" Count="0" />
       <LineId Id="40" Count="0" />
       <LineId Id="33" Count="5" />
+      <LineId Id="83" Count="0" />
       <LineId Id="58" Count="0" />
       <LineId Id="39" Count="0" />
       <LineId Id="59" Count="0" />
+      <LineId Id="84" Count="0" />
       <LineId Id="43" Count="1" />
       <LineId Id="46" Count="2" />
       <LineId Id="45" Count="0" />
       <LineId Id="49" Count="1" />
       <LineId Id="54" Count="1" />
       <LineId Id="62" Count="0" />
+      <LineId Id="85" Count="0" />
       <LineId Id="61" Count="0" />
       <LineId Id="67" Count="10" />
       <LineId Id="80" Count="0" />
@@ -512,12 +254,6 @@ END_CASE]]></ST>
       <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="PrgMeasure.A_020_DBNest1">
-      <LineId Id="132" Count="0" />
-      <LineId Id="175" Count="0" />
-      <LineId Id="139" Count="28" />
-      <LineId Id="134" Count="0" />
-      <LineId Id="133" Count="0" />
-      <LineId Id="2" Count="89" />
       <LineId Id="1" Count="0" />
     </LineIds>
   </POU>

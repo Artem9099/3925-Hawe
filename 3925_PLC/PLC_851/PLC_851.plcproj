@@ -22,6 +22,9 @@
     <CompilerDefines>VISU_USEPROPERTYINFO</CompilerDefines>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DUTs\ST_DATABASE_RECORD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DUTs\ST_RECIPE_ENDURANCE_RUN.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -277,13 +280,19 @@
     <Compile Include="MODULE\DATABASE\DUT\E_SEQ_DATABASE.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MODULE\DATABASE\DUT\ST_DB_DATA_RECORD.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="MODULE\DATABASE\ITF\I_DATABASE.TcIO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MODULE\DATABASE\POU\FB_DATABASE.TcPOU">
+    <Compile Include="MODULE\DATABASE\ITF\I_INFLUXDB_ADS.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\POU\FB_INFLUX_DB.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\POU\FB_INFLUX_DB_ADS.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\DATABASE\POU\FB_MY_SQL.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MODULE\FREQUENCE\ITF\I_FREQ_GEN.TcIO">
@@ -628,10 +637,14 @@
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Database">
       <DefaultResolution>Tc3_Database, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Database</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_EventLogger">
       <DefaultResolution>Tc3_EventLogger, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_EventLogger</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_IotBase">
+      <DefaultResolution>Tc3_IotBase, * (Beckhoff Automation GmbH)</DefaultResolution>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
