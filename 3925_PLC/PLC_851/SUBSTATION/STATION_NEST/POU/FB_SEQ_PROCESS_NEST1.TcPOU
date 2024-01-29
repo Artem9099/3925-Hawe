@@ -3,14 +3,13 @@
   <POU Name="FB_SEQ_PROCESS_NEST1" Id="{90dfbb11-d3d7-48d5-bf26-d1c1660fcc54}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_SEQ_PROCESS_NEST1 IMPLEMENTS I_PROCESS_NEST1
 VAR_INPUT
-  bDoubleActing:                                          BOOL := TRUE;
+  bDoubleActing:                                          BOOL;
   rSpeedEfficiencyFactor:                                 REAL;
   uiRecordDelay:                                          UINT;
-  
 END_VAR
 VAR_OUTPUT
-  rMaxSpeedInMmPerSHP:                                    REAL := 50;
-  rMaxSpeedInMmPerSWP:                                    REAL := 50;
+  rMaxSpeedInMmPerSHP:                                    REAL := 999;
+  rMaxSpeedInMmPerSWP:                                    REAL := 999;
 END_VAR
 VAR //General
 	{attribute 'instance-path'} 
@@ -23,8 +22,8 @@ VAR //General
 	bEnable:                                                BOOL;
 END_VAR
 VAR   // From FB_init	
-	itfLogEvents: 										                      I_HANDLE_EVENTS;
-  itfOpMode:											                        I_OP_MODE; 
+	itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER; 
   itfTimer:                                               I_CLOCK;
   itfCounterCyl:                                          I_CYLINDER_DA_COUNTER;
   itfTestCyl:                                             I_CYLINDER_DA_TESTDEV1;
@@ -79,6 +78,7 @@ VAR
   listSpeed:                                              ARRAY [1..6] OF REAL;
 END_VAR    
 VAR // Input variables
+  bCylinderDecoupled:                                     BOOL := TRUE;
   uiVentCount:                                            UINT;
   udiERCycles:                                            UDINT;
   udiERTotalCycles:                                       UDINT := 0;
@@ -88,9 +88,22 @@ VAR // Input variables
   stLT2Params:                                            ST_RECIPE_LEAK_TEST2;
   uiCurrentNokLimitInPercent:                             UINT;
   rCurrentNokDifference:                                  REAL;
-  lrStartVal:                                             LREAL;
+  lrStartPos:                                             LREAL;
+  siLT2TestDirection:                                     SINT;
+  lrStartReservoirPressure:                               LREAL;
+  lrStartPressureA:                                       LREAL;
+  lrStartPressureB:                                       LREAL;
   sTimer:                                                 STRING;
-END_VAR          	
+  rWorkForceATmp:                                         REAL;
+  rWorkForceBTmp:                                         REAL;
+  rLoadForceATmp:                                         REAL;
+  rLoadForceBTmp:                                         REAL;
+END_VAR      
+VAR
+  lrDistanceInM:                                          LREAL := 0.0;
+  lrLastRecordPos:                                        LREAL := 0.0;
+  uiRecordDelayCycleCount:                                UINT := 0;
+END_VAR    	
 VAR_TEMP                    	
 	iTemp:											                            INT;
 END_VAR]]></Declaration>
@@ -208,6 +221,20 @@ CASE eSeq OF
 			eSeq := E_SEQ_PROCESS.BASE;
 		END_IF
     
+  E_SEQ_PROCESS.RESET_DISTANCE: _m_Seq_RESET_DISTANCE();
+    IF TRUE
+		AND stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+		THEN
+			eSeq := E_SEQ_PROCESS.BASE;
+		END_IF
+    
+  E_SEQ_PROCESS.MOVE_CYL_TO_HP: _m_Seq_MOVE_CYL1_TO_HP();
+    IF TRUE
+		AND stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+		THEN
+			eSeq := E_SEQ_PROCESS.BASE;
+		END_IF
+    
   // End
 	E_SEQ_PROCESS.END:;
 	E_SEQ_PROCESS.ERROR_SEQ:;	
@@ -251,7 +278,7 @@ END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="_m_Delay" Id="{afe32a0d-66df-45f4-aefa-508e58f789d5}" FolderPath="PRIVAT\">
-      <Declaration><![CDATA[METHOD _m_Delay : BOOL
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
 VAR_INPUT
 	DelayTime:	TIME;
 END_VAR
@@ -261,6 +288,28 @@ END_VAR
 THIS^.stSeqCtrlGeneral.tDelay := DelayTime;
 
 _m_Delay := THIS^.stSeqCtrlGeneral.tonDelay.Q;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_DistanceRecord" Id="{6a567510-ae56-442a-b9dc-97c33c61df90}" FolderPath="SEQUNCE\SEQ_SNIPPETS\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DistanceRecord : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// The last position was set at the first call
+IF THIS^.uiRecordDelayCycleCount = 0 THEN
+  THIS^.lrLastRecordPos := THIS^.itfTestCyl.P_Position;
+END_IF
+
+IF THIS^.uiRecordDelayCycleCount >= 100 THEN
+THIS^.lrDistanceInM := THIS^.lrDistanceInM + (ABS(THIS^.itfTestCyl.P_Position - THIS^.lrLastRecordPos) / 1000);
+
+THIS^.lrLastRecordPos := THIS^.itfTestCyl.P_Position;
+THIS^.uiRecordDelayCycleCount := 1;
+END_IF
+
+
+THIS^.uiRecordDelayCycleCount := THIS^.uiRecordDelayCycleCount + 1;]]></ST>
       </Implementation>
     </Method>
     <Method Name="_m_GeneralStepSetting" Id="{038b80d8-386d-4d3f-be70-faba59a8c5b7}" FolderPath="PRIVAT\">
@@ -310,7 +359,7 @@ CASE THIS^.uiSnippetSeq OF
     IF TRUE
     AND _m_Delay(DelayTime:= UINT_TO_TIME(THIS^.uiRecordDelay * 1000))
 		THEN 
-      THIS^.lrStartVal := THIS^.itfTestCyl.P_Position;
+      THIS^.lrStartPos := THIS^.itfTestCyl.P_Position;
       THIS^.uiSnippetSeq := 20;
 		END_IF
     
@@ -320,10 +369,11 @@ CASE THIS^.uiSnippetSeq OF
 		THEN 
       THIS^.uiSnippetSeq := 999;
 		END_IF
-    IF ABS(THIS^.lrStartVal - THIS^.itfTestCyl.P_Position) > ABS(THIS^.stLT1Params.rNokLimit) THEN
-      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000; // Abort
+    IF ABS(THIS^.lrStartPos - THIS^.itfTestCyl.P_Position) > ABS(THIS^.stLT1Params.rNokLimit) THEN
+      THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10170, sMsg:= 'NOK-Limit wurde überschritten!', bWithConfirmation:= FALSE);
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
 		END_IF
-    THIS^.rCurrentNokDifference := ABS(THIS^.lrStartVal - THIS^.itfTestCyl.P_Position);
+    THIS^.rCurrentNokDifference := ABS(THIS^.lrStartPos - THIS^.itfTestCyl.P_Position);
     THIS^.uiCurrentNokLimitInPercent := TO_UINT(100 / ABS(THIS^.stLT1Params.rNokLimit) * THIS^.rCurrentNokDifference);
 END_CASE
 
@@ -337,8 +387,8 @@ END_CASE
 VAR_INPUT
 END_VAR
 VAR
-  rV0:        REAL := 75;
-  rTmpVal:    REAL;
+  rV0:                  REAL := 75;
+  rTmpVal:              REAL;
 END_VAR
 
 // Formula for Leak Test 2
@@ -374,36 +424,73 @@ CASE THIS^.uiSnippetSeq OF
     IF TRUE
     AND _m_Delay(DelayTime:= UINT_TO_TIME(THIS^.uiRecordDelay * 1000))
 		THEN 
-      THIS^.lrStartVal := THIS^.itfTestCyl.P_ReservoirPressure;
+      THIS^.lrStartPressureA := THIS^.itfTestCyl.P_PressureChA;
+      THIS^.lrStartPressureB := THIS^.itfTestCyl.P_PressureChB;
+      THIS^.lrStartReservoirPressure := THIS^.itfTestCyl.P_ReservoirPressure;
       THIS^.uiSnippetSeq := 20;
 		END_IF
     
   20:
     IF TRUE
 		THEN 
-      IF THIS^.lrStartVal <= 0 THEN
+      IF TRUE
+         AND ((THIS^.siLT2TestDirection = 1 AND THIS^.lrStartPressureA <= 10) 
+         OR (THIS^.siLT2TestDirection = -1 AND THIS^.lrStartPressureB <= 10)
+         OR THIS^.lrStartReservoirPressure < 10
+         OR (THIS^.siLT2TestDirection <> -1 AND THIS^.siLT2TestDirection <> 1))
+      THEN
         THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
       ELSE
         THIS^.uiSnippetSeq := 30;
       END_IF
 		END_IF
     
-  30:
+  30: // Direction choice
+    IF siLT2TestDirection = -1 THEN
+      THIS^.uiSnippetSeq := 40;
+    ELSIF siLT2TestDirection = 1 THEN
+      THIS^.uiSnippetSeq := 50;
+    ELSE
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+		END_IF
+    
+  40:
     IF TRUE
     AND _m_Delay(DelayTime:= UDINT_TO_TIME(THIS^.stLT2Params.udiDurationPerTest * 60000))
 		THEN 
       THIS^.uiSnippetSeq := 999;
 		END_IF
-    IF ABS(THIS^.rCurrentNokDifference) > ABS(THIS^.stLT1Params.rNokLimit) THEN
-      //THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000; // Abort
+    IF ABS(THIS^.rCurrentNokDifference) > ABS(THIS^.stLT2Params.rNokLimit) THEN
+      THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10170, sMsg:= 'NOK-Limit wurde überschritten!', bWithConfirmation:= FALSE);
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
 		END_IF
-    rTmpVal := (112 / THIS^.lrStartVal) * ((THIS^.lrStartVal / THIS^.itfTestCyl.P_ReservoirPressure) - 1);
-    IF ABS(rTmpVal) > 0 THEN
-      THIS^.rCurrentNokDifference := ABS(75 * SQRT(rTmpVal));
+    rTmpVal := F_RoundREAL(rValue:= (THIS^.lrStartReservoirPressure / THIS^.lrStartPressureB) * ((THIS^.lrStartPressureB / THIS^.itfTestCyl.P_PressureChB) - 1), 
+                           uiDezimalPlace:= 6);
+    IF ABS(rTmpVal) <> 0.0 THEN
+      THIS^.rCurrentNokDifference := 75 * SQRT(ABS(rTmpVal));
     ELSE
       THIS^.rCurrentNokDifference := 0;
     END_IF
-    THIS^.uiCurrentNokLimitInPercent := TO_UINT(100 / ABS(THIS^.stLT1Params.rNokLimit) * THIS^.rCurrentNokDifference);
+    THIS^.uiCurrentNokLimitInPercent := TO_UINT(100 / ABS(THIS^.stLT2Params.rNokLimit) * THIS^.rCurrentNokDifference);
+    
+  50:
+    IF TRUE
+    AND _m_Delay(DelayTime:= UDINT_TO_TIME(THIS^.stLT2Params.udiDurationPerTest * 60000))
+		THEN 
+      THIS^.uiSnippetSeq := 999;
+		END_IF
+    IF ABS(THIS^.rCurrentNokDifference) > ABS(THIS^.stLT2Params.rNokLimit) THEN
+      THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10170, sMsg:= 'NOK-Limit wurde überschritten!', bWithConfirmation:= FALSE);
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+		END_IF
+    rTmpVal := F_RoundREAL(rValue:= (THIS^.lrStartReservoirPressure / THIS^.lrStartPressureA) * ((THIS^.lrStartPressureA / THIS^.itfTestCyl.P_PressureChA) - 1), 
+                           uiDezimalPlace:= 6);
+    IF ABS(rTmpVal) <> 0.0 THEN
+      THIS^.rCurrentNokDifference := 75 * SQRT(ABS(rTmpVal));
+    ELSE
+      THIS^.rCurrentNokDifference := 0;
+    END_IF
+    THIS^.uiCurrentNokLimitInPercent := TO_UINT(100 / ABS(THIS^.stLT2Params.rNokLimit) * THIS^.rCurrentNokDifference);
 END_CASE
 
 
@@ -412,7 +499,7 @@ END_CASE
       </Implementation>
     </Method>
     <Method Name="_m_ResetDelayTimer" Id="{a87074ad-9f2e-405d-8180-62d94d4076fc}" FolderPath="PRIVAT\">
-      <Declaration><![CDATA[METHOD _m_ResetDelayTimer : BOOL
+      <Declaration><![CDATA[METHOD PRIVATE _m_ResetDelayTimer : BOOL
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[_m_ResetDelayTimer := THIS^.stSeqCtrlGeneral.tonDelay.ET = T#0MS;
@@ -523,7 +610,11 @@ E_SEQ_GENERAL.BUSY:;
     50:	// Move test cylinder to HP
       IF TRUE  
       AND _m_Delay(DelayTime:= T#3S)
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= 2 * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
       AND THIS^.itfTestCyl.P_Position <= THIS^.stBPDParams.rEndPosTol
       AND THIS^.itfTestCyl.P_SpeedInMmPerSecond < 0.1
 			THEN 
@@ -539,15 +630,19 @@ E_SEQ_GENERAL.BUSY:;
       
     70:	// Set work pressure zero
       IF TRUE  
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
 			END_IF
       
 		80:	// Open low pressure valve, set limit zero and move counter cylinder to HP
       IF TRUE 
-      AND _m_Delay(DelayTime:= T#10S)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND _m_Delay(DelayTime:= T#25S)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, 
+                                     rWorkPressure:= 10, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
       AND THIS^.itfTestCyl.M_LowPressureMode(bSet:= TRUE, ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
 			THEN 
         THIS^.rTargetLowPressureInBar := THIS^.stBPDParams.rIncreaseValueInBar;
@@ -564,7 +659,11 @@ E_SEQ_GENERAL.BUSY:;
   
 		100:	// Move test cylinder to WP
       IF TRUE 
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 100, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, 
+                                  rWorkPressure:= 100, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 100)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 110; 
 			END_IF
@@ -628,7 +727,11 @@ E_SEQ_GENERAL.BUSY:;
   
 		220:	// Move test cylinder to HP
       IF TRUE 
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 100, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, 
+                                  rWorkPressure:= 100, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 100)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 230; 
 			END_IF
@@ -666,7 +769,7 @@ E_SEQ_GENERAL.BUSY:;
     1000: // Exit seq - Stop
       IF TRUE
       AND _m_Delay(DelayTime:= T#1S) 
-      AND THIS^.itfTestCyl.M_StopAndLock()
+      AND THIS^.itfTestCyl.M_Stop()
       AND THIS^.itfCounterCyl.M_Stop()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1010;
@@ -674,8 +777,8 @@ E_SEQ_GENERAL.BUSY:;
       
     1010: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
@@ -718,6 +821,9 @@ END_VAR]]></Declaration>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
 ActiveSeq := TO_STRING(THIS^.eSeq);
 
+// Distance record
+_m_DistanceRecord();
+
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
 
@@ -754,7 +860,7 @@ E_SEQ_GENERAL.BUSY:;
 			THEN
         IF TRUE
         AND (THIS^.stERParams.rSpeedA > THIS^.rMaxSpeedInMmPerSWP * THIS^.rSpeedEfficiencyFactor
-        OR THIS^.stERParams.rSpeedB > THIS^.rMaxSpeedInMmPerSHP * THIS^.rSpeedEfficiencyFactor) 
+        OR (THIS^.bDoubleActing AND THIS^.stERParams.rSpeedB > THIS^.rMaxSpeedInMmPerSHP * THIS^.rSpeedEfficiencyFactor)) 
         THEN
           THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 11; 
         ELSE
@@ -818,18 +924,14 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stERParams.rWorkForceA * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.MM_PER_SECOND, 
                                   rSpeed:= THIS^.stERParams.rSpeedA)
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 41;
-			END_IF
-      
-    41: // Move to WP (Max position - 10)
-      IF TRUE
       AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                       rWorkPressure:= THIS^.stERParams.rLoadForceA * 1000, 
+                                      bPressureRegulation:= TRUE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
-                                      rSpeed:= 100)
+                                      rSpeed:= 50)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50;
 			END_IF
@@ -853,10 +955,6 @@ E_SEQ_GENERAL.BUSY:;
       
     70: // Move to HP (Min position + 10)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
-                                  rWorkPressure:= THIS^.stERParams.rWorkForceB * 1000, 
-                                  eSpeedType:= E_SPEED_TYPE.MM_PER_SECOND, 
-                                  rSpeed:= THIS^.stERParams.rSpeedB)
 			THEN 
         IF THIS^.bDoubleActing THEN
           THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 71;
@@ -867,20 +965,32 @@ E_SEQ_GENERAL.BUSY:;
       
     71: // Move to HP (Min position + 10)
       IF TRUE
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stERParams.rWorkForceB * 1000, 
+                                  bPressureRegulation:= TRUE,
+                                  eSpeedType:= E_SPEED_TYPE.MM_PER_SECOND, 
+                                  rSpeed:= THIS^.stERParams.rSpeedB)
       AND THIS^.itfCounterCyl.M_ToHP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                       rWorkPressure:= THIS^.stERParams.rLoadForceB * 1000, 
+                                      bPressureRegulation:= TRUE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
 			END_IF
       
-    72: // Move to WP (Min position + 10)
+    72: // Move to HP (Min position + 10)
       IF TRUE
-      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.BAR, 
-                                      rWorkPressure:= 200, 
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.MM_PER_SECOND, 
+                                  rSpeed:= THIS^.stERParams.rSpeedB)
+      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                      rWorkPressure:= stERParams.rLoadForceA * 1000, 
+                                      bPressureRegulation:= FALSE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
-                                      rSpeed:= 100)
+                                      rSpeed:= 50)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
 			END_IF
@@ -895,46 +1005,70 @@ E_SEQ_GENERAL.BUSY:;
         END_IF
 			END_IF
       
-    1000: // Exit seq - Disable low pressure circuit
+    1000: // Move to WP (Max position - 10)
       IF TRUE
-      AND _m_Delay(DelayTime:= T#1S)
-      AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stERParams.rWorkForceA * 1000, 
+                                  bPressureRegulation:= TRUE,
+                                  eSpeedType:= E_SPEED_TYPE.MM_PER_SECOND, 
+                                  rSpeed:= THIS^.stERParams.rSpeedA)
+      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                      rWorkPressure:= THIS^.stERParams.rLoadForceA * 1000, 
+                                      bPressureRegulation:= TRUE,
+                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                      rSpeed:= 50)
 			THEN 
-				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1010;
-			END_IF  
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1010;
+			END_IF
       
-    1010: // Exit seq - Stop
+    1010: // Move to WP (Max position - 10)
+      IF TRUE
+			THEN 
+        IF THIS^.itfTestCyl.P_Position >= THIS^.itfTestCyl.P_StrokeLength / 2 THEN
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1020; 
+        END_IF
+			END_IF
+      
+    1020: // Exit seq - Stop
       IF TRUE
       AND _m_Delay(DelayTime:= T#1S) 
       AND THIS^.itfTestCyl.M_StopAndLock()
       AND THIS^.itfCounterCyl.M_Stop()
 			THEN 
-				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1020;
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1030;
 			END_IF
       
-    1020: // Set pressure
-      IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+    1030: // Exit seq - Disable low pressure circuit
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#1S)
+      AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
 			THEN 
-				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1030; 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1040;
+			END_IF 
+      
+    1040: // Set pressure
+      IF TRUE 
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1050; 
 			END_IF
       
-    1030: // Remove pump 2
+    1050: // Remove pump 2
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump2Add(bAdd:= FALSE)
 			THEN
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1040; 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1060; 
 			END_IF
       
-    1040: // Remove pump 3
+    1060: // Remove pump 3
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump3Add(bAdd:= FALSE)
 			THEN
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1050; 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1070; 
 			END_IF
       
-    1050: // Remove pump 4
+    1070: // Remove pump 4
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump4Add(bAdd:= FALSE)
 			THEN
@@ -942,13 +1076,13 @@ E_SEQ_GENERAL.BUSY:;
         AND (THIS^.stERParams.rSpeedA > THIS^.rMaxSpeedInMmPerSWP * THIS^.rSpeedEfficiencyFactor
         OR THIS^.stERParams.rSpeedB > THIS^.rMaxSpeedInMmPerSHP * THIS^.rSpeedEfficiencyFactor) 
         THEN
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1060; 
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1080; 
         ELSE
           THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
         END_IF
 			END_IF
       
-    1060: // Set Pressure to zero
+    1080: // Set Pressure to zero
       IF TRUE 
       AND THIS^.itfPump2Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
       AND THIS^.itfPump3Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
@@ -1020,8 +1154,8 @@ E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0:  // Switch off the counter and test pump
       IF TRUE 
-			AND THIS^.itfCounterCylPump.M_Off()
-      AND THIS^.itfTestCylPump.M_Off()
+			//AND THIS^.itfCounterCylPump.M_Off()
+      //AND THIS^.itfTestCylPump.M_Off()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
 			END_IF
@@ -1123,6 +1257,9 @@ END_VAR]]></Declaration>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
 ActiveSeq := TO_STRING(THIS^.eSeq);
 
+// Distance record
+_m_DistanceRecord();
+
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
 
@@ -1193,11 +1330,19 @@ E_SEQ_GENERAL.BUSY:;
           THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 61; 
         END_IF
 			END_IF
-      
+        
     60: // Move to HP (Min position + 10mm)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stLT1Params.rLoadForceB * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position <= ABS(THIS^.stLT1Params.rDistanceBeforeEndPosHP) THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
@@ -1206,8 +1351,16 @@ E_SEQ_GENERAL.BUSY:;
       
     61: // Move to HP (Min position + 10mm)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 10, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                     rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position <= ABS(THIS^.stLT1Params.rDistanceBeforeEndPosHP) THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
@@ -1225,7 +1378,7 @@ E_SEQ_GENERAL.BUSY:;
       
     80: // Set cylinder pressure to 0
       IF TRUE
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90; 
 			END_IF
@@ -1235,6 +1388,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1253,7 +1407,11 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= REAL_TO_TIME(THIS^.stLT1Params.rRestDelay * 1000))
       AND THIS^.itfCounterCyl.M_Stop()
 			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120; 
+        IF THIS^.bDoubleActing THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120;
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 150;
+        END_IF
 			END_IF
       
     120: // Start leak test pull (HP endposition + 10mm)
@@ -1261,6 +1419,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceB * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1279,27 +1438,21 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= REAL_TO_TIME(THIS^.stLT1Params.rRestDelay))
       AND THIS^.itfCounterCyl.M_Stop()
 			THEN 
-        IF THIS^.bDoubleActing THEN
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 150; 
-        ELSE
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 151; 
-        END_IF
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 150;
 			END_IF
       
     150: // Move to WP (Max position - 10mm)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
-			THEN 
-        IF THIS^.itfTestCyl.P_Position >= THIS^.itfTestCyl.P_StrokeLength - ABS(THIS^.stLT1Params.rDistanceBeforeEndPosWP) THEN
-				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 160; 
-        END_IF
-			END_IF
-      
-    151: // Move to WP (Max position - 10mm)
-      IF TRUE
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 10, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position >= THIS^.itfTestCyl.P_StrokeLength - ABS(THIS^.stLT1Params.rDistanceBeforeEndPosWP) THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 160; 
@@ -1317,7 +1470,7 @@ E_SEQ_GENERAL.BUSY:;
       
     170: // Set cylinder pressure to 0
       IF TRUE
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 180; 
 			END_IF
@@ -1327,6 +1480,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1345,7 +1499,11 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= REAL_TO_TIME(THIS^.stLT1Params.rRestDelay * 1000))
       AND THIS^.itfCounterCyl.M_Stop()
 			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 210; 
+        IF THIS^.bDoubleActing THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 210; 
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 241; 
+        END_IF
 			END_IF
       
     210: // Start leak test pull (WP endposition - 10mm)
@@ -1353,6 +1511,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceB * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1380,8 +1539,16 @@ E_SEQ_GENERAL.BUSY:;
       
     240: // Move to Middle position
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stLT1Params.rLoadForceB * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position <= THIS^.itfTestCyl.P_StrokeLength / 2 THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 250; 
@@ -1390,8 +1557,16 @@ E_SEQ_GENERAL.BUSY:;
       
     241: // Move to Middle position
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 10, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                     rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position <= THIS^.itfTestCyl.P_StrokeLength / 2 THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 250; 
@@ -1409,7 +1584,7 @@ E_SEQ_GENERAL.BUSY:;
       
     260: // Set cylinder pressure to 0
       IF TRUE
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 270; 
 			END_IF
@@ -1419,6 +1594,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceA * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1436,8 +1612,12 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND _m_Delay(DelayTime:= REAL_TO_TIME(THIS^.stLT1Params.rRestDelay * 1000))
       AND THIS^.itfCounterCyl.M_Stop()
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 300; 
+			THEN
+        IF THIS^.bDoubleActing THEN
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 300; 
+        ELSE
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000; 
+        END_IF 
 			END_IF
       
     300: // Start leak test pull (Middle position)
@@ -1445,6 +1625,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                      rWorkPressure:= THIS^.stLT1Params.rLoadForceB * 1000, 
+                                     bPressureRegulation:= TRUE,
                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                      rSpeed:= 100)
 			THEN 
@@ -1485,8 +1666,8 @@ E_SEQ_GENERAL.BUSY:;
       
     1020: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
@@ -1552,6 +1733,7 @@ E_SEQ_GENERAL.BUSY:;
 		0: // Check if enable
       IF TRUE
       AND THIS^.bEnable 
+      AND THIS^.bDoubleActing
       THEN
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
       ELSE
@@ -1600,21 +1782,33 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE 
 			AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
 			THEN 
-        IF THIS^.bDoubleActing THEN
-				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
-        ELSE
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120;
-        END_IF
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
 			END_IF
       
     70: // Move to HP (Min position)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stLT2Params.rLoadForceB * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position <= 0.1 THEN
-				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 71; 
         END_IF
+			END_IF
+      
+    71: // Move to HP (Min position)
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#25S)
+      AND THIS^.itfTestCyl.M_Stop()
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, 
+                                     rWorkPressure:= 10, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 100)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
 			END_IF
       
     80: // Stop and lock
@@ -1628,7 +1822,7 @@ E_SEQ_GENERAL.BUSY:;
       
     90: // Set cylinder pressure to 0
       IF TRUE
-      AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
       AND THIS^.itfTestCyl.M_OpenReservoir(bOpenA:= TRUE, bOpenB:= FALSE)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100; 
@@ -1639,6 +1833,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stLT2Params.rLoadForceB * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                   rSpeed:= 100)
 			THEN 
@@ -1654,6 +1849,7 @@ E_SEQ_GENERAL.BUSY:;
 			END_IF
       
     120: // Leak detection
+      THIS^.siLT2TestDirection := -1;
       IF TRUE
       AND _m_LeakTest2_LeakDet()
 			THEN 
@@ -1670,8 +1866,11 @@ E_SEQ_GENERAL.BUSY:;
       
     140: // Move to WP (Max position)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.stLT2Params.rLoadForceA * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
 			THEN 
         IF THIS^.itfTestCyl.P_Position >= THIS^.itfTestCyl.P_StrokeLength - 0.1 THEN
 				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 150; 
@@ -1689,7 +1888,7 @@ E_SEQ_GENERAL.BUSY:;
       
     160: // Set cylinder pressure to 0
       IF TRUE
-      AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
       AND THIS^.itfTestCyl.M_OpenReservoir(bOpenA:= FALSE, bOpenB:= TRUE)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 170; 
@@ -1700,6 +1899,7 @@ E_SEQ_GENERAL.BUSY:;
       AND _m_Delay(DelayTime:= T#1S)
       AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stLT2Params.rLoadForceA * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                   rSpeed:= 100)
 			THEN 
@@ -1715,6 +1915,7 @@ E_SEQ_GENERAL.BUSY:;
 			END_IF
       
     190: // Leak detection
+      THIS^.siLT2TestDirection := 1;
       IF TRUE
       AND _m_LeakTest2_LeakDet()
 			THEN 
@@ -1748,8 +1949,8 @@ E_SEQ_GENERAL.BUSY:;
       
     1020: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1030; 
 			END_IF
@@ -1798,6 +1999,9 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
 ActiveSeq := TO_STRING(THIS^.eSeq);
+
+// Distance record
+_m_DistanceRecord();
 
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
@@ -1850,6 +2054,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stERParams.rWorkForceB * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                   rSpeed:= 100)
 			THEN 
@@ -1864,6 +2069,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfCounterCyl.M_ToHP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                       rWorkPressure:= THIS^.stERParams.rLoadForceB * 1000, 
+                                      bPressureRegulation:= TRUE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
@@ -1872,8 +2078,9 @@ E_SEQ_GENERAL.BUSY:;
       
     32: // Move to HP (Min position + 10)
       IF TRUE
-      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.BAR, 
-                                      rWorkPressure:= 200, 
+      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                      rWorkPressure:= THIS^.stERParams.rLoadForceA * 1000, 
+                                      bPressureRegulation:= FALSE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
@@ -1922,6 +2129,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stERParams.rWorkForceA * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                   rSpeed:= 100)
 			THEN 
@@ -1932,6 +2140,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                       rWorkPressure:= THIS^.stERParams.rLoadForceA * 1000, 
+                                      bPressureRegulation:= TRUE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
@@ -1972,6 +2181,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                   rWorkPressure:= THIS^.stERParams.rWorkForceB * 1000, 
+                                  bPressureRegulation:= TRUE,
                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                   rSpeed:= 100)
 			THEN 
@@ -1986,6 +2196,7 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
       AND THIS^.itfCounterCyl.M_ToHP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
                                       rWorkPressure:= THIS^.stERParams.rLoadForceB * 1000, 
+                                      bPressureRegulation:= TRUE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
@@ -1996,8 +2207,9 @@ E_SEQ_GENERAL.BUSY:;
       
     92: // Move to HP (Min position + 10)
       IF TRUE
-      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.BAR, 
-                                      rWorkPressure:= 200, 
+      AND THIS^.itfCounterCyl.M_ToWP( ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                      rWorkPressure:= THIS^.stERParams.rLoadForceB * 1000, 
+                                      bPressureRegulation:= FALSE,
                                       eSpeedType:= E_SPEED_TYPE.PERCENT, 
                                       rSpeed:= 100)
 			THEN 
@@ -2031,10 +2243,12 @@ E_SEQ_GENERAL.BUSY:;
       THEN
         FOR THIS^.ii := 1 TO 3 BY 1 DO
           IF THIS^.ii = 1 THEN
-            THIS^.rMaxSpeedInMmPerSHP := THIS^.listSpeed[THIS^.ii + 3];
+            IF THIS^.bDoubleActing THEN
+              THIS^.rMaxSpeedInMmPerSHP := THIS^.listSpeed[THIS^.ii + 3];
+            END_IF
             THIS^.rMaxSpeedInMmPerSWP := THIS^.listSpeed[THIS^.ii];
           ELSE
-            IF THIS^.rMaxSpeedInMmPerSHP > THIS^.listSpeed[THIS^.ii + 3] THEN
+            IF THIS^.rMaxSpeedInMmPerSHP > THIS^.listSpeed[THIS^.ii + 3] AND THIS^.bDoubleActing THEN
               THIS^.rMaxSpeedInMmPerSHP := THIS^.listSpeed[THIS^.ii + 3];
 						END_IF
             IF THIS^.rMaxSpeedInMmPerSWP > THIS^.listSpeed[THIS^.ii] THEN
@@ -2067,8 +2281,8 @@ E_SEQ_GENERAL.BUSY:;
       
     1020: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1030; 
 			END_IF
@@ -2137,6 +2351,9 @@ END_VAR
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
 ActiveSeq := TO_STRING(THIS^.eSeq);
 
+// Distance record
+_m_DistanceRecord();
+
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
 	
@@ -2157,142 +2374,211 @@ E_SEQ_GENERAL.RESET:;
   
 E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
-		0: // Disable low pressure mode and add low pressure to counter cylinder
+		0: // Check if enable
+      IF TRUE
+      AND THIS^.bEnable 
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
+			END_IF
+
+    10: // Disable low pressure mode and add low pressure to counter cylinder
       IF TRUE 
 			AND THIS^.itfTestCyl.M_LowPressureMode(bSet:= FALSE, ePressureType:= E_PRESSURE_TYPE.VALUE, rWorkPressure:= 0)
       AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= TRUE)
 			THEN 
-				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
 			END_IF
       
-    10: // Disable pump 2
+    20: // Disable pump 2
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump2Add(bAdd:= FALSE)
       //AND THIS^.itfPump2Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
 			END_IF
       
-    20: // Disable pump 3
+    30: // Disable pump 3
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump3Add(bAdd:= FALSE)
       //AND THIS^.itfPump3Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
 			END_IF
       
-    30: // Disable pump 4
+    40: // Disable pump 4
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump4Add(bAdd:= FALSE)
       //AND THIS^.itfPump4Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50; 
 			END_IF
       
-    40: // Check if double- or single-acting cylinder
+    50: // Check if double- or single-acting cylinder
       IF TRUE 
       AND THIS^.bDoubleActing
 			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
       ELSE
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 51;
-			END_IF
-      
-		50:	// Double acting cylinder - Move to HP
-      IF TRUE 
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 250, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 50)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
-			END_IF
-      
-    51:	// Single acting cylinder - Move to HP
-      IF TRUE 
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 50)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
-			END_IF
-      
-    60:	// Delay timer
-      IF TRUE 
-      AND _m_Delay(DelayTime:= T#3S)
-			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 61;
 			END_IF
       
-    61:	// Wait for HP endpos
+		60:	// Double acting cylinder - Move to HP
+      IF TRUE 
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceBTmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                      rWorkPressure:= 0, 
+                                      bPressureRegulation:= FALSE,
+                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                      rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
+			END_IF
+      
+    61:	// Single acting cylinder - Move to HP
+      IF TRUE 
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 62;
+			END_IF
+      
+    62: // Cylinder - Move to HP - Check if Cylinder decoupled
+      IF TRUE
+      AND NOT THIS^.bCylinderDecoupled
+      THEN
+        IF THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                      rWorkPressure:= THIS^.rLoadForceATmp * 1000, 
+                                      bPressureRegulation:= FALSE,
+                                      eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                      rSpeed:= 50)
+			  THEN 
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
+        END_IF
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
+			END_IF
+      
+    70:	// Delay timer
+      IF TRUE 
+      AND _m_Delay(DelayTime:= T#3S)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 71;
+			END_IF
+      
+    71:	// Wait for HP endpos
       IF TRUE 
 			THEN 
         IF TRUE 
         AND ABS(THIS^.itfTestCyl.P_PositionAbs - THIS^.lrLastPos) < 0.1
         THEN
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
         ELSE
           THIS^.lrLastPos := THIS^.itfTestCyl.P_PositionAbs;
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70;
         END_IF
 			END_IF
       
-    70:	// Set zero position
+    80:	// Set zero position
       IF TRUE 
       AND THIS^.itfTestCyl.M_SetZeroPos()
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
-			END_IF
-      
-    80:	// Move to WP
-      IF TRUE 
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 250, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90;
 			END_IF
       
-    90:	// Delay timer
+    90: // Vent cylinder - Move to WP (Max position)
+      IF TRUE
+      AND NOT THIS^.bCylinderDecoupled
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 91; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 92; 
+			END_IF
+      
+    91:	// Move to WP
+      IF TRUE 
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceATmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+			END_IF
+      
+    92:	// Move to WP
+      IF TRUE 
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceATmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+			END_IF
+      
+    100:	// Delay timer
       IF TRUE 
       AND _m_Delay(DelayTime:= T#3S)
 			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 91;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 101;
 			END_IF
       
-    91:	// Wait for WP endpos
+    101:	// Wait for WP endpos
       IF TRUE 
 			THEN 
         IF TRUE 
         AND ABS(THIS^.itfTestCyl.P_PositionAbs - THIS^.lrLastPos) < 0.1
         THEN
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 110;
         ELSE
           THIS^.lrLastPos := THIS^.itfTestCyl.P_PositionAbs;
-          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
         END_IF
 			END_IF
       
-    100:	// Set Max position
+    110:	// Set Max position
       IF TRUE 
       AND THIS^.itfTestCyl.M_SetMaxPos()
-			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 110;
-			END_IF
-      
-    110:	// Stop
-      IF TRUE 
-      AND THIS^.itfCounterCyl.M_Stop()
-      AND THIS^.itfTestCyl.M_StopAndLock()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120;
 			END_IF
       
-    120:	// Set work/load pressure
+    120:	// Stop
       IF TRUE 
-      AND itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0) 
-      AND itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+      AND THIS^.itfCounterCyl.M_Stop()
+      AND THIS^.itfTestCyl.M_StopAndLock()
 			THEN 
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 130;
 			END_IF
       
-    130: // Disable low pressure mode
+    130:	// Set work/load pressure
+      IF TRUE 
+      AND itfTestCyl.M_SetWorkPressureZero()
+      AND itfCounterCyl.M_SetWorkPressureZero()
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 140;
+			END_IF
+      
+    140: // Disable low pressure mode
       IF TRUE 
       AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
 			THEN 
@@ -2303,6 +2589,200 @@ E_SEQ_GENERAL.BUSY:;
       IF TRUE
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo:=concat('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo:= 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.ERROR;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_MOVE_CYL1_TO_HP" Id="{092a5b5c-d7ba-47a6-9219-3ae57ddc69f2}" FolderPath="SEQUNCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_MOVE_CYL1_TO_HP : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+  ActiveSeq: STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+// Distance record
+_m_DistanceRecord();
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	AND _m_Delay(T#1S)
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+  IF TRUE
+	THEN
+    THIS^.udiCurrentCycle := 1;
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0: // Check if enable
+      IF TRUE
+      AND THIS^.bEnable 
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
+			END_IF
+
+    10: // Disable low pressure mode
+      IF TRUE 
+      AND _m_Delay(DelayTime:= T#3S)
+			AND THIS^.itfTestCyl.M_LowPressureMode(bSet:= FALSE, ePressureType:= E_PRESSURE_TYPE.VALUE, rWorkPressure:= 0)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
+			END_IF
+      
+    20: // Disable pump 2
+      IF TRUE 
+			AND THIS^.itfTestCyl.M_Pump2Add(bAdd:= FALSE)
+      //AND THIS^.itfPump2Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+			THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
+			END_IF
+      
+    30: // Disable pump 3
+      IF TRUE 
+			AND THIS^.itfTestCyl.M_Pump3Add(bAdd:= FALSE)
+      //AND THIS^.itfPump3Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+			THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
+			END_IF
+      
+    40: // Disable pump 4
+      IF TRUE 
+			AND THIS^.itfTestCyl.M_Pump4Add(bAdd:= FALSE)
+      //AND THIS^.itfPump4Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+			THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
+			END_IF
+      
+    60: // Move Test Cylinder 1 to HP - Add low pressure circuit to counter cylinder
+      IF TRUE 
+			AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= TRUE)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
+			END_IF
+      
+    70: // Move Test Cylinder 1 to HP - Move to HP (Min position)
+      IF TRUE
+      AND THIS^.bDoubleActing
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 71; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 72; 
+			END_IF
+      
+    71: // Move Test Cylinder 1 to HP - Move to HP (Min position)
+      IF TRUE
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceBTmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
+			END_IF
+      
+    72: // Move Test Cylinder 1 to HP - Move to HP (Min position)
+      IF TRUE
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                   rWorkPressure:= THIS^.rLoadForceATmp * 1000, 
+                                   bPressureRegulation:= FALSE,
+                                   eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                   rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
+			END_IF
+      
+    80:	// Delay timer
+      IF TRUE 
+      AND _m_Delay(DelayTime:= T#3S)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 81;
+			END_IF
+      
+    81:	// Wait for HP endpos
+      IF TRUE 
+			THEN 
+        IF TRUE 
+        AND ABS(THIS^.itfTestCyl.P_PositionAbs - THIS^.lrLastPos) < 0.5
+        THEN
+				  THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+        ELSE
+          THIS^.lrLastPos := THIS^.itfTestCyl.P_PositionAbs;
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
+        END_IF
+			END_IF
+      
+    1000: // Exit seq - Disable low pressure circuit
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#1S)
+      AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1010;
+			END_IF  
+    
+    1010: // Exit seq - Stop
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#1S) 
+      AND THIS^.itfTestCyl.M_StopAndLock()
+      AND THIS^.itfCounterCyl.M_Stop()
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1020;
+			END_IF
+      
+    1020: // Set pressure
+      IF TRUE 
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
       
 	ELSE
@@ -2426,6 +2906,77 @@ END_CASE
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="_m_Seq_RESET_DISTANCE" Id="{b915e986-7fba-4750-9ebc-48a061bf89a4}" FolderPath="SEQUNCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_RESET_DISTANCE : BOOL
+VAR_INPUT
+END_VAR
+VAR
+  ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	//AND _m_Delay(T#1S)
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0: // Check if enabled
+      IF TRUE 
+			THEN 
+        THIS^.lrDistanceInM := 0.0;
+        THIS^.lrLastRecordPos := 0.0;
+        THIS^.uiRecordDelayCycleCount := 0;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      AND THIS^.itfCounterCyl.M_LowPressureCircuit(bAdd:= FALSE)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo:=concat('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo:= 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.ERROR;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="_m_Seq_STOP" Id="{9a676912-6d4e-4b69-b51b-55e17b73a609}" FolderPath="SEQUNCE\">
       <Declaration><![CDATA[METHOD PRIVATE _m_Seq_STOP : E_SEQ_PROCESS
 VAR_INPUT
@@ -2459,8 +3010,8 @@ E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
 			END_IF
@@ -2483,7 +3034,7 @@ E_SEQ_GENERAL.BUSY:;
     30: // Disable pump 2
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump2Add(bAdd:= FALSE)
-      AND THIS^.itfPump2Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+      //AND THIS^.itfPump2Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
 			END_IF
@@ -2491,7 +3042,7 @@ E_SEQ_GENERAL.BUSY:;
     40: // Disable pump 3
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump3Add(bAdd:= FALSE)
-      AND THIS^.itfPump3Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+      //AND THIS^.itfPump3Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50; 
 			END_IF
@@ -2499,7 +3050,7 @@ E_SEQ_GENERAL.BUSY:;
     50: // Disable pump 4
       IF TRUE 
 			AND THIS^.itfTestCyl.M_Pump4Add(bAdd:= FALSE)
-      AND THIS^.itfPump4Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
+      //AND THIS^.itfPump4Pressure.M_SetLimit(ePressureType:= E_PRESSURE_TYPE.PERCENT, rLimit:= 0)
 			THEN
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000; 
 			END_IF
@@ -2633,6 +3184,9 @@ END_VAR
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
 ActiveSeq := TO_STRING(THIS^.eSeq);
 
+// Distance record
+_m_DistanceRecord();
+
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
 
@@ -2713,8 +3267,41 @@ E_SEQ_GENERAL.BUSY:;
       
     70: // Vent cylinder - Move to WP (Max position)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 5000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND NOT THIS^.bCylinderDecoupled
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 71; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 72; 
+			END_IF
+      
+    71: // Vent cylinder - Move to WP (Max position)
+      IF TRUE
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceATmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0,
+                                     bPressureRegulation:= FALSE, 
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
+			END_IF
+      
+    72: // Vent cylinder - Move to WP (Max position)
+      IF TRUE
+      AND THIS^.itfTestCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceATmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                     rWorkPressure:= THIS^.rLoadForceBTmp * 1000,
+                                     bPressureRegulation:= FALSE, 
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
 			END_IF
@@ -2726,17 +3313,13 @@ E_SEQ_GENERAL.BUSY:;
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 81;
 			END_IF
       
-    81:	// Wait for HP endpos
+    81:	// Wait for WP endpos
       IF TRUE 
 			THEN 
         IF TRUE 
         AND ABS(THIS^.itfTestCyl.P_PositionAbs - THIS^.lrLastPos) < 0.5
         THEN
-          IF THIS^.bDoubleActing THEN
-            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90;
-          ELSE
-            THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 91;
-          END_IF
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90;
         ELSE
           THIS^.lrLastPos := THIS^.itfTestCyl.P_PositionAbs;
           THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80;
@@ -2745,17 +3328,53 @@ E_SEQ_GENERAL.BUSY:;
       
     90: // Vent cylinder - Move to HP (Min position)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 10000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, rWorkPressure:= 5000, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.bDoubleActing
 			THEN 
-        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 91; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 92; 
 			END_IF
       
     91: // Vent cylinder - Move to HP (Min position)
       IF TRUE
-      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 10, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 80)
-      AND THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 200, eSpeedType:= E_SPEED_TYPE.PERCENT, rSpeed:= 100)
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                  rWorkPressure:= THIS^.rWorkForceBTmp * 1000, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+      AND THIS^.itfCounterCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                     rWorkPressure:= 0, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
 			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+			END_IF
+      
+    92: // Vent cylinder - Move to HP (Min position)
+      IF TRUE
+      AND THIS^.itfTestCyl.M_ToHP(ePressureType:= E_PRESSURE_TYPE.VALUE, 
+                                  rWorkPressure:= 0, 
+                                  bPressureRegulation:= FALSE,
+                                  eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                  rSpeed:= 50)
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 93;
+			END_IF
+      
+    93: // Vent cylinder - Move to HP (Min position) - Check if Cylinder decoupled
+      IF TRUE
+      AND NOT THIS^.bCylinderDecoupled
+      THEN
+        IF THIS^.itfCounterCyl.M_ToWP(ePressureType:= E_PRESSURE_TYPE.FORCE, 
+                                     rWorkPressure:= THIS^.rLoadForceATmp * 1000, 
+                                     bPressureRegulation:= FALSE,
+                                     eSpeedType:= E_SPEED_TYPE.PERCENT, 
+                                     rSpeed:= 50)
+			  THEN 
+          THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
+        END_IF
+      ELSE
         THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100;
 			END_IF
       
@@ -2799,8 +3418,8 @@ E_SEQ_GENERAL.BUSY:;
       
     1020: // Set pressure
       IF TRUE 
-			AND THIS^.itfCounterCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
-      AND THIS^.itfTestCyl.M_SetWorkPressure(ePressureType:= E_PRESSURE_TYPE.BAR, rWorkPressure:= 0)
+			AND THIS^.itfCounterCyl.M_SetWorkPressureZero()
+      AND THIS^.itfTestCyl.M_SetWorkPressureZero()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
@@ -2909,8 +3528,8 @@ VAR_INPUT
 	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
   
-  itfLogEvents: 										                      I_HANDLE_EVENTS;
   itfOpMode:											                        I_OP_MODE;
+  itfEventLogger:                                         I_EVENT_LOGGER; 
   itfTimer:                                               I_CLOCK; 
   itfCounterCyl:                                          I_CYLINDER_DA_COUNTER;
   itfTestCyl:                                             I_CYLINDER_DA_TESTDEV1;
@@ -2922,8 +3541,8 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
-THIS^.itfOpMode := itfOpMode;
+        <ST><![CDATA[THIS^.itfOpMode := itfOpMode;
+THIS^.itfEventLogger := itfEventLogger;
 THIS^.itfTimer := itfTimer;
 THIS^.itfCounterCyl := itfCounterCyl;
 THIS^.itfTestCyl := itfTestCyl;
@@ -3027,12 +3646,48 @@ END_IF]]></ST>
     </Method>
     <Method Name="M_MeasureStrokeLength" Id="{c2d244be-0edd-4b3a-ab80-ba09bb0b94df}">
       <Declaration><![CDATA[METHOD M_MeasureStrokeLength : BOOL
-]]></Declaration>
+VAR_INPUT
+  bCylinderDecoupled:             BOOL;
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[M_MeasureStrokeLength := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
 
+// Assign input
+THIS^.bCylinderDecoupled := bCylinderDecoupled;
+THIS^.rWorkForceATmp := rWorkForceA;
+THIS^.rWorkForceBTmp := rWorkForceB;
+THIS^.rLoadForceATmp := rLoadForceA;
+THIS^.rLoadForceBTmp := rLoadForceB;
+
 IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
   THIS^.eNextSeq := E_SEQ_PROCESS.MEASURE_STROKE_LENGTH;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MoveTestCyl1ToHP" Id="{434c9967-d0db-4a9f-83fd-d16ec699a24d}">
+      <Declaration><![CDATA[METHOD M_MoveTestCyl1ToHP : BOOL
+VAR_INPUT
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_MoveTestCyl1ToHP := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// Assign input
+THIS^.rWorkForceATmp := rWorkForceA;
+THIS^.rWorkForceBTmp := rWorkForceB;
+THIS^.rLoadForceATmp := rLoadForceA;
+THIS^.rLoadForceBTmp := rLoadForceB;
+
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_PROCESS.MOVE_CYL_TO_HP;
   THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
 END_IF]]></ST>
       </Implementation>
@@ -3058,6 +3713,19 @@ END_IF]]></ST>
 IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
   THIS^.eNextSeq := E_SEQ_PROCESS.INIT;
   THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ResetDistance" Id="{63ee2d24-294d-430f-bde8-3acf6512978e}">
+      <Declaration><![CDATA[METHOD M_ResetDistance : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ResetDistance := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_PROCESS.RESET_DISTANCE;
+  stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
 END_IF]]></ST>
       </Implementation>
     </Method>
@@ -3124,14 +3792,24 @@ END_IF]]></ST>
     <Method Name="M_VentCylinder" Id="{315e753e-9ea7-42df-86ae-3907bd0ff162}">
       <Declaration><![CDATA[METHOD M_VentCylinder : BOOL
 VAR_INPUT
-  uiVentCount:                UINT;
+  bCylinderDecoupled:             BOOL;
+  uiVentCount:                    UINT;
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[M_VentCylinder := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
 
 // Assign input
+THIS^.bCylinderDecoupled := bCylinderDecoupled;
 THIS^.uiVentCount := uiVentCount;
+THIS^.rWorkForceATmp := rWorkForceA;
+THIS^.rWorkForceBTmp := rWorkForceB;
+THIS^.rLoadForceATmp := rLoadForceA;
+THIS^.rLoadForceBTmp := rLoadForceB;
 
 // General
 IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
@@ -3436,6 +4114,12 @@ END_VAR
       <LineId Id="425" Count="0" />
       <LineId Id="427" Count="4" />
       <LineId Id="426" Count="0" />
+      <LineId Id="1117" Count="0" />
+      <LineId Id="1119" Count="4" />
+      <LineId Id="1118" Count="0" />
+      <LineId Id="1225" Count="0" />
+      <LineId Id="1227" Count="4" />
+      <LineId Id="1226" Count="0" />
       <LineId Id="360" Count="0" />
       <LineId Id="206" Count="2" />
       <LineId Id="350" Count="0" />
@@ -3468,6 +4152,20 @@ END_VAR
       <LineId Id="16" Count="0" />
       <LineId Id="11" Count="0" />
     </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1._m_DistanceRecord">
+      <LineId Id="19" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_GeneralStepSetting">
       <LineId Id="37" Count="0" />
       <LineId Id="30" Count="0" />
@@ -3489,7 +4187,9 @@ END_VAR
       <LineId Id="11" Count="0" />
       <LineId Id="105" Count="0" />
       <LineId Id="104" Count="0" />
-      <LineId Id="48" Count="6" />
+      <LineId Id="48" Count="3" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="52" Count="2" />
       <LineId Id="17" Count="1" />
       <LineId Id="77" Count="0" />
       <LineId Id="75" Count="0" />
@@ -3505,28 +4205,48 @@ END_VAR
       <LineId Id="6" Count="0" />
       <LineId Id="106" Count="6" />
       <LineId Id="68" Count="0" />
-      <LineId Id="70" Count="4" />
+      <LineId Id="70" Count="3" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="74" Count="0" />
       <LineId Id="69" Count="0" />
       <LineId Id="128" Count="0" />
       <LineId Id="130" Count="1" />
       <LineId Id="133" Count="0" />
       <LineId Id="136" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="205" Count="1" />
+      <LineId Id="202" Count="0" />
       <LineId Id="134" Count="0" />
       <LineId Id="138" Count="0" />
       <LineId Id="135" Count="0" />
       <LineId Id="139" Count="0" />
       <LineId Id="129" Count="0" />
+      <LineId Id="175" Count="3" />
+      <LineId Id="180" Count="3" />
+      <LineId Id="179" Count="0" />
       <LineId Id="67" Count="0" />
       <LineId Id="11" Count="0" />
       <LineId Id="105" Count="0" />
       <LineId Id="104" Count="0" />
-      <LineId Id="48" Count="5" />
-      <LineId Id="153" Count="1" />
+      <LineId Id="48" Count="4" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="154" Count="0" />
       <LineId Id="54" Count="0" />
       <LineId Id="150" Count="0" />
       <LineId Id="144" Count="0" />
       <LineId Id="152" Count="0" />
-      <LineId Id="17" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="186" Count="6" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="193" Count="8" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="18" Count="0" />
       <LineId Id="77" Count="0" />
       <LineId Id="75" Count="0" />
       <LineId Id="57" Count="0" />
@@ -3576,6 +4296,9 @@ END_VAR
       <LineId Id="288" Count="1" />
       <LineId Id="295" Count="0" />
       <LineId Id="290" Count="0" />
+      <LineId Id="614" Count="0" />
+      <LineId Id="620" Count="0" />
+      <LineId Id="615" Count="1" />
       <LineId Id="492" Count="1" />
       <LineId Id="291" Count="0" />
       <LineId Id="293" Count="0" />
@@ -3589,6 +4312,9 @@ END_VAR
       <LineId Id="170" Count="1" />
       <LineId Id="304" Count="0" />
       <LineId Id="306" Count="0" />
+      <LineId Id="621" Count="0" />
+      <LineId Id="624" Count="0" />
+      <LineId Id="622" Count="1" />
       <LineId Id="172" Count="1" />
       <LineId Id="240" Count="0" />
       <LineId Id="174" Count="0" />
@@ -3601,6 +4327,9 @@ END_VAR
       <LineId Id="183" Count="0" />
       <LineId Id="201" Count="1" />
       <LineId Id="307" Count="0" />
+      <LineId Id="617" Count="0" />
+      <LineId Id="625" Count="0" />
+      <LineId Id="618" Count="1" />
       <LineId Id="204" Count="1" />
       <LineId Id="420" Count="0" />
       <LineId Id="231" Count="0" />
@@ -3626,7 +4355,11 @@ END_VAR
       <LineId Id="541" Count="4" />
       <LineId Id="553" Count="4" />
       <LineId Id="559" Count="3" />
-      <LineId Id="571" Count="36" />
+      <LineId Id="571" Count="4" />
+      <LineId Id="626" Count="0" />
+      <LineId Id="629" Count="0" />
+      <LineId Id="627" Count="1" />
+      <LineId Id="576" Count="31" />
       <LineId Id="530" Count="0" />
       <LineId Id="388" Count="0" />
       <LineId Id="365" Count="3" />
@@ -3639,7 +4372,11 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_ENDURANCE_RUN">
-      <LineId Id="17" Count="12" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="603" Count="0" />
+      <LineId Id="602" Count="0" />
+      <LineId Id="604" Count="0" />
+      <LineId Id="19" Count="10" />
       <LineId Id="216" Count="0" />
       <LineId Id="30" Count="1" />
       <LineId Id="438" Count="0" />
@@ -3697,15 +4434,13 @@ END_VAR
       <LineId Id="172" Count="0" />
       <LineId Id="176" Count="1" />
       <LineId Id="217" Count="0" />
-      <LineId Id="455" Count="2" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="583" Count="0" />
+      <LineId Id="456" Count="1" />
+      <LineId Id="643" Count="3" />
+      <LineId Id="642" Count="0" />
       <LineId Id="180" Count="0" />
       <LineId Id="279" Count="0" />
-      <LineId Id="175" Count="0" />
-      <LineId Id="358" Count="0" />
-      <LineId Id="360" Count="1" />
-      <LineId Id="363" Count="0" />
-      <LineId Id="458" Count="2" />
-      <LineId Id="364" Count="1" />
       <LineId Id="201" Count="0" />
       <LineId Id="551" Count="0" />
       <LineId Id="553" Count="0" />
@@ -3717,9 +4452,8 @@ END_VAR
       <LineId Id="293" Count="3" />
       <LineId Id="290" Count="0" />
       <LineId Id="192" Count="0" />
-      <LineId Id="194" Count="1" />
-      <LineId Id="197" Count="0" />
-      <LineId Id="461" Count="2" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="463" Count="0" />
       <LineId Id="198" Count="0" />
       <LineId Id="523" Count="0" />
       <LineId Id="199" Count="0" />
@@ -3728,25 +4462,40 @@ END_VAR
       <LineId Id="264" Count="0" />
       <LineId Id="370" Count="0" />
       <LineId Id="372" Count="1" />
+      <LineId Id="649" Count="3" />
+      <LineId Id="647" Count="0" />
       <LineId Id="375" Count="0" />
-      <LineId Id="464" Count="2" />
+      <LineId Id="464" Count="0" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="465" Count="1" />
       <LineId Id="376" Count="0" />
       <LineId Id="563" Count="0" />
       <LineId Id="371" Count="0" />
       <LineId Id="527" Count="0" />
-      <LineId Id="529" Count="6" />
+      <LineId Id="529" Count="1" />
+      <LineId Id="655" Count="3" />
+      <LineId Id="653" Count="0" />
+      <LineId Id="531" Count="1" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="533" Count="2" />
       <LineId Id="545" Count="0" />
       <LineId Id="528" Count="0" />
       <LineId Id="564" Count="0" />
       <LineId Id="566" Count="0" />
       <LineId Id="571" Count="6" />
       <LineId Id="565" Count="0" />
+      <LineId Id="605" Count="0" />
+      <LineId Id="614" Count="6" />
+      <LineId Id="660" Count="3" />
+      <LineId Id="659" Count="0" />
+      <LineId Id="621" Count="1" />
+      <LineId Id="634" Count="7" />
+      <LineId Id="606" Count="0" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="590" Count="6" />
+      <LineId Id="589" Count="0" />
       <LineId Id="337" Count="0" />
       <LineId Id="339" Count="5" />
-      <LineId Id="338" Count="0" />
-      <LineId Id="219" Count="0" />
-      <LineId Id="221" Count="5" />
-      <LineId Id="228" Count="0" />
       <LineId Id="236" Count="1" />
       <LineId Id="239" Count="5" />
       <LineId Id="73" Count="0" />
@@ -3849,7 +4598,10 @@ END_VAR
       <LineId Id="127" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_LEAK_TEST_1">
-      <LineId Id="8" Count="12" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="832" Count="1" />
+      <LineId Id="831" Count="0" />
+      <LineId Id="10" Count="10" />
       <LineId Id="95" Count="0" />
       <LineId Id="21" Count="1" />
       <LineId Id="236" Count="0" />
@@ -3868,12 +4620,28 @@ END_VAR
       <LineId Id="612" Count="0" />
       <LineId Id="574" Count="0" />
       <LineId Id="613" Count="2" />
-      <LineId Id="552" Count="0" />
       <LineId Id="129" Count="0" />
-      <LineId Id="147" Count="7" />
+      <LineId Id="841" Count="0" />
+      <LineId Id="147" Count="2" />
+      <LineId Id="752" Count="0" />
+      <LineId Id="809" Count="0" />
+      <LineId Id="753" Count="1" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="755" Count="0" />
+      <LineId Id="810" Count="0" />
+      <LineId Id="756" Count="1" />
+      <LineId Id="151" Count="3" />
       <LineId Id="163" Count="0" />
       <LineId Id="616" Count="0" />
-      <LineId Id="618" Count="7" />
+      <LineId Id="618" Count="2" />
+      <LineId Id="758" Count="0" />
+      <LineId Id="811" Count="0" />
+      <LineId Id="759" Count="1" />
+      <LineId Id="621" Count="0" />
+      <LineId Id="761" Count="0" />
+      <LineId Id="812" Count="0" />
+      <LineId Id="762" Count="1" />
+      <LineId Id="622" Count="3" />
       <LineId Id="617" Count="0" />
       <LineId Id="164" Count="7" />
       <LineId Id="180" Count="0" />
@@ -3886,7 +4654,9 @@ END_VAR
       <LineId Id="243" Count="1" />
       <LineId Id="251" Count="0" />
       <LineId Id="246" Count="0" />
-      <LineId Id="580" Count="2" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="813" Count="0" />
+      <LineId Id="581" Count="1" />
       <LineId Id="247" Count="1" />
       <LineId Id="253" Count="0" />
       <LineId Id="659" Count="0" />
@@ -3897,11 +4667,15 @@ END_VAR
       <LineId Id="685" Count="0" />
       <LineId Id="691" Count="0" />
       <LineId Id="288" Count="2" />
-      <LineId Id="292" Count="2" />
+      <LineId Id="292" Count="1" />
+      <LineId Id="794" Count="3" />
+      <LineId Id="793" Count="0" />
       <LineId Id="296" Count="0" />
       <LineId Id="270" Count="0" />
       <LineId Id="272" Count="3" />
-      <LineId Id="583" Count="2" />
+      <LineId Id="583" Count="0" />
+      <LineId Id="814" Count="0" />
+      <LineId Id="584" Count="1" />
       <LineId Id="276" Count="1" />
       <LineId Id="279" Count="0" />
       <LineId Id="694" Count="0" />
@@ -3909,16 +4683,19 @@ END_VAR
       <LineId Id="695" Count="0" />
       <LineId Id="303" Count="0" />
       <LineId Id="305" Count="4" />
-      <LineId Id="626" Count="0" />
-      <LineId Id="310" Count="0" />
-      <LineId Id="627" Count="2" />
+      <LineId Id="629" Count="0" />
       <LineId Id="304" Count="0" />
-      <LineId Id="181" Count="5" />
+      <LineId Id="181" Count="3" />
+      <LineId Id="764" Count="0" />
+      <LineId Id="815" Count="0" />
+      <LineId Id="765" Count="1" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="767" Count="0" />
+      <LineId Id="816" Count="0" />
+      <LineId Id="768" Count="1" />
+      <LineId Id="186" Count="0" />
       <LineId Id="268" Count="1" />
       <LineId Id="189" Count="0" />
-      <LineId Id="261" Count="0" />
-      <LineId Id="630" Count="0" />
-      <LineId Id="632" Count="7" />
       <LineId Id="631" Count="0" />
       <LineId Id="383" Count="0" />
       <LineId Id="385" Count="6" />
@@ -3928,15 +4705,21 @@ END_VAR
       <LineId Id="517" Count="0" />
       <LineId Id="319" Count="0" />
       <LineId Id="321" Count="3" />
-      <LineId Id="586" Count="2" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="819" Count="0" />
+      <LineId Id="587" Count="1" />
       <LineId Id="325" Count="1" />
       <LineId Id="335" Count="0" />
       <LineId Id="719" Count="0" />
       <LineId Id="721" Count="4" />
       <LineId Id="720" Count="0" />
-      <LineId Id="336" Count="6" />
+      <LineId Id="336" Count="5" />
+      <LineId Id="799" Count="3" />
+      <LineId Id="798" Count="0" />
       <LineId Id="351" Count="5" />
-      <LineId Id="589" Count="2" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="820" Count="0" />
+      <LineId Id="590" Count="1" />
       <LineId Id="357" Count="1" />
       <LineId Id="367" Count="0" />
       <LineId Id="726" Count="0" />
@@ -3948,10 +4731,26 @@ END_VAR
       <LineId Id="641" Count="2" />
       <LineId Id="320" Count="0" />
       <LineId Id="400" Count="0" />
-      <LineId Id="402" Count="7" />
+      <LineId Id="402" Count="2" />
+      <LineId Id="776" Count="0" />
+      <LineId Id="821" Count="0" />
+      <LineId Id="777" Count="1" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="779" Count="0" />
+      <LineId Id="822" Count="0" />
+      <LineId Id="780" Count="1" />
+      <LineId Id="406" Count="3" />
       <LineId Id="418" Count="0" />
       <LineId Id="644" Count="0" />
-      <LineId Id="646" Count="7" />
+      <LineId Id="646" Count="2" />
+      <LineId Id="782" Count="0" />
+      <LineId Id="823" Count="0" />
+      <LineId Id="783" Count="1" />
+      <LineId Id="649" Count="0" />
+      <LineId Id="785" Count="0" />
+      <LineId Id="824" Count="0" />
+      <LineId Id="786" Count="1" />
+      <LineId Id="650" Count="3" />
       <LineId Id="645" Count="0" />
       <LineId Id="419" Count="7" />
       <LineId Id="435" Count="0" />
@@ -3959,15 +4758,22 @@ END_VAR
       <LineId Id="533" Count="4" />
       <LineId Id="532" Count="0" />
       <LineId Id="436" Count="4" />
-      <LineId Id="592" Count="2" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="825" Count="0" />
+      <LineId Id="593" Count="1" />
       <LineId Id="441" Count="1" />
       <LineId Id="451" Count="0" />
       <LineId Id="733" Count="0" />
       <LineId Id="735" Count="4" />
       <LineId Id="734" Count="0" />
-      <LineId Id="452" Count="6" />
+      <LineId Id="452" Count="5" />
+      <LineId Id="803" Count="0" />
+      <LineId Id="805" Count="2" />
+      <LineId Id="804" Count="0" />
       <LineId Id="467" Count="5" />
-      <LineId Id="595" Count="2" />
+      <LineId Id="595" Count="0" />
+      <LineId Id="808" Count="0" />
+      <LineId Id="596" Count="1" />
       <LineId Id="473" Count="1" />
       <LineId Id="483" Count="0" />
       <LineId Id="740" Count="0" />
@@ -3984,7 +4790,9 @@ END_VAR
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_LEAK_TEST_2">
       <LineId Id="97" Count="15" />
       <LineId Id="117" Count="6" />
-      <LineId Id="628" Count="6" />
+      <LineId Id="628" Count="2" />
+      <LineId Id="754" Count="0" />
+      <LineId Id="631" Count="3" />
       <LineId Id="124" Count="0" />
       <LineId Id="627" Count="0" />
       <LineId Id="626" Count="0" />
@@ -3997,16 +4805,28 @@ END_VAR
       <LineId Id="599" Count="21" />
       <LineId Id="598" Count="0" />
       <LineId Id="138" Count="4" />
-      <LineId Id="640" Count="0" />
-      <LineId Id="143" Count="0" />
-      <LineId Id="641" Count="2" />
-      <LineId Id="152" Count="9" />
-      <LineId Id="170" Count="8" />
+      <LineId Id="643" Count="0" />
+      <LineId Id="152" Count="4" />
+      <LineId Id="705" Count="0" />
+      <LineId Id="713" Count="0" />
+      <LineId Id="706" Count="0" />
+      <LineId Id="716" Count="0" />
+      <LineId Id="158" Count="3" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="733" Count="0" />
+      <LineId Id="735" Count="1" />
+      <LineId Id="751" Count="0" />
+      <LineId Id="753" Count="0" />
+      <LineId Id="742" Count="6" />
+      <LineId Id="734" Count="0" />
+      <LineId Id="171" Count="7" />
       <LineId Id="187" Count="4" />
       <LineId Id="698" Count="0" />
       <LineId Id="192" Count="1" />
       <LineId Id="202" Count="5" />
-      <LineId Id="645" Count="2" />
+      <LineId Id="645" Count="0" />
+      <LineId Id="718" Count="0" />
+      <LineId Id="646" Count="1" />
       <LineId Id="208" Count="1" />
       <LineId Id="691" Count="0" />
       <LineId Id="671" Count="0" />
@@ -4014,23 +4834,35 @@ END_VAR
       <LineId Id="679" Count="2" />
       <LineId Id="672" Count="0" />
       <LineId Id="657" Count="0" />
-      <LineId Id="659" Count="4" />
+      <LineId Id="659" Count="0" />
+      <LineId Id="762" Count="0" />
+      <LineId Id="761" Count="0" />
+      <LineId Id="661" Count="2" />
       <LineId Id="658" Count="0" />
       <LineId Id="219" Count="6" />
-      <LineId Id="266" Count="9" />
+      <LineId Id="266" Count="4" />
+      <LineId Id="719" Count="0" />
+      <LineId Id="722" Count="0" />
+      <LineId Id="720" Count="0" />
+      <LineId Id="725" Count="0" />
+      <LineId Id="272" Count="3" />
       <LineId Id="284" Count="8" />
       <LineId Id="301" Count="4" />
       <LineId Id="699" Count="0" />
       <LineId Id="306" Count="1" />
       <LineId Id="316" Count="5" />
-      <LineId Id="648" Count="2" />
+      <LineId Id="648" Count="0" />
+      <LineId Id="727" Count="0" />
+      <LineId Id="649" Count="1" />
       <LineId Id="322" Count="1" />
       <LineId Id="332" Count="0" />
       <LineId Id="682" Count="0" />
       <LineId Id="684" Count="5" />
       <LineId Id="683" Count="0" />
       <LineId Id="664" Count="0" />
-      <LineId Id="666" Count="4" />
+      <LineId Id="666" Count="0" />
+      <LineId Id="763" Count="0" />
+      <LineId Id="667" Count="3" />
       <LineId Id="665" Count="0" />
       <LineId Id="333" Count="6" />
       <LineId Id="494" Count="7" />
@@ -4045,7 +4877,10 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_MAX_SPEED_RECORD">
-      <LineId Id="473" Count="18" />
+      <LineId Id="473" Count="1" />
+      <LineId Id="893" Count="1" />
+      <LineId Id="892" Count="0" />
+      <LineId Id="475" Count="16" />
       <LineId Id="713" Count="1" />
       <LineId Id="492" Count="7" />
       <LineId Id="758" Count="0" />
@@ -4056,14 +4891,20 @@ END_VAR
       <LineId Id="808" Count="4" />
       <LineId Id="807" Count="0" />
       <LineId Id="781" Count="0" />
-      <LineId Id="783" Count="6" />
+      <LineId Id="783" Count="3" />
+      <LineId Id="879" Count="0" />
+      <LineId Id="787" Count="2" />
       <LineId Id="825" Count="0" />
       <LineId Id="790" Count="0" />
       <LineId Id="826" Count="2" />
-      <LineId Id="791" Count="9" />
+      <LineId Id="791" Count="5" />
+      <LineId Id="880" Count="0" />
+      <LineId Id="797" Count="3" />
       <LineId Id="782" Count="0" />
       <LineId Id="829" Count="0" />
-      <LineId Id="831" Count="7" />
+      <LineId Id="831" Count="3" />
+      <LineId Id="881" Count="0" />
+      <LineId Id="835" Count="3" />
       <LineId Id="830" Count="0" />
       <LineId Id="862" Count="0" />
       <LineId Id="864" Count="0" />
@@ -4073,7 +4914,11 @@ END_VAR
       <LineId Id="813" Count="6" />
       <LineId Id="805" Count="0" />
       <LineId Id="543" Count="11" />
-      <LineId Id="562" Count="30" />
+      <LineId Id="562" Count="13" />
+      <LineId Id="882" Count="0" />
+      <LineId Id="576" Count="9" />
+      <LineId Id="883" Count="0" />
+      <LineId Id="586" Count="6" />
       <LineId Id="700" Count="0" />
       <LineId Id="702" Count="0" />
       <LineId Id="707" Count="0" />
@@ -4090,14 +4935,20 @@ END_VAR
       <LineId Id="721" Count="1" />
       <LineId Id="728" Count="1" />
       <LineId Id="720" Count="0" />
-      <LineId Id="593" Count="16" />
+      <LineId Id="593" Count="13" />
+      <LineId Id="884" Count="0" />
+      <LineId Id="607" Count="2" />
       <LineId Id="841" Count="0" />
       <LineId Id="610" Count="0" />
       <LineId Id="842" Count="2" />
-      <LineId Id="611" Count="9" />
+      <LineId Id="611" Count="5" />
+      <LineId Id="885" Count="0" />
+      <LineId Id="617" Count="3" />
       <LineId Id="622" Count="2" />
       <LineId Id="845" Count="0" />
-      <LineId Id="847" Count="9" />
+      <LineId Id="847" Count="3" />
+      <LineId Id="886" Count="0" />
+      <LineId Id="851" Count="5" />
       <LineId Id="846" Count="0" />
       <LineId Id="743" Count="0" />
       <LineId Id="745" Count="7" />
@@ -4111,7 +4962,10 @@ END_VAR
       <LineId Id="731" Count="0" />
       <LineId Id="759" Count="3" />
       <LineId Id="764" Count="0" />
-      <LineId Id="766" Count="1" />
+      <LineId Id="766" Count="0" />
+      <LineId Id="897" Count="0" />
+      <LineId Id="767" Count="0" />
+      <LineId Id="898" Count="0" />
       <LineId Id="769" Count="4" />
       <LineId Id="775" Count="1" />
       <LineId Id="774" Count="0" />
@@ -4125,7 +4979,10 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_MEASURE_STROKE_LENGTH">
-      <LineId Id="6" Count="4" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="525" Count="1" />
+      <LineId Id="524" Count="0" />
+      <LineId Id="8" Count="2" />
       <LineId Id="12" Count="6" />
       <LineId Id="175" Count="0" />
       <LineId Id="19" Count="2" />
@@ -4133,7 +4990,11 @@ END_VAR
       <LineId Id="26" Count="2" />
       <LineId Id="174" Count="0" />
       <LineId Id="29" Count="1" />
-      <LineId Id="385" Count="2" />
+      <LineId Id="511" Count="6" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="510" Count="0" />
+      <LineId Id="509" Count="0" />
+      <LineId Id="386" Count="1" />
       <LineId Id="435" Count="0" />
       <LineId Id="388" Count="1" />
       <LineId Id="193" Count="0" />
@@ -4148,15 +5009,30 @@ END_VAR
       <LineId Id="39" Count="0" />
       <LineId Id="82" Count="0" />
       <LineId Id="126" Count="0" />
-      <LineId Id="272" Count="0" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="504" Count="0" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="461" Count="0" />
+      <LineId Id="528" Count="3" />
+      <LineId Id="527" Count="0" />
       <LineId Id="42" Count="0" />
       <LineId Id="124" Count="0" />
       <LineId Id="44" Count="0" />
       <LineId Id="209" Count="0" />
       <LineId Id="203" Count="2" />
-      <LineId Id="208" Count="0" />
+      <LineId Id="462" Count="0" />
+      <LineId Id="505" Count="0" />
+      <LineId Id="463" Count="0" />
+      <LineId Id="467" Count="0" />
       <LineId Id="206" Count="1" />
       <LineId Id="202" Count="0" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="482" Count="3" />
+      <LineId Id="495" Count="1" />
+      <LineId Id="506" Count="0" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="489" Count="5" />
+      <LineId Id="481" Count="0" />
       <LineId Id="217" Count="0" />
       <LineId Id="219" Count="1" />
       <LineId Id="227" Count="0" />
@@ -4173,9 +5049,23 @@ END_VAR
       <LineId Id="242" Count="2" />
       <LineId Id="246" Count="1" />
       <LineId Id="392" Count="0" />
+      <LineId Id="532" Count="0" />
+      <LineId Id="534" Count="6" />
+      <LineId Id="533" Count="0" />
       <LineId Id="273" Count="0" />
-      <LineId Id="275" Count="5" />
+      <LineId Id="275" Count="2" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="507" Count="0" />
+      <LineId Id="469" Count="1" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="471" Count="0" />
+      <LineId Id="508" Count="0" />
+      <LineId Id="472" Count="1" />
+      <LineId Id="279" Count="1" />
       <LineId Id="157" Count="0" />
+      <LineId Id="541" Count="0" />
+      <LineId Id="543" Count="13" />
+      <LineId Id="542" Count="0" />
       <LineId Id="289" Count="0" />
       <LineId Id="291" Count="3" />
       <LineId Id="301" Count="0" />
@@ -4206,6 +5096,71 @@ END_VAR
       <LineId Id="57" Count="21" />
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_MOVE_CYL1_TO_HP">
+      <LineId Id="6" Count="1" />
+      <LineId Id="537" Count="1" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="8" Count="2" />
+      <LineId Id="12" Count="6" />
+      <LineId Id="295" Count="0" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="290" Count="0" />
+      <LineId Id="292" Count="2" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="430" Count="6" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="429" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="361" Count="2" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="400" Count="21" />
+      <LineId Id="202" Count="6" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="575" Count="6" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="235" Count="2" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="588" Count="3" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="241" Count="1" />
+      <LineId Id="486" Count="0" />
+      <LineId Id="447" Count="0" />
+      <LineId Id="449" Count="2" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="528" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="582" Count="0" />
+      <LineId Id="605" Count="3" />
+      <LineId Id="604" Count="0" />
+      <LineId Id="453" Count="1" />
+      <LineId Id="500" Count="0" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="332" Count="12" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="346" Count="3" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="375" Count="1" />
+      <LineId Id="379" Count="3" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="262" Count="6" />
+      <LineId Id="277" Count="7" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="57" Count="21" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_MOVE_TO_SET_POS">
       <LineId Id="8" Count="12" />
       <LineId Id="95" Count="0" />
@@ -4217,6 +5172,15 @@ END_VAR
       <LineId Id="103" Count="3" />
       <LineId Id="102" Count="0" />
       <LineId Id="64" Count="24" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_RESET_DISTANCE">
+      <LineId Id="6" Count="14" />
+      <LineId Id="22" Count="8" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="204" Count="2" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="171" Count="30" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_STOP">
@@ -4265,7 +5229,10 @@ END_VAR
       <LineId Id="127" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1._m_Seq_VENT_CYLINDER">
-      <LineId Id="6" Count="4" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="537" Count="1" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="8" Count="2" />
       <LineId Id="12" Count="6" />
       <LineId Id="295" Count="0" />
       <LineId Id="19" Count="1" />
@@ -4289,19 +5256,52 @@ END_VAR
       <LineId Id="192" Count="0" />
       <LineId Id="195" Count="13" />
       <LineId Id="217" Count="3" />
-      <LineId Id="222" Count="4" />
+      <LineId Id="466" Count="0" />
+      <LineId Id="224" Count="1" />
+      <LineId Id="571" Count="1" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="541" Count="13" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="555" Count="0" />
+      <LineId Id="557" Count="13" />
+      <LineId Id="556" Count="0" />
       <LineId Id="302" Count="0" />
       <LineId Id="304" Count="12" />
-      <LineId Id="443" Count="0" />
-      <LineId Id="317" Count="0" />
-      <LineId Id="444" Count="2" />
+      <LineId Id="446" Count="0" />
       <LineId Id="318" Count="3" />
-      <LineId Id="234" Count="3" />
-      <LineId Id="239" Count="3" />
-      <LineId Id="260" Count="0" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="575" Count="6" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="235" Count="2" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="588" Count="3" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="241" Count="1" />
+      <LineId Id="486" Count="0" />
       <LineId Id="447" Count="0" />
-      <LineId Id="449" Count="5" />
+      <LineId Id="449" Count="2" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="528" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="582" Count="0" />
+      <LineId Id="453" Count="1" />
       <LineId Id="448" Count="0" />
+      <LineId Id="499" Count="0" />
+      <LineId Id="501" Count="0" />
+      <LineId Id="506" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="515" Count="0" />
+      <LineId Id="507" Count="1" />
+      <LineId Id="529" Count="0" />
+      <LineId Id="509" Count="3" />
+      <LineId Id="516" Count="2" />
+      <LineId Id="500" Count="0" />
       <LineId Id="330" Count="0" />
       <LineId Id="332" Count="13" />
       <LineId Id="350" Count="0" />
@@ -4353,8 +5353,8 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.FB_init">
-      <LineId Id="7" Count="0" />
       <LineId Id="25" Count="0" />
+      <LineId Id="107" Count="0" />
       <LineId Id="89" Count="0" />
       <LineId Id="35" Count="0" />
       <LineId Id="37" Count="0" />
@@ -4408,8 +5408,22 @@ END_VAR
       <LineId Id="4" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_MeasureStrokeLength">
-      <LineId Id="7" Count="1" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="8" Count="0" />
       <LineId Id="44" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.M_MoveTestCyl1ToHP">
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="13" Count="3" />
       <LineId Id="4" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_MoveToSetPos">
@@ -4420,6 +5434,10 @@ END_VAR
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_Reset">
       <LineId Id="7" Count="1" />
       <LineId Id="56" Count="2" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SEQ_PROCESS_NEST1.M_ResetDistance">
+      <LineId Id="5" Count="5" />
       <LineId Id="4" Count="0" />
     </LineIds>
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_Run">
@@ -4443,7 +5461,9 @@ END_VAR
     <LineIds Name="FB_SEQ_PROCESS_NEST1.M_VentCylinder">
       <LineId Id="6" Count="0" />
       <LineId Id="47" Count="1" />
+      <LineId Id="73" Count="0" />
       <LineId Id="46" Count="0" />
+      <LineId Id="68" Count="3" />
       <LineId Id="59" Count="0" />
       <LineId Id="7" Count="0" />
       <LineId Id="53" Count="2" />

@@ -29,6 +29,12 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
     </Method>
+    <Method Name="M_SetWorkPressureZero" Id="{d0043780-b8ba-4d47-a388-09297da08fc8}">
+      <Declaration><![CDATA[METHOD M_SetWorkPressureZero : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
     <Method Name="M_Stop" Id="{5d16f8e8-c647-4b76-ab9b-0e37bc939372}">
       <Declaration><![CDATA[METHOD M_Stop : BOOL
 VAR_INPUT
@@ -41,6 +47,7 @@ VAR_INPUT
   /// Bar | Force in N | Percent 0-100 | Value 0-32767
   ePressureType:            E_PRESSURE_TYPE;
   rWorkPressure:            REAL;
+  bPressureRegulation:      BOOL;
   /// Just need for prop valve
   eSpeedType:               E_SPEED_TYPE;
   rSpeed:                   REAL;

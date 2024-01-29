@@ -14,8 +14,8 @@ VAR //General
   bStop:                                                  BOOL;
 END_VAR
 VAR   // From FB_init	
-	itfLogEvents: 										                      I_HANDLE_EVENTS;
-  itfOpMode:											                        I_OP_MODE;  
+	itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER; 
   itfTimerNest1:                                          I_CLOCK; 
   itfTimerNest2:                                          I_CLOCK; 
   itfTimerNest3:                                          I_CLOCK; 
@@ -88,7 +88,12 @@ VAR // Input variables
   stBPDParams:                                            ST_RECIPE_BREAK_PRESSURE;
   stLT1Params:                                            ST_RECIPE_LEAK_TEST1;
   stLT2Params:                                            ST_RECIPE_LEAK_TEST2;
-END_VAR                   	
+END_VAR 
+VAR // HMI interaction
+  bShowMessage:                                           BOOL;
+  bEnableOkBtn:                                           BOOL;
+  bBtnOkPressed:                                          BOOL;
+END_VAR                  	
 VAR_TEMP                    	
 	iTemp:											                            INT;
 END_VAR
@@ -286,7 +291,10 @@ VAR
 	ActiveSeq: STRING;
 END_VAR
 VAR
-	
+	rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
@@ -294,7 +302,6 @@ ActiveSeq := TO_STRING(THIS^.eSeq);
 
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
-
 	
 E_SEQ_GENERAL.EXECUTE:;
 	IF TRUE
@@ -304,7 +311,11 @@ E_SEQ_GENERAL.EXECUTE:;
 E_SEQ_GENERAL.RESET:;
 	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
 	IF TRUE
+  AND THIS^.itfNest1.M_ResetDistance()
 	THEN
+    THIS^.bShowMessage := FALSE;
+    THIS^.bEnableOkBtn := FALSE;
+    THIS^.bBtnOkPressed := FALSE;
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
 	END_IF
   
@@ -312,27 +323,46 @@ E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0:  // check validity
       IF TRUE
-      AND THIS^.stBPDParams.rMinSpeedInMmPerS > 0.1
-      AND THIS^.stBPDParams.rEndPosTol > 0
-      AND THIS^.stBPDParams.rIncreaseInterval > 0.1
-      AND THIS^.stBPDParams.rIncreaseInterval < 10
-      AND THIS^.stBPDParams.rNokLimit > 1
-			THEN 
+         AND THIS^.stBPDParams.rMinSpeedInMmPerS >= 0.1
+         AND THIS^.stBPDParams.rEndPosTol >= 0.0
+         AND THIS^.stBPDParams.rIncreaseInterval >= 0.1
+         AND THIS^.stBPDParams.rIncreaseInterval <= 10.0
+         AND THIS^.stBPDParams.rNokLimit >= 0.1
+         AND PrgMeasure.fbInfluxDB.P_ADSState
+         AND PrgMeasure.fbInfluxDB.P_InfluxDBState			
+      THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5; 
       ELSE
-        THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5000;
 			END_IF
       
     5:  // Start timer
       IF THIS^.itfNest1.P_EnableState THEN
         THIS^.itfTimerNest1.M_StartTimer();
+        PrgMeasure.bRecord := TRUE;
 			END_IF
-      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 6;
+      
+    6:  // Reset distance
+      IF TRUE
+      AND THIS^.itfNest1.M_ResetDistance()
+	    THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      END_IF
 
     10:  // Nest 1 vent cylinder
+      rWorkForceA := 4.0;
+      rWorkForceB := 4.0;
+      rLoadForceA := 1.0;
+      rLoadForceB := 1.0;
       IF TRUE
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
-			AND THIS^.itfNest1.M_VentCylinder(uiVentCount:= THIS^.stBPDParams.uiVentCycles)
+			AND THIS^.itfNest1.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stBPDParams.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
 			END_IF
@@ -345,13 +375,101 @@ E_SEQ_GENERAL.BUSY:;
 			END_IF
       
     30:  // Nest 1 determinate stroke length
+      rWorkForceA := 4.0;
+      rWorkForceB := 4.0;
+      rLoadForceA := 1.0;
+      rLoadForceB := 1.0;
       IF TRUE 
-			AND THIS^.itfNest1.M_MeasureStrokeLength()
+			AND THIS^.itfNest1.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
 			END_IF
       
-    40:  // Nest 1 endurance run
+    40: // Move cylinder to HP
+      rWorkForceA := 4.0;
+      rWorkForceB := 4.0;
+      rLoadForceA := 1.0;
+      rLoadForceB := 1.0;
+      IF TRUE 
+			AND THIS^.itfNest1.M_MoveTestCyl1ToHP(rWorkForceA:= rWorkForceA,
+                                            rWorkForceB:= rWorkForceB,
+                                            rLoadForceA:= rLoadForceA,
+                                            rLoadForceB:= rLoadForceB)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50; 
+			END_IF
+    
+    50: // OPMode to Pause
+      IF TRUE
+      THEN
+        //PrgOrg.fbOpMode.M_OP_MODE_TO_PAUSE();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
+			END_IF
+    
+    60: // Show message to decouple
+      IF TRUE
+      THEN
+        THIS^.bShowMessage := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
+			END_IF
+    
+    70: // Delay
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#3S)
+      THEN
+        PrgOrg.fbLockDoor.M_Reset();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
+			END_IF
+    
+    80: // Wait if door is open
+      IF TRUE
+      AND NOT PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
+			END_IF
+    
+    90: // Wait if door is close
+      IF TRUE
+      AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100; 
+			END_IF
+    
+    100:  // Enable OK button
+      IF TRUE
+      THEN
+        THIS^.bEnableOkBtn := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 110; 
+			END_IF
+    
+    110:  // Wait for press OK button
+      IF TRUE
+      AND THIS^.bBtnOkPressed
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120; 
+			END_IF
+      IF NOT PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active THEN
+        THIS^.bEnableOkBtn := FALSE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
+			END_IF
+    
+    120:  // Switch OPMode to auto
+      IF TRUE
+      THEN
+        THIS^.bShowMessage := FALSE;
+        THIS^.bEnableOkBtn := FALSE;
+        THIS^.bBtnOkPressed := FALSE;
+        //PrgOrg.fbOpMode.M_OP_MODE_ON();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 130; 
+			END_IF
+      
+    130:  // Nest 1 break pressure det
       IF TRUE 
 			AND THIS^.itfNest1.M_BreakPressureDet(stBreakPressureParams:= THIS^.stBPDParams)
 			THEN 
@@ -365,12 +483,41 @@ E_SEQ_GENERAL.BUSY:;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
       
+    5000: // Error seq
+      IF THIS^.stBPDParams.rMinSpeedInMmPerS < 0.1 THEN 
+				THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10010, sMsg:= 'Mindestgeschwindigkeit in mm/min zu klein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stBPDParams.rEndPosTol < 0.0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10020, sMsg:= 'Endposition Toleranz muss größer sein als 0!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stBPDParams.rIncreaseInterval < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10030, sMsg:= 'Das Interval darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stBPDParams.rIncreaseInterval > 10.0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10040, sMsg:= 'Das Interval darf nicht größer sein als 10!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stBPDParams.rNokLimit < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10050, sMsg:= 'Das NOK Limit darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_ADSState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10060, sMsg:= 'ADS-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_InfluxDBState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10070, sMsg:= 'InfluxDB-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+      
 	ELSE
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
 	END_CASE
 	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
 E_SEQ_GENERAL.DONE:;
-E_SEQ_GENERAL.ERROR:;
+  PrgMeasure.bRecord := FALSE;
+  
+E_SEQ_GENERAL.ERROR:
+  THIS^.itfOpMode.M_OP_MODE_OFF();
+
 E_SEQ_GENERAL.TIME_OUT:; 
 
 IF TRUE
@@ -398,6 +545,12 @@ VAR_INPUT
 END_VAR
 VAR
 	ActiveSeq:                      STRING;
+END_VAR
+VAR
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
@@ -406,7 +559,6 @@ ActiveSeq := TO_STRING(THIS^.eSeq);
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
 
-	
 E_SEQ_GENERAL.EXECUTE:;
 	IF TRUE
 	THEN
@@ -427,17 +579,19 @@ E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0:  // check validity
       IF TRUE
-      AND THIS^.stERParams.rSpeedA > 1
-      AND THIS^.stERParams.rSpeedB > 1
-      AND THIS^.stERParams.rTurningPointHP > 0
-      AND THIS^.stERParams.rTurningPointWP > 0
-      AND THIS^.stERParams.rWorkForceA > 0.1
-      AND THIS^.stERParams.rWorkForceB > 0.1
-      AND THIS^.stERParams.udiCycles > 1
+        AND THIS^.stERParams.rSpeedA >= 1.0
+        AND THIS^.stERParams.rSpeedB >= 1.0
+        AND THIS^.stERParams.rTurningPointHP > 0.0
+        AND THIS^.stERParams.rTurningPointWP > 0.0
+        AND THIS^.stERParams.rWorkForceA >= 0.1
+        AND THIS^.stERParams.rWorkForceB >= 0.1
+        AND THIS^.stERParams.udiCycles > 1
+        AND PrgMeasure.fbInfluxDB.P_ADSState
+        AND PrgMeasure.fbInfluxDB.P_InfluxDBState
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5; 
       ELSE
-        THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5000; 
 			END_IF
       
     5:  // Start timer
@@ -453,26 +607,81 @@ E_SEQ_GENERAL.BUSY:;
       IF THIS^.itfNest4.P_EnableState THEN
         THIS^.itfTimerNest4.M_StartTimer();
 			END_IF
-      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 6;
+      
+    6:  // Reset distance
+      IF TRUE
+      AND THIS^.itfNest1.M_ResetDistance()
+      AND THIS^.itfNest2.M_ResetDistance()
+      AND THIS^.itfNest3.M_ResetDistance()
+      AND THIS^.itfNest4.M_ResetDistance()
+	    THEN
+        PrgMeasure.bRecord := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      END_IF
 
     10:  // Nest 1-4 vent cylinder
+      rWorkForceA := THIS^.stERParams.rWorkForceA;
+      rWorkForceB := THIS^.stERParams.rWorkForceB;
+      rLoadForceA := 1.0; //THIS^.stERParams.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stERParams.rLoadForceB;
       IF TRUE
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
-			AND THIS^.itfNest1.M_VentCylinder(uiVentCount:= THIS^.stERParams.uiVentCycles)
-      AND THIS^.itfNest2.M_VentCylinder(uiVentCount:= THIS^.stERParams.uiVentCycles)
-      AND THIS^.itfNest3.M_VentCylinder(uiVentCount:= THIS^.stERParams.uiVentCycles)
-      AND THIS^.itfNest4.M_VentCylinder(uiVentCount:= THIS^.stERParams.uiVentCycles)
+			AND THIS^.itfNest1.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stERParams.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest2.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stERParams.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest3.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stERParams.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest4.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stERParams.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
 			END_IF
       
     20:  // Nest 1-4 determinate stroke length
+      rWorkForceA := THIS^.stERParams.rWorkForceA;
+      rWorkForceB := THIS^.stERParams.rWorkForceB;
+      rLoadForceA := 1.0; //THIS^.stERParams.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stERParams.rLoadForceB;
       IF TRUE  
       AND THIS^.itfLowPressurePump.M_On()
-			AND THIS^.itfNest1.M_MeasureStrokeLength()
-      AND THIS^.itfNest2.M_MeasureStrokeLength()
-      AND THIS^.itfNest3.M_MeasureStrokeLength()
-      AND THIS^.itfNest4.M_MeasureStrokeLength()
+			AND THIS^.itfNest1.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest2.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest3.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest4.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
 			END_IF
@@ -552,10 +761,10 @@ E_SEQ_GENERAL.BUSY:;
     90:  // Last endurance run loop
       IF TRUE 
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= FALSE)
-			AND THIS^.itfNest1.M_EnduranceRun(udiCycles:= THIS^.udiCyclesPerLoop + THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
-      AND THIS^.itfNest2.M_EnduranceRun(udiCycles:= THIS^.udiCyclesPerLoop + THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
-      AND THIS^.itfNest3.M_EnduranceRun(udiCycles:= THIS^.udiCyclesPerLoop + THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
-      AND THIS^.itfNest4.M_EnduranceRun(udiCycles:= THIS^.udiCyclesPerLoop + THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
+			AND THIS^.itfNest1.M_EnduranceRun(udiCycles:= THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
+      AND THIS^.itfNest2.M_EnduranceRun(udiCycles:= THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
+      AND THIS^.itfNest3.M_EnduranceRun(udiCycles:= THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
+      AND THIS^.itfNest4.M_EnduranceRun(udiCycles:= THIS^.udiResidualVal, stEnduranceRunParams:= THIS^.stERParams)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000; 
 			END_IF
@@ -577,12 +786,47 @@ E_SEQ_GENERAL.BUSY:;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
       
+    5000: // Error seq
+      IF THIS^.stERParams.rSpeedA < 1.0 THEN 
+				THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10080, sMsg:= 'Geschwindigkeit für die A-Seite muss größer als 1mm/s sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.rSpeedB < 1.0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10090, sMsg:= 'Geschwindigkeit für die B-Seite muss größer als 1mm/s sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.rTurningPointHP <= 0.0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10100, sMsg:= 'Der Umkehrpunkt für die HP darf nicht 0 oder negativ sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.rTurningPointWP <= 0.0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10110, sMsg:= 'Der Umkehrpunkt für die WP darf nicht 0 oder negativ sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.rWorkForceA < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10120, sMsg:= 'Die Kraft für die A-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.rWorkForceB < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10130, sMsg:= 'Die Kraft für die B-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stERParams.udiCycles <= 1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10140, sMsg:= 'Zu wenig Zyklen ausgewählt!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_ADSState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10060, sMsg:= 'ADS-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_InfluxDBState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10070, sMsg:= 'InfluxDB-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+      
 	ELSE
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
 	END_CASE
 	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
 E_SEQ_GENERAL.DONE:;
+  PrgMeasure.bRecord := FALSE;
+
 E_SEQ_GENERAL.ERROR:;
+  THIS^.itfOpMode.M_OP_MODE_OFF();
+
 E_SEQ_GENERAL.TIME_OUT:; 
 
 IF TRUE
@@ -641,6 +885,7 @@ E_SEQ_GENERAL.BUSY:;
 			AND THIS^.itfNest1.M_Stop()
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
 			THEN 
+        PrgMeasure.bRecord := FALSE;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
 			END_IF
       
@@ -743,6 +988,7 @@ E_SEQ_GENERAL.BUSY:;
       AND THIS^.itfTimerNest1.M_StartTimer()
 			AND THIS^.itfNest1.M_Reset()
 			THEN 
+        PrgMeasure.bRecord := FALSE;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
 			END_IF
       
@@ -772,7 +1018,7 @@ E_SEQ_GENERAL.BUSY:;
       
     40: // Low pressure pump reset
       IF TRUE 
-			AND THIS^.itfLowPressurePump.M_Off()
+			//AND THIS^.itfLowPressurePump.M_Off()
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50; 
 			END_IF
@@ -836,7 +1082,10 @@ VAR
 	ActiveSeq: STRING;
 END_VAR
 VAR
-	
+	rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
@@ -844,7 +1093,6 @@ ActiveSeq := TO_STRING(THIS^.eSeq);
 
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
-
 	
 E_SEQ_GENERAL.EXECUTE:;
 	IF TRUE
@@ -858,21 +1106,23 @@ E_SEQ_GENERAL.RESET:;
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
 	END_IF
   
-E_SEQ_GENERAL.BUSY:;
+E_SEQ_GENERAL.BUSY:
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0:  // check validity
       IF TRUE
-      AND THIS^.stLT1Params.rDistanceBeforeEndPosHP > 0
-      AND THIS^.stLT1Params.rDistanceBeforeEndPosWP > 0
-      AND THIS^.stLT1Params.rLoadForceA > 0.1
-      AND THIS^.stLT1Params.rLoadForceA > 0.1
-      AND THIS^.stLT1Params.rNokLimit > 0.05
-      AND THIS^.stLT1Params.rRestDelay > 0
-      AND THIS^.stLT1Params.udiDurationPerTest > 0
+        AND THIS^.stLT1Params.rDistanceBeforeEndPosHP > 0.0
+        AND THIS^.stLT1Params.rDistanceBeforeEndPosWP > 0.0
+        AND THIS^.stLT1Params.rLoadForceA >= 0.1
+        AND THIS^.stLT1Params.rLoadForceB >= 0.1
+        AND THIS^.stLT1Params.rNokLimit >= 0.05
+        AND THIS^.stLT1Params.rRestDelay > 0.0
+        AND THIS^.stLT1Params.udiDurationPerTest > 0
+        AND PrgMeasure.fbInfluxDB.P_ADSState
+        AND PrgMeasure.fbInfluxDB.P_InfluxDBState
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5; 
       ELSE
-        THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5000; 
 			END_IF
       
     5:  // Start timer
@@ -888,26 +1138,81 @@ E_SEQ_GENERAL.BUSY:;
       IF THIS^.itfNest4.P_EnableState THEN
         THIS^.itfTimerNest4.M_StartTimer();
 			END_IF
-      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 6;
+      
+    6:  // Reset distance
+      IF TRUE
+      AND THIS^.itfNest1.M_ResetDistance()
+      AND THIS^.itfNest2.M_ResetDistance()
+      AND THIS^.itfNest3.M_ResetDistance()
+      AND THIS^.itfNest4.M_ResetDistance()
+	    THEN
+        PrgMeasure.bRecord := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      END_IF
 
     10:  // Nest 1 vent cylinder
+      rWorkForceA := THIS^.stLT1Params.rLoadForceA;
+      rWorkForceB := THIS^.stLT1Params.rLoadForceB;
+      rLoadForceA := 1.0; //THIS^.stLT1Params.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stLT1Params.rLoadForceB;
       IF TRUE
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
-			AND THIS^.itfNest1.M_VentCylinder(uiVentCount:= THIS^.stLT1Params.uiVentCycles)
-      AND THIS^.itfNest2.M_VentCylinder(uiVentCount:= THIS^.stLT1Params.uiVentCycles)
-      AND THIS^.itfNest3.M_VentCylinder(uiVentCount:= THIS^.stLT1Params.uiVentCycles)
-      AND THIS^.itfNest4.M_VentCylinder(uiVentCount:= THIS^.stLT1Params.uiVentCycles)
+			AND THIS^.itfNest1.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stLT1Params.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest2.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stLT1Params.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest3.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stLT1Params.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest4.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stLT1Params.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
 			END_IF
       
     20:  // Nest 1 determinate stroke length
+      rWorkForceA := THIS^.stLT1Params.rLoadForceA;
+      rWorkForceB := THIS^.stLT1Params.rLoadForceB;
+      rLoadForceA := 1.0; //THIS^.stLT1Params.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stLT1Params.rLoadForceB;
       IF TRUE  
       AND THIS^.itfLowPressurePump.M_Off()
-			AND THIS^.itfNest1.M_MeasureStrokeLength()
-      AND THIS^.itfNest2.M_MeasureStrokeLength()
-      AND THIS^.itfNest3.M_MeasureStrokeLength()
-      AND THIS^.itfNest4.M_MeasureStrokeLength()
+			AND THIS^.itfNest1.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest2.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest3.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
+      AND THIS^.itfNest4.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
 			END_IF
@@ -932,12 +1237,47 @@ E_SEQ_GENERAL.BUSY:;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
       
+    5000: // Error seq
+      IF THIS^.stLT1Params.rDistanceBeforeEndPosHP <= 0 THEN 
+				THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10100, sMsg:= 'Der Umkehrpunkt für die HP darf nicht 0 oder negativ sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rDistanceBeforeEndPosWP <= 0 THEN 
+				THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10110, sMsg:= 'Der Umkehrpunkt für die WP darf nicht 0 oder negativ sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rLoadForceA < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10120, sMsg:= 'Die Kraft für die A-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rLoadForceB < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10130, sMsg:= 'Die Kraft für die B-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rNokLimit < 0.05 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10050, sMsg:= 'Das NOK Limit darf nicht kleiner sein als 0.05!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rRestDelay <= 0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10150, sMsg:= 'Die Beruhigungszeit muss größer als 0 sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.udiDurationPerTest <= 0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10160, sMsg:= 'Die Prüfdauer muss größer als 0 sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_ADSState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10060, sMsg:= 'ADS-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_InfluxDBState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10070, sMsg:= 'InfluxDB-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+      
 	ELSE
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
 	END_CASE
 	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
 E_SEQ_GENERAL.DONE:;
-E_SEQ_GENERAL.ERROR:;
+  PrgMeasure.bRecord := FALSE;
+
+E_SEQ_GENERAL.ERROR:
+  THIS^.itfOpMode.M_OP_MODE_OFF();
+
 E_SEQ_GENERAL.TIME_OUT:; 
 
 IF TRUE
@@ -967,7 +1307,10 @@ VAR
 	ActiveSeq: STRING;
 END_VAR
 VAR
-	
+	rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
@@ -975,13 +1318,13 @@ ActiveSeq := TO_STRING(THIS^.eSeq);
 
 CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
 E_SEQ_GENERAL.READY:;
-
 	
 E_SEQ_GENERAL.EXECUTE:;
 	IF TRUE
 	THEN
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
 	END_IF
+  
 E_SEQ_GENERAL.RESET:;
 	stSeqCtrlGeneral.iInternalSeqStateCase := 0;
 	IF TRUE
@@ -993,40 +1336,147 @@ E_SEQ_GENERAL.BUSY:;
 	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
     0:  // check validity
       IF TRUE
-      AND THIS^.stLT2Params.rLoadForceA > 0.1
-      AND THIS^.stLT2Params.rLoadForceA > 0.1
-      AND THIS^.stLT2Params.rNokLimit > 0.05
-      AND THIS^.stLT2Params.rRestDelay > 0
-      AND THIS^.stLT2Params.udiDurationPerTest > 0
+        AND THIS^.stLT2Params.rLoadForceA >= 0.1
+        AND THIS^.stLT2Params.rLoadForceB >= 0.1
+        AND THIS^.stLT2Params.rNokLimit >= 0.05
+        AND THIS^.stLT2Params.rRestDelay > 0.0
+        AND THIS^.stLT2Params.udiDurationPerTest > 0
+        AND PrgMeasure.fbInfluxDB.P_ADSState
+        AND PrgMeasure.fbInfluxDB.P_InfluxDBState
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5; 
       ELSE
-        THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 5000; 
 			END_IF
       
     5:  // Start timer
       IF THIS^.itfNest1.P_EnableState THEN
         THIS^.itfTimerNest1.M_StartTimer();
 			END_IF
-      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 6;
+      
+    6:  // Reset distance
+      IF TRUE
+      AND THIS^.itfNest1.M_ResetDistance()
+	    THEN
+        PrgMeasure.bRecord := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+      END_IF
 
     10:  // Nest 1 vent cylinder
+      rWorkForceA := THIS^.stLT2Params.rLoadForceA;
+      rWorkForceB := THIS^.stLT2Params.rLoadForceB;
+      rLoadForceA := 1.0; //THIS^.stLT2Params.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stLT2Params.rLoadForceB;
       IF TRUE
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
-			AND THIS^.itfNest1.M_VentCylinder(uiVentCount:= THIS^.stLT2Params.uiVentCycles)
+			AND THIS^.itfNest1.M_VentCylinder(bCylinderDecoupled:= FALSE,
+                                        uiVentCount:= THIS^.stLT2Params.uiVentCycles,
+                                        rWorkForceA:= rWorkForceA,
+                                        rWorkForceB:= rWorkForceB,
+                                        rLoadForceA:= rLoadForceA,
+                                        rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 20; 
 			END_IF
       
     20:  // Nest 1 determinate stroke length
+      rWorkForceA := THIS^.stLT2Params.rLoadForceA;
+      rWorkForceB := THIS^.stLT2Params.rLoadForceB;
+      rLoadForceA := 1.0; //THIS^.stLT2Params.rLoadForceA;
+      rLoadForceB := 1.0; //THIS^.stLT2Params.rLoadForceB;
       IF TRUE  
       AND THIS^.itfLowPressurePump.M_Off()
-			AND THIS^.itfNest1.M_MeasureStrokeLength()
+			AND THIS^.itfNest1.M_MeasureStrokeLength(bCylinderDecoupled:= FALSE,
+                                               rWorkForceA:= rWorkForceA,
+                                               rWorkForceB:= rWorkForceB,
+                                               rLoadForceA:= rLoadForceA,
+                                               rLoadForceB:= rLoadForceB)
 			THEN 
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 30; 
 			END_IF
       
-    30:  // Nest 1 endurance run
+    30: // Move cylinder to HP
+      rWorkForceA := 4.0;
+      rWorkForceB := 4.0;
+      rLoadForceA := 1.0;
+      rLoadForceB := 1.0;
+      IF TRUE 
+			AND THIS^.itfNest1.M_MoveTestCyl1ToHP(rWorkForceA:= rWorkForceA,
+                                            rWorkForceB:= rWorkForceB,
+                                            rLoadForceA:= rLoadForceA,
+                                            rLoadForceB:= rLoadForceB)
+			THEN 
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 40; 
+			END_IF
+      
+    40: // OPMode to Pause
+      IF TRUE
+      THEN
+        //PrgOrg.fbOpMode.M_OP_MODE_TO_PAUSE();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 50; 
+			END_IF
+    
+    50: // Show message to decouple
+      IF TRUE
+      THEN
+        THIS^.bShowMessage := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
+			END_IF
+    
+    60: // Delay
+      IF TRUE
+      AND _m_Delay(DelayTime:= T#3S)
+      THEN
+        PrgOrg.fbLockDoor.M_Reset();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 70; 
+			END_IF
+    
+    70: // Wait if door is open
+      IF TRUE
+      AND NOT PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 80; 
+      ELSE
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
+			END_IF
+    
+    80: // Wait if door is close
+      IF TRUE
+      AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 90; 
+			END_IF
+    
+    90:  // Enable OK button
+      IF TRUE
+      THEN
+        THIS^.bEnableOkBtn := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 100; 
+			END_IF
+    
+    100:  // Wait for press OK button
+      IF TRUE
+      AND THIS^.bBtnOkPressed
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 110; 
+			END_IF
+      IF NOT PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active THEN
+        THIS^.bEnableOkBtn := FALSE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 60; 
+			END_IF
+    
+    110:  // Switch OPMode to auto
+      IF TRUE
+      THEN
+        THIS^.bShowMessage := FALSE;
+        THIS^.bEnableOkBtn := FALSE;
+        THIS^.bBtnOkPressed := FALSE;
+        //PrgOrg.fbOpMode.M_OP_MODE_ON();
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 120; 
+			END_IF
+      
+    120:  // Nest 1 LeakTest2
       IF TRUE 
 			AND THIS^.itfNest1.M_LeakTest2(stLeakTest2Params:= THIS^.stLT2Params)
 			THEN 
@@ -1040,12 +1490,41 @@ E_SEQ_GENERAL.BUSY:;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999; 
 			END_IF
       
+    5000: // Error seq
+      IF THIS^.stLT2Params.rLoadForceA < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10120, sMsg:= 'Die Kraft für die A-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT2Params.rLoadForceB < 0.1 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10130, sMsg:= 'Die Kraft für die B-Seite darf nicht kleiner sein als 0.1!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rNokLimit < 0.05 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10050, sMsg:= 'Das NOK Limit darf nicht kleiner sein als 0.05!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.rRestDelay <= 0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10150, sMsg:= 'Die Beruhigungszeit muss größer als 0 sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF THIS^.stLT1Params.udiDurationPerTest <= 0 THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10160, sMsg:= 'Die Prüfdauer muss größer als 0 sein!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_ADSState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10060, sMsg:= 'ADS-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      IF NOT PrgMeasure.fbInfluxDB.P_InfluxDBState THEN
+        THIS^.itfEventLogger.M_ErrorMsg(udiID:= 10070, sMsg:= 'InfluxDB-Status ist nicht ok!', bWithConfirmation:= FALSE);
+			END_IF
+      THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR; // Error step
+      
 	ELSE
 		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
 	END_CASE
 	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
 E_SEQ_GENERAL.DONE:;
-E_SEQ_GENERAL.ERROR:;
+  PrgMeasure.bRecord := FALSE;
+
+E_SEQ_GENERAL.ERROR:
+  THIS^.itfOpMode.M_OP_MODE_OFF();
+  
 E_SEQ_GENERAL.TIME_OUT:; 
 
 IF TRUE
@@ -1104,6 +1583,7 @@ E_SEQ_GENERAL.BUSY:;
 			AND THIS^.itfNest1.M_Stop()
       AND THIS^.itfLowPressurePump.M_Bypass(bEnable:= TRUE)
 			THEN 
+        PrgMeasure.bRecord := FALSE;
 				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10; 
 			END_IF
       
@@ -1319,8 +1799,8 @@ VAR_INPUT
 	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
   
-  itfLogEvents: 										                      I_HANDLE_EVENTS;
   itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER; 
   itfTimerNest1:                                          I_CLOCK; 
   itfTimerNest2:                                          I_CLOCK; 
   itfTimerNest3:                                          I_CLOCK; 
@@ -1343,8 +1823,8 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
-THIS^.itfOpMode := itfOpMode;
+        <ST><![CDATA[THIS^.itfOpMode := itfOpMode;
+THIS^.itfEventLogger := itfEventLogger;
 THIS^.itfTimerNest1 := itfTimerNest1;
 THIS^.itfTimerNest2 := itfTimerNest2;
 THIS^.itfTimerNest3 := itfTimerNest3;
@@ -1775,7 +2255,6 @@ END_VAR
       <LineId Id="57" Count="0" />
       <LineId Id="46" Count="0" />
       <LineId Id="7" Count="1" />
-      <LineId Id="65" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="12" Count="0" />
       <LineId Id="68" Count="0" />
@@ -1784,7 +2263,9 @@ END_VAR
       <LineId Id="34" Count="0" />
       <LineId Id="51" Count="0" />
       <LineId Id="36" Count="0" />
+      <LineId Id="411" Count="0" />
       <LineId Id="41" Count="0" />
+      <LineId Id="478" Count="2" />
       <LineId Id="38" Count="0" />
       <LineId Id="33" Count="0" />
       <LineId Id="184" Count="0" />
@@ -1793,17 +2274,30 @@ END_VAR
       <LineId Id="148" Count="0" />
       <LineId Id="323" Count="0" />
       <LineId Id="333" Count="4" />
-      <LineId Id="324" Count="1" />
-      <LineId Id="339" Count="1" />
+      <LineId Id="559" Count="0" />
+      <LineId Id="557" Count="1" />
+      <LineId Id="325" Count="0" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="564" Count="0" />
       <LineId Id="320" Count="0" />
       <LineId Id="355" Count="1" />
       <LineId Id="358" Count="1" />
+      <LineId Id="422" Count="0" />
       <LineId Id="357" Count="0" />
       <LineId Id="368" Count="0" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="414" Count="1" />
+      <LineId Id="419" Count="2" />
+      <LineId Id="413" Count="0" />
       <LineId Id="319" Count="0" />
       <LineId Id="318" Count="0" />
+      <LineId Id="382" Count="2" />
+      <LineId Id="381" Count="0" />
       <LineId Id="151" Count="0" />
       <LineId Id="293" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="386" Count="2" />
       <LineId Id="247" Count="0" />
       <LineId Id="153" Count="1" />
       <LineId Id="214" Count="0" />
@@ -1813,9 +2307,63 @@ END_VAR
       <LineId Id="204" Count="1" />
       <LineId Id="221" Count="0" />
       <LineId Id="302" Count="0" />
-      <LineId Id="304" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="390" Count="2" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="305" Count="0" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="394" Count="1" />
       <LineId Id="307" Count="2" />
       <LineId Id="303" Count="0" />
+      <LineId Id="437" Count="1" />
+      <LineId Id="456" Count="5" />
+      <LineId Id="463" Count="4" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="443" Count="1" />
+      <LineId Id="469" Count="1" />
+      <LineId Id="472" Count="1" />
+      <LineId Id="471" Count="0" />
+      <LineId Id="439" Count="1" />
+      <LineId Id="474" Count="1" />
+      <LineId Id="477" Count="0" />
+      <LineId Id="481" Count="0" />
+      <LineId Id="476" Count="0" />
+      <LineId Id="447" Count="1" />
+      <LineId Id="483" Count="0" />
+      <LineId Id="487" Count="0" />
+      <LineId Id="484" Count="0" />
+      <LineId Id="545" Count="0" />
+      <LineId Id="486" Count="0" />
+      <LineId Id="482" Count="0" />
+      <LineId Id="441" Count="1" />
+      <LineId Id="489" Count="5" />
+      <LineId Id="496" Count="0" />
+      <LineId Id="445" Count="1" />
+      <LineId Id="503" Count="2" />
+      <LineId Id="508" Count="0" />
+      <LineId Id="502" Count="0" />
+      <LineId Id="449" Count="1" />
+      <LineId Id="510" Count="0" />
+      <LineId Id="512" Count="0" />
+      <LineId Id="514" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="509" Count="0" />
+      <LineId Id="451" Count="1" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="520" Count="0" />
+      <LineId Id="517" Count="0" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="515" Count="0" />
+      <LineId Id="521" Count="1" />
+      <LineId Id="524" Count="0" />
+      <LineId Id="523" Count="0" />
+      <LineId Id="453" Count="1" />
+      <LineId Id="526" Count="1" />
+      <LineId Id="532" Count="1" />
+      <LineId Id="531" Count="0" />
+      <LineId Id="529" Count="1" />
+      <LineId Id="528" Count="0" />
       <LineId Id="206" Count="0" />
       <LineId Id="208" Count="1" />
       <LineId Id="259" Count="0" />
@@ -1826,11 +2374,24 @@ END_VAR
       <LineId Id="369" Count="0" />
       <LineId Id="331" Count="1" />
       <LineId Id="328" Count="0" />
+      <LineId Id="561" Count="1" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="565" Count="0" />
+      <LineId Id="578" Count="17" />
+      <LineId Id="563" Count="0" />
       <LineId Id="133" Count="0" />
       <LineId Id="27" Count="1" />
       <LineId Id="23" Count="0" />
       <LineId Id="101" Count="0" />
-      <LineId Id="14" Count="2" />
+      <LineId Id="424" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="16" Count="0" />
       <LineId Id="119" Count="0" />
       <LineId Id="113" Count="0" />
       <LineId Id="116" Count="1" />
@@ -1851,7 +2412,6 @@ END_VAR
       <LineId Id="57" Count="0" />
       <LineId Id="46" Count="0" />
       <LineId Id="7" Count="1" />
-      <LineId Id="65" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="12" Count="0" />
       <LineId Id="68" Count="0" />
@@ -1859,10 +2419,10 @@ END_VAR
       <LineId Id="20" Count="0" />
       <LineId Id="34" Count="0" />
       <LineId Id="51" Count="0" />
-      <LineId Id="36" Count="0" />
+      <LineId Id="574" Count="0" />
       <LineId Id="41" Count="0" />
       <LineId Id="346" Count="2" />
-      <LineId Id="345" Count="0" />
+      <LineId Id="570" Count="0" />
       <LineId Id="38" Count="0" />
       <LineId Id="33" Count="0" />
       <LineId Id="184" Count="0" />
@@ -1873,6 +2433,7 @@ END_VAR
       <LineId Id="432" Count="2" />
       <LineId Id="436" Count="1" />
       <LineId Id="440" Count="0" />
+      <LineId Id="624" Count="1" />
       <LineId Id="428" Count="3" />
       <LineId Id="148" Count="0" />
       <LineId Id="461" Count="0" />
@@ -1884,19 +2445,57 @@ END_VAR
       <LineId Id="482" Count="1" />
       <LineId Id="481" Count="0" />
       <LineId Id="462" Count="0" />
+      <LineId Id="575" Count="1" />
+      <LineId Id="578" Count="4" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="585" Count="0" />
+      <LineId Id="583" Count="1" />
       <LineId Id="420" Count="0" />
       <LineId Id="419" Count="0" />
+      <LineId Id="513" Count="2" />
+      <LineId Id="512" Count="0" />
       <LineId Id="151" Count="0" />
       <LineId Id="293" Count="0" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="548" Count="0" />
+      <LineId Id="517" Count="2" />
       <LineId Id="152" Count="0" />
-      <LineId Id="245" Count="2" />
+      <LineId Id="520" Count="0" />
+      <LineId Id="549" Count="0" />
+      <LineId Id="521" Count="2" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="524" Count="0" />
+      <LineId Id="550" Count="0" />
+      <LineId Id="525" Count="2" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="528" Count="0" />
+      <LineId Id="551" Count="0" />
+      <LineId Id="529" Count="2" />
+      <LineId Id="247" Count="0" />
       <LineId Id="153" Count="1" />
       <LineId Id="214" Count="0" />
       <LineId Id="199" Count="0" />
-      <LineId Id="201" Count="1" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="533" Count="2" />
+      <LineId Id="532" Count="0" />
+      <LineId Id="202" Count="0" />
       <LineId Id="268" Count="0" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="552" Count="0" />
+      <LineId Id="537" Count="1" />
       <LineId Id="203" Count="0" />
-      <LineId Id="251" Count="2" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="553" Count="0" />
+      <LineId Id="540" Count="1" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="542" Count="0" />
+      <LineId Id="554" Count="0" />
+      <LineId Id="543" Count="1" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="545" Count="0" />
+      <LineId Id="555" Count="0" />
+      <LineId Id="546" Count="1" />
+      <LineId Id="253" Count="0" />
       <LineId Id="204" Count="1" />
       <LineId Id="221" Count="0" />
       <LineId Id="302" Count="0" />
@@ -1951,11 +2550,25 @@ END_VAR
       <LineId Id="485" Count="0" />
       <LineId Id="363" Count="1" />
       <LineId Id="360" Count="0" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="602" Count="15" />
+      <LineId Id="645" Count="1" />
+      <LineId Id="644" Count="0" />
+      <LineId Id="650" Count="1" />
+      <LineId Id="649" Count="0" />
+      <LineId Id="618" Count="5" />
+      <LineId Id="601" Count="0" />
       <LineId Id="133" Count="0" />
       <LineId Id="27" Count="1" />
       <LineId Id="23" Count="0" />
       <LineId Id="101" Count="0" />
-      <LineId Id="14" Count="2" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="587" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="648" Count="0" />
+      <LineId Id="647" Count="0" />
+      <LineId Id="16" Count="0" />
       <LineId Id="119" Count="0" />
       <LineId Id="113" Count="0" />
       <LineId Id="116" Count="1" />
@@ -1995,7 +2608,9 @@ END_VAR
       <LineId Id="151" Count="0" />
       <LineId Id="218" Count="0" />
       <LineId Id="227" Count="0" />
-      <LineId Id="153" Count="1" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="154" Count="0" />
       <LineId Id="207" Count="0" />
       <LineId Id="255" Count="0" />
       <LineId Id="257" Count="1" />
@@ -2060,7 +2675,9 @@ END_VAR
       <LineId Id="148" Count="0" />
       <LineId Id="151" Count="0" />
       <LineId Id="244" Count="0" />
-      <LineId Id="152" Count="2" />
+      <LineId Id="152" Count="1" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="154" Count="0" />
       <LineId Id="243" Count="0" />
       <LineId Id="155" Count="0" />
       <LineId Id="157" Count="1" />
@@ -2116,7 +2733,6 @@ END_VAR
       <LineId Id="57" Count="0" />
       <LineId Id="46" Count="0" />
       <LineId Id="7" Count="1" />
-      <LineId Id="65" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="12" Count="0" />
       <LineId Id="68" Count="0" />
@@ -2131,24 +2747,61 @@ END_VAR
       <LineId Id="184" Count="0" />
       <LineId Id="13" Count="0" />
       <LineId Id="21" Count="0" />
-      <LineId Id="304" Count="12" />
+      <LineId Id="304" Count="8" />
+      <LineId Id="453" Count="1" />
+      <LineId Id="313" Count="3" />
       <LineId Id="148" Count="0" />
       <LineId Id="335" Count="0" />
       <LineId Id="337" Count="12" />
       <LineId Id="336" Count="0" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="425" Count="6" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="432" Count="0" />
+      <LineId Id="424" Count="0" />
       <LineId Id="303" Count="0" />
       <LineId Id="302" Count="0" />
+      <LineId Id="368" Count="3" />
       <LineId Id="151" Count="0" />
       <LineId Id="293" Count="0" />
       <LineId Id="152" Count="0" />
-      <LineId Id="245" Count="2" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="372" Count="4" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="377" Count="2" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="381" Count="2" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="385" Count="2" />
+      <LineId Id="247" Count="0" />
       <LineId Id="153" Count="1" />
       <LineId Id="214" Count="0" />
       <LineId Id="199" Count="0" />
-      <LineId Id="201" Count="1" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="401" Count="2" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="202" Count="0" />
       <LineId Id="268" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="389" Count="1" />
       <LineId Id="203" Count="0" />
-      <LineId Id="251" Count="2" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="392" Count="1" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="407" Count="0" />
+      <LineId Id="395" Count="1" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="398" Count="1" />
+      <LineId Id="253" Count="0" />
       <LineId Id="204" Count="1" />
       <LineId Id="221" Count="0" />
       <LineId Id="206" Count="0" />
@@ -2160,11 +2813,33 @@ END_VAR
       <LineId Id="350" Count="3" />
       <LineId Id="324" Count="2" />
       <LineId Id="319" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="450" Count="2" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="466" Count="1" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="469" Count="4" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="475" Count="1" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="478" Count="1" />
+      <LineId Id="477" Count="0" />
+      <LineId Id="481" Count="1" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="484" Count="5" />
+      <LineId Id="483" Count="0" />
       <LineId Id="133" Count="0" />
       <LineId Id="27" Count="1" />
       <LineId Id="23" Count="0" />
       <LineId Id="101" Count="0" />
-      <LineId Id="14" Count="2" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="491" Count="0" />
+      <LineId Id="490" Count="0" />
+      <LineId Id="16" Count="0" />
       <LineId Id="119" Count="0" />
       <LineId Id="113" Count="0" />
       <LineId Id="116" Count="1" />
@@ -2185,12 +2860,12 @@ END_VAR
       <LineId Id="57" Count="0" />
       <LineId Id="46" Count="0" />
       <LineId Id="7" Count="1" />
-      <LineId Id="65" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="12" Count="0" />
       <LineId Id="68" Count="0" />
       <LineId Id="70" Count="1" />
       <LineId Id="20" Count="0" />
+      <LineId Id="396" Count="0" />
       <LineId Id="34" Count="0" />
       <LineId Id="51" Count="0" />
       <LineId Id="36" Count="0" />
@@ -2201,25 +2876,52 @@ END_VAR
       <LineId Id="13" Count="0" />
       <LineId Id="21" Count="0" />
       <LineId Id="304" Count="0" />
-      <LineId Id="307" Count="9" />
+      <LineId Id="307" Count="5" />
+      <LineId Id="554" Count="1" />
+      <LineId Id="313" Count="3" />
       <LineId Id="148" Count="0" />
       <LineId Id="331" Count="0" />
       <LineId Id="333" Count="2" />
       <LineId Id="345" Count="0" />
       <LineId Id="332" Count="0" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="388" Count="1" />
+      <LineId Id="393" Count="1" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="387" Count="0" />
       <LineId Id="303" Count="0" />
       <LineId Id="302" Count="0" />
+      <LineId Id="359" Count="2" />
+      <LineId Id="358" Count="0" />
       <LineId Id="151" Count="0" />
       <LineId Id="293" Count="0" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="363" Count="2" />
       <LineId Id="247" Count="0" />
       <LineId Id="153" Count="1" />
       <LineId Id="214" Count="0" />
       <LineId Id="199" Count="0" />
-      <LineId Id="201" Count="1" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="370" Count="2" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="202" Count="0" />
       <LineId Id="268" Count="0" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="367" Count="1" />
       <LineId Id="253" Count="0" />
       <LineId Id="204" Count="1" />
       <LineId Id="221" Count="0" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="414" Count="11" />
+      <LineId Id="413" Count="0" />
+      <LineId Id="426" Count="0" />
+      <LineId Id="428" Count="17" />
+      <LineId Id="502" Count="0" />
+      <LineId Id="446" Count="44" />
+      <LineId Id="427" Count="0" />
       <LineId Id="206" Count="0" />
       <LineId Id="208" Count="1" />
       <LineId Id="259" Count="0" />
@@ -2230,11 +2932,20 @@ END_VAR
       <LineId Id="346" Count="0" />
       <LineId Id="320" Count="2" />
       <LineId Id="318" Count="0" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="518" Count="0" />
+      <LineId Id="525" Count="20" />
+      <LineId Id="517" Count="0" />
       <LineId Id="133" Count="0" />
       <LineId Id="27" Count="1" />
       <LineId Id="23" Count="0" />
       <LineId Id="101" Count="0" />
-      <LineId Id="14" Count="2" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="399" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="514" Count="1" />
+      <LineId Id="16" Count="0" />
       <LineId Id="119" Count="0" />
       <LineId Id="113" Count="0" />
       <LineId Id="116" Count="1" />
@@ -2274,7 +2985,9 @@ END_VAR
       <LineId Id="151" Count="0" />
       <LineId Id="218" Count="0" />
       <LineId Id="227" Count="0" />
-      <LineId Id="153" Count="1" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="154" Count="0" />
       <LineId Id="207" Count="0" />
       <LineId Id="236" Count="0" />
       <LineId Id="238" Count="1" />
@@ -2355,8 +3068,8 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PROCESS_MAIN.FB_init">
-      <LineId Id="7" Count="0" />
       <LineId Id="18" Count="0" />
+      <LineId Id="117" Count="0" />
       <LineId Id="85" Count="3" />
       <LineId Id="19" Count="5" />
       <LineId Id="57" Count="0" />

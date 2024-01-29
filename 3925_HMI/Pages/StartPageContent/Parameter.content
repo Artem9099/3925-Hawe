@@ -4,7 +4,7 @@
 </div>
 <div id="lblCylinder" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Zylinder" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbCylinder" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Cylinder&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbCylinder" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Cylinder&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbCylinder%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -34,6 +34,17 @@
           }
         ],
         "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbCylinder%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbCylinder::SelectedIndex%/ctrl%"
+        },
+        "asyncWait": true
       }
     ]
   }
@@ -42,7 +53,7 @@
 </div>
 <div id="lblCylinder_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Profil für Dauerlauf" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbProfileEnduranceRun" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::EnduranceRun&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbProfileEnduranceRun" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::EnduranceRun&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbEnduranceRun%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -72,15 +83,86 @@
           }
         ],
         "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbEnduranceRun%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbProfileEnduranceRun::SelectedIndex%/ctrl%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkPressureA%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA%/s%) / %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkPressureB%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB%/s%) / \r\n%s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadPressureA%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA%/s%) / 1963.5"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadPressureB%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB%/s%) / 962.11"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadPressureA%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA%/s%) / 1963.5"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadPressureB%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB%/s%) / 962.11"
+        },
+        "asyncWait": true
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="lblCylinder_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Allgemeine Einstellungen" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+<div id="lblCylinder_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="405" data-tchmi-left-unit="px" data-tchmi-text="Allgemeine Einstellungen" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbProfileGenConfig" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::General&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbProfileGenConfig" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="565" data-tchmi-left-unit="px" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::General&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbGeneralSettings%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -110,15 +192,26 @@
           }
         ],
         "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbGeneralSettings%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbProfileGenConfig::SelectedIndex%/ctrl%"
+        },
+        "asyncWait": true
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="lblCylinder_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Profil für Dichtheitsprüfung 1" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+<div id="lblCylinder_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Profil für Dichtheitsprüfung 1" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbProfileLeakTest1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::LeakTest1&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbProfileLeakTest1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::LeakTest1&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbLeakTest1%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -148,15 +241,46 @@
           }
         ],
         "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbLeakTest1%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbProfileLeakTest1::SelectedIndex%/ctrl%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadPressureA%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceA%/s%) / 1963.5"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadPressureB%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceB%/s%) / 962.11"
+        },
+        "asyncWait": true
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="lblCylinder_4" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="405" data-tchmi-left-unit="px" data-tchmi-text="Profil für Dichtheitsprüfung 2" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+<div id="lblCylinder_4" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Profil für Dichtheitsprüfung 2" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbProfileLeakTest2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="565" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::LeakTest2&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbProfileLeakTest2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-top="154" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::LeakTest2&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbLeakTest2%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -186,15 +310,46 @@
           }
         ],
         "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbLeakTest2%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbProfileLeakTest2::SelectedIndex%/ctrl%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureA%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA%/s%) / %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%"
+        },
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureB%/s%",
+        "value": {
+          "objectType": "FunctionExpression",
+          "functionExpression": "(10000 * %s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB%/s%) / %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%"
+        },
+        "asyncWait": true
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="lblCylinder_5" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="405" data-tchmi-left-unit="px" data-tchmi-text="Profil für Losbrechdruck" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+<div id="lblCylinder_5" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="405" data-tchmi-left-unit="px" data-tchmi-text="Profil für Losbrechdruck" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="cmbProfileBreakPressureDet" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="565" data-tchmi-left-unit="px" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::BreakPressureDet&quot;)%/f%" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="cmbProfileBreakPressureDet" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCombobox" data-tchmi-auto-focus-out="true" data-tchmi-combobox-text="Select" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="565" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-src-data="%f%ListRecipesAsReferenceArray(%s%TcHmiRecipeManagement.Config::recipeList%/s%, &quot;Profiles::BreakPressureDet&quot;)%/f%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableParams%/s%" data-tchmi-selected-index="%s%PLC1.PrgVisu.uiCmbBreakPressureDet%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -223,6 +378,17 @@
             "symbolExpression": "%ctrl%cmbProfileBreakPressureDet::SelectedValue%/ctrl%"
           }
         ],
+        "asyncWait": true
+      },
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgVisu.uiCmbBreakPressureDet%/s%",
+        "value": {
+          "objectType": "Symbol",
+          "valueType": "tchmi:general#/definitions/String",
+          "symbolExpression": "%ctrl%cmbProfileBreakPressureDet::SelectedIndex%/ctrl%"
+        },
         "asyncWait": true
       }
     ]

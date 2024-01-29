@@ -9,7 +9,8 @@ Project("{FE7A1B72-C5B7-4D7C-BB7D-76384D4DE8E1}") = "3925_HMI", "..\3925_HMI\392
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEC77DB5-5FEE-4723-9DF9-D665D9E8518B}"
 	ProjectSection(SolutionItems) = preProject
-		Token.txt = Token.txt
+		Grafana-Info.txt = Grafana-Info.txt
+		InfluxDB-Info.txt = InfluxDB-Info.txt
 	EndProjectSection
 EndProject
 Global

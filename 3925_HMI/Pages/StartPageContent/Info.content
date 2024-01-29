@@ -4,7 +4,7 @@
 </div>
 <div id="lblProcessTime" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Sequenz" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="txtProcessTime" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiInput" data-tchmi-auto-focus-out="false" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="310" data-tchmi-left-unit="px" data-tchmi-text="%s%PLC1.PrgStation.fbMainProcess.strSeq%/s%" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="480" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
+<div id="txtProcessTime" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiInput" data-tchmi-auto-focus-out="false" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="250" data-tchmi-left-unit="px" data-tchmi-text="%s%PLC1.PrgStation.fbMainProcess.strSeq%/s%" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="540" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -17,7 +17,7 @@
 </div>
 <div id="lblProcessTime_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Kolbenfläche A/B (mm²)" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="txtPistonSurfaceA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="310" data-tchmi-left-unit="px" data-tchmi-max-value="10000" data-tchmi-min-value="100" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
+<div id="txtPistonSurfaceA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="250" data-tchmi-left-unit="px" data-tchmi-max-value="10000" data-tchmi-min-value="100" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -28,7 +28,7 @@
 </script>
 
 </div>
-<div id="txtPistonSurfaceB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="380" data-tchmi-left-unit="px" data-tchmi-max-value="10000" data-tchmi-min-value="100" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false" data-tchmi-value-horizontal-alignment="Right">
+<div id="txtPistonSurfaceB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="320" data-tchmi-left-unit="px" data-tchmi-max-value="10000" data-tchmi-min-value="100" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false" data-tchmi-value-horizontal-alignment="Right">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -39,9 +39,9 @@
 </script>
 
 </div>
-<div id="lblProcessTime_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="VMAX bei einer aktiven Pumpe A/B (mm/s)" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="290" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+<div id="lblProcessTime_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="VMAX bei einer aktiven Pumpe A/B (mm/s)" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="225" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="TcHmiNumericInput_8" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="310" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.rMaxSpeedInMmPerSHP%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
+<div id="TcHmiNumericInput_8" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="320" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.rMaxSpeedInMmPerSHP%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false" data-tchmi-value-horizontal-alignment="Right">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -52,7 +52,7 @@
 </script>
 
 </div>
-<div id="TcHmiNumericInput_9" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="380" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.rMaxSpeedInMmPerSWP%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false" data-tchmi-value-horizontal-alignment="Right">
+<div id="TcHmiNumericInput_9" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="250" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.rMaxSpeedInMmPerSWP%/s%" data-tchmi-width="60" data-tchmi-width-unit="px" data-tchmi-is-enabled="false" data-tchmi-value-horizontal-alignment="Left">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -62,5 +62,181 @@
 }
 </script>
 
+</div>
+<div id="lblProcessTime_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="604" data-tchmi-left-unit="px" data-tchmi-text="ADSGateway Status" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+</div>
+<div id="lblProcessTime_4" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="604" data-tchmi-left-unit="px" data-tchmi-text="InfluxDB Status" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
+</div>
+<div id="TcHmiEllipse_82" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiEllipse" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="764" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="26" data-tchmi-width-unit="px">
+<script data-tchmi-target-attribute="data-tchmi-fill-color" type="application/json">
+{
+  "angle": 0.0,
+  "stopPoints": [
+    {
+      "color": "rgba(0, 0, 0, 1)",
+      "stop": "0%"
+    },
+    {
+      "color": "rgba(73, 255, 2, 1)",
+      "stop": "100%"
+    }
+  ]
+}
+</script>
+
+
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "%s%PLC1.PrgVisu.tonHeartbeat.Q%/s%",
+    "actions": [
+      {
+        "objectType": "Condition",
+        "active": true,
+        "parts": [
+          {
+            "if": [
+              {
+                "compare1": {
+                  "objectType": "Symbol",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "symbolExpression": "%s%PLC1.PrgMeasure.fbInfluxDB.bADSState%/s%"
+                },
+                "compare2": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "value": true
+                },
+                "compareOperator": "==",
+                "logic": null
+              }
+            ],
+            "then": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%TcHmiEllipse_82::FillColor%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/Color",
+                  "value": {
+                    "color": "rgba(73, 255, 2, 1)"
+                  }
+                },
+                "asyncWait": true
+              }
+            ]
+          },
+          {
+            "else": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%TcHmiEllipse_82::FillColor%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/Color",
+                  "value": {
+                    "color": "rgba(255, 0, 0, 1)"
+                  }
+                },
+                "asyncWait": true
+              }
+            ]
+          }
+        ],
+        "asyncWait": true
+      }
+    ]
+  }
+]
+</script>
+</div>
+<div id="TcHmiEllipse_83" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiEllipse" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="764" data-tchmi-left-unit="px" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="26" data-tchmi-width-unit="px">
+<script data-tchmi-target-attribute="data-tchmi-fill-color" type="application/json">
+{
+  "angle": 0.0,
+  "stopPoints": [
+    {
+      "color": "rgba(0, 0, 0, 1)",
+      "stop": "0%"
+    },
+    {
+      "color": "rgba(73, 255, 2, 1)",
+      "stop": "100%"
+    }
+  ]
+}
+</script>
+
+
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "%s%PLC1.PrgVisu.tonHeartbeat.Q%/s%",
+    "actions": [
+      {
+        "objectType": "Condition",
+        "active": true,
+        "parts": [
+          {
+            "if": [
+              {
+                "compare1": {
+                  "objectType": "Symbol",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "symbolExpression": "%s%PLC1.PrgMeasure.fbInfluxDB.bInfluxDBState%/s%"
+                },
+                "compare2": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "value": true
+                },
+                "compareOperator": "==",
+                "logic": null
+              }
+            ],
+            "then": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%TcHmiEllipse_83::FillColor%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/Color",
+                  "value": {
+                    "color": "rgba(73, 255, 2, 1)"
+                  }
+                },
+                "asyncWait": true
+              }
+            ]
+          },
+          {
+            "else": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%TcHmiEllipse_83::FillColor%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/Color",
+                  "value": {
+                    "color": "rgba(255, 0, 0, 1)"
+                  }
+                },
+                "asyncWait": true
+              }
+            ]
+          }
+        ],
+        "asyncWait": true
+      }
+    ]
+  }
+]
+</script>
 </div>
 </div>

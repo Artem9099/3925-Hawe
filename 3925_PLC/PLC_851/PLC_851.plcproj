@@ -22,9 +22,6 @@
     <CompilerDefines>VISU_USEPROPERTYINFO</CompilerDefines>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DUTs\ST_DATABASE_RECORD.TcDUT">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="DUTs\ST_RECIPE_ENDURANCE_RUN.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -47,6 +44,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\ST_SETTINGS.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FUNCTIONS\FUNCTIONS\MATH\F_RoundLREAL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FUNCTIONS\FUNCTIONS\MATH\F_RoundREAL.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="GlobalTextList.TcGTLO">
@@ -280,6 +283,9 @@
     <Compile Include="MODULE\DATABASE\DUT\E_SEQ_DATABASE.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MODULE\DATABASE\DUT\ST_DATABASE_RECORD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MODULE\DATABASE\ITF\I_DATABASE.TcIO">
       <SubType>Code</SubType>
     </Compile>
@@ -334,10 +340,16 @@
     <Compile Include="MODULE\GENERAL\ST_CHART.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MODULE\HMI\DUT\E_SEQ_HMI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="MODULE\HMI\ITF\I_HMI_CTRL.TcIO">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MODULE\HMI\POU\FB_HMI_CTRL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\HMI\POU\FB_HMI_CTRL_ADS.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="MODULE\SAFETY\DUT\E_STEP_STATE_ESTOP.TcDUT">
@@ -389,10 +401,22 @@
     <Compile Include="IMPLICIT_CHECKS\CheckRangeUnsigned.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MODULE\TRAFFIC_LIGHT\ITFs\I_TrafficLight.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MODULE\TRAFFIC_LIGHT\POUs\FB_TrafficLight.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ORGANISATION\DATE_TIME\ITF\I_CLOCK.TcIO">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ORGANISATION\DATE_TIME\POU\FB_CLOCK.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\EVENT_LOGGER\ITFs\I_EVENT_LOGGER.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORGANISATION\EVENT_LOGGER\POUs\FB_EVENT_LOGGER.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ORGANISATION\GENERAL\DUT\E_SEQ_GENERAL.TcTLEO">
@@ -665,6 +689,8 @@
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="FUNCTIONS\FUNCTIONS" />
+    <Folder Include="FUNCTIONS\FUNCTIONS\MATH" />
     <Folder Include="MODULE" />
     <Folder Include="MODULE\ACTOR_VALVE\GENERAL" />
     <Folder Include="MODULE\ACTOR_VALVE\GENERAL\DUT" />
@@ -711,6 +737,7 @@
     <Folder Include="MODULE\DATABASE" />
     <Folder Include="MODULE\HMI" />
     <Folder Include="MODULE\HMI\ITF" />
+    <Folder Include="MODULE\HMI\DUT" />
     <Folder Include="MODULE\HMI\POU" />
     <Folder Include="MODULE\SAFETY" />
     <Folder Include="MODULE\SAFETY\DUT" />
@@ -720,15 +747,24 @@
     <Folder Include="MODULE\SAFETY\POU" />
     <Folder Include="IMPLICIT_CHECKS" />
     <Folder Include="DUTs" />
+    <Folder Include="MODULE\TRAFFIC_LIGHT" />
+    <Folder Include="MODULE\TRAFFIC_LIGHT\DUTs" />
+    <Folder Include="MODULE\TRAFFIC_LIGHT\ITFs" />
+    <Folder Include="MODULE\TRAFFIC_LIGHT\POUs" />
+    <Folder Include="FUNCTIONS" />
     <Folder Include="ORGANISATION" />
     <Folder Include="ORGANISATION\DATE_TIME\DUT" />
     <Folder Include="ORGANISATION\DATE_TIME\ITF" />
     <Folder Include="ORGANISATION\DATE_TIME\POU" />
+    <Folder Include="ORGANISATION\EVENT_LOGGER\ITFs" />
+    <Folder Include="ORGANISATION\EVENT_LOGGER\DUTs" />
+    <Folder Include="ORGANISATION\EVENT_LOGGER\POUs" />
     <Folder Include="ORGANISATION\GENERAL" />
     <Folder Include="ORGANISATION\GENERAL\ITF" />
     <Folder Include="ORGANISATION\GENERAL\DUT" />
     <Folder Include="ORGANISATION\GENERAL\POU" />
     <Folder Include="ORGANISATION\DATE_TIME" />
+    <Folder Include="ORGANISATION\EVENT_LOGGER" />
     <Folder Include="ORGANISATION\OP_MODE" />
     <Folder Include="ORGANISATION\OP_MODE\DUT" />
     <Folder Include="ORGANISATION\OP_MODE\GVL_PARA" />

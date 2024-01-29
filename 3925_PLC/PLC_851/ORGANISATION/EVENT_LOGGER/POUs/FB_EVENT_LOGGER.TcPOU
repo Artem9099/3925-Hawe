@@ -1,0 +1,283 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_EVENT_LOGGER" Id="{c7a3cb00-eeb6-4905-8930-18e4802c682a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_EVENT_LOGGER IMPLEMENTS I_EVENT_LOGGER
+VAR
+  fbAlarm:                        FB_TcAlarm;
+  fbMessage:                      FB_TcMessage;
+  bError:                         BOOL;
+  bInfo:                          BOOL;
+  bWarning:                       BOOL;
+  uiSeq:                          ARRAY [1..3] OF UINT := [0, 0, 0];
+  udiID:                          UDINT;
+	sMsg:                           T_MaxString;
+  bWithConfirmation:              BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bInfo THEN
+  CASE uiSeq[1] OF
+    0:
+      fbMessage.CreateEx(TC_EVENTS.Info.IndividualInfoMsg, 0);
+      uiSeq[1] := 1;
+    1:
+      fbMessage.ipArguments.Clear().AddDInt(udiID).AddString(sMsg);
+      fbMessage.Send(0);
+      uiSeq[1] := 2;
+    2:
+      bInfo := FALSE;
+      uiSeq[1] := 0;
+	END_CASE
+END_IF
+
+IF bWarning THEN
+  CASE uiSeq[2] OF
+    0:
+      fbMessage.CreateEx(TC_EVENTS.Warnings.IndividualWarningMsg, 0);
+      uiSeq[2] := 1;
+    1:
+      fbMessage.ipArguments.Clear().AddDInt(udiID).AddString(sMsg);
+      fbMessage.Send(0);
+      uiSeq[2] := 2;
+    2:
+      bWarning := FALSE;
+      uiSeq[2] := 0;
+	END_CASE
+END_IF
+
+IF bError THEN
+  CASE uiSeq[3] OF
+    0:
+      fbAlarm.CreateEx(TC_EVENTS.Errors.IndividualErrMsg, bWithConfirmation, 0);
+      uiSeq[3] := 1;
+    1:
+      fbAlarm.ipArguments.Clear().AddDInt(udiID).AddString(sMsg);
+      fbAlarm.Raise(0);
+      uiSeq[3] := 2;
+    2:
+      bError := FALSE;
+      uiSeq[3] := 0;
+	END_CASE
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="M_ErrorMsg" Id="{19fbce93-535e-4c73-b977-36e7db2a9ddb}">
+      <Declaration><![CDATA[METHOD M_ErrorMsg : BOOL
+VAR_INPUT
+	udiID:                        UDINT;
+	sMsg:                         T_MaxString;
+  bWithConfirmation:            BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ErrorMsg := THIS^.uiSeq[3] = 2;
+
+// Assign input
+THIS^.udiID := udiID;
+THIS^.sMsg := sMsg;
+THIS^.bWithConfirmation := bWithConfirmation;
+
+THIS^.bError := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_InfoMsg" Id="{fc354915-a515-4312-b3d4-f11cdd8da792}">
+      <Declaration><![CDATA[METHOD M_InfoMsg : BOOL
+VAR_INPUT
+	udiID	: UDINT;
+	sMsg	: Tc2_System.T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_InfoMsg := THIS^.uiSeq[1] = 2;
+
+// Assign input
+THIS^.udiID := udiID;
+THIS^.sMsg := sMsg;
+
+THIS^.bInfo := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{66457c75-ddcd-4157-b8bc-e20988a2f08e}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_WarningMsg" Id="{b0dd5e76-edf9-46bb-bc0a-86e7f1896a38}">
+      <Declaration><![CDATA[METHOD M_WarningMsg : BOOL
+VAR_INPUT
+	udiID	: UDINT;
+	sMsg	: Tc2_System.T_MaxString;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_WarningMsg := THIS^.uiSeq[2] = 2;
+
+// Assign input
+THIS^.udiID := udiID;
+THIS^.sMsg := sMsg;
+
+THIS^.bWarning := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Event" Id="{771994c3-828a-4a10-a23b-b5fc6f7cd29b}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{f9827bf1-b722-4319-a974-50ebfd3b6ea5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ca3eae66-2ef2-40c3-ab81-03aba26cf8de}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{caef1014-ae1f-4668-877b-a070794e9176}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{0b5e0e43-58de-4140-a23e-907d3efb380e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{1e19d4b8-79b9-4739-bfb9-c58f09e3a121}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{34341a3f-3111-4f00-87d1-76b5271a51e1}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{82ceaebb-3f41-47b2-800a-51a6dbb04cc8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{136551f6-2487-419e-9b98-ffb7bb105d4a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{5065b438-13ec-4f28-b43e-3f5a246524bc}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{cc53d8bb-4153-4ecf-8f58-30c70a036a14}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_EVENT_LOGGER">
+      <LineId Id="9" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="37" Count="7" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="46" Count="4" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="52" Count="13" />
+      <LineId Id="51" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.M_ErrorMsg">
+      <LineId Id="13" Count="1" />
+      <LineId Id="8" Count="2" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.M_InfoMsg">
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="3" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.M_WarningMsg">
+      <LineId Id="9" Count="5" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EVENT_LOGGER.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

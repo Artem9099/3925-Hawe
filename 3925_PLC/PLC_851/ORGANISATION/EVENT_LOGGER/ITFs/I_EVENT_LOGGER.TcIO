@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_EVENT_LOGGER" Id="{3c9f643c-1be8-4034-b7a3-46b2be2a5667}">
+    <Declaration><![CDATA[INTERFACE I_EVENT_LOGGER EXTENDS I_GENERAL_OBJECT
+]]></Declaration>
+    <Method Name="M_ErrorMsg" Id="{57e7f899-fa28-4e8f-9024-893d194c83f1}">
+      <Declaration><![CDATA[METHOD M_ErrorMsg : BOOL
+VAR_INPUT
+  udiID:                        UDINT;
+  sMsg:                         T_MaxString;
+  bWithConfirmation:            BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_InfoMsg" Id="{ea255825-0bf2-4bd3-b445-0b22ae821b44}">
+      <Declaration><![CDATA[METHOD M_InfoMsg : BOOL
+VAR_INPUT
+  udiID:                   UDINT;
+  sMsg:                    T_MaxString;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_WarningMsg" Id="{f84b71f1-ff6d-4d00-876b-9f120eff2007}">
+      <Declaration><![CDATA[METHOD M_WarningMsg : BOOL
+VAR_INPUT
+  udiID:                   UDINT;
+  sMsg:                    T_MaxString;
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

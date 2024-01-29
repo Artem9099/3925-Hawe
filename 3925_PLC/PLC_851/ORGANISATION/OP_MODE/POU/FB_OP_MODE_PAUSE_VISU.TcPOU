@@ -86,6 +86,7 @@ END_IF
 		
 IF bClick_Stop THEN
 	itfOpMode.M_OP_MODE_OFF();
+  //itfOpMode.M_STOP();
 	bClick_Stop			:= FALSE;
   //M_ResetModeSelection();
 END_IF
@@ -206,7 +207,8 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[this^.itfOpMode := itfOpMode;]]></ST>
+        <ST><![CDATA[THIS^.itfOpMode := itfOpMode;
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_ResetModeSelection" Id="{ed6bb6b7-7ee8-44bc-bb61-57981ce4404b}">
@@ -467,7 +469,9 @@ END_VAR
     <LineIds Name="FB_OP_MODE_PAUSE_VISU">
       <LineId Id="109" Count="19" />
       <LineId Id="500" Count="0" />
-      <LineId Id="129" Count="10" />
+      <LineId Id="129" Count="9" />
+      <LineId Id="645" Count="0" />
+      <LineId Id="139" Count="0" />
       <LineId Id="499" Count="0" />
       <LineId Id="140" Count="0" />
       <LineId Id="196" Count="3" />
@@ -521,6 +525,7 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_OP_MODE_PAUSE_VISU.FB_init">
       <LineId Id="7" Count="0" />
+      <LineId Id="15" Count="0" />
     </LineIds>
     <LineIds Name="FB_OP_MODE_PAUSE_VISU.M_ResetModeSelection">
       <LineId Id="8" Count="0" />

@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="I_TrafficLight" Id="{23cd0bc1-e28e-4991-afd7-9230b5c9a16d}">
+    <Declaration><![CDATA[INTERFACE I_TrafficLight
+]]></Declaration>
+    <Method Name="M_Beep" Id="{bb056172-509c-4431-b8f0-d3b84e61d9d9}">
+      <Declaration><![CDATA[METHOD M_Beep : BOOL
+VAR_INPUT
+	/// On/Off signal
+	bEnable:				BOOL;
+	/// Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)
+	uiBlinkFrequency:		UINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Green" Id="{5392e748-f362-4b4e-b841-c08a07fab4c7}">
+      <Declaration><![CDATA[METHOD M_Green : BOOL
+VAR_INPUT
+	/// On/Off light
+	bEnable:				BOOL;
+	/// Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)
+	uiBlinkFrequency:		UINT;
+	/// Reset all colors, before set this color
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Multicolor" Id="{3b6fcb6b-4cdb-40a3-8698-c2b5ff82a1be}">
+      <Declaration><![CDATA[METHOD M_Multicolor : BOOL
+VAR_INPUT
+	/// Enable green
+	bGreen:					BOOL;
+	/// Enable yellow
+	bYellow:				BOOL;
+	/// Enable red
+	bRed:					BOOL;
+	/// Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)
+	uiBlinkFrequency:		UINT;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Red" Id="{9d04d6c2-6410-4453-8b7a-cf3835f0ce9e}">
+      <Declaration><![CDATA[METHOD M_Red : BOOL
+VAR_INPUT
+	/// On/Off light
+	bEnable:				BOOL;
+	/// Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)
+	uiBlinkFrequency:		UINT;
+	/// Reset all colors, before set this color
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Reset" Id="{05f4770d-7654-4978-9007-3f4a01dd27bf}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_Yellow" Id="{290ab3ce-12ac-4bb0-ae6c-1cc3e1a605b5}">
+      <Declaration><![CDATA[METHOD M_Yellow : BOOL
+VAR_INPUT
+	/// On/Off light
+	bEnable:				BOOL;
+	/// Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)
+	uiBlinkFrequency:		UINT;
+	/// Reset all colors, before set this color
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+    </Method>
+    <Property Name="P_BeepState" Id="{79a2d464-12eb-48cd-941e-7595f1af30f9}">
+      <Declaration><![CDATA[PROPERTY P_BeepState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{057a686d-e852-4bb3-8651-6ebebe48fa63}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_GreenState" Id="{231624c7-da4a-47de-9e17-56cdadcfaaab}">
+      <Declaration><![CDATA[PROPERTY P_GreenState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{44d0d2d1-e807-49cc-80a7-f0928ebd0860}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_RedState" Id="{36aa8f5c-94f0-40ba-a92b-4d9d66f51e9d}">
+      <Declaration><![CDATA[PROPERTY P_RedState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{04da49f1-a004-4f79-89b4-47e5ce8eecea}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_YellowState" Id="{f77d27da-9cf1-44db-b33f-c9db4bc66884}">
+      <Declaration><![CDATA[PROPERTY P_YellowState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{03bc0115-a94a-4d76-8d32-8e78a04f21fc}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+  </Itf>
+</TcPlcObject>

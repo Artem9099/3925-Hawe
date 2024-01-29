@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_RoundREAL" Id="{db918c49-291a-498e-b3e3-c07540be8418}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_RoundREAL : REAL
+VAR_INPUT
+	rValue:					REAL;
+	uiDezimalPlace:	UINT;
+END_VAR
+VAR
+	rResult:				REAL;
+	uiMultiplier:		UINT := 1;
+	i:							UINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR i := 1 TO uiDezimalPlace BY 1 DO
+	uiMultiplier := uiMultiplier * 10;
+END_FOR
+
+rResult := TO_REAL(TO_DINT(rValue * uiMultiplier)) / uiMultiplier;
+
+F_RoundREAL := rResult;]]></ST>
+    </Implementation>
+    <LineIds Name="F_RoundREAL">
+      <LineId Id="7" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

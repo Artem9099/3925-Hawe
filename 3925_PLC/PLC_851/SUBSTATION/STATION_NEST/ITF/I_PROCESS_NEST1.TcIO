@@ -22,6 +22,16 @@ VAR_INPUT
   stEnduranceRunParams:                 ST_RECIPE_ENDURANCE_RUN;
 END_VAR]]></Declaration>
     </Method>
+    <Method Name="M_MoveTestCyl1ToHP" Id="{304a7696-bec7-4272-afab-fa5ef556cb70}">
+      <Declaration><![CDATA[METHOD M_MoveTestCyl1ToHP : BOOL
+VAR_INPUT
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
+END_VAR
+]]></Declaration>
+    </Method>
     <Property Name="P_MaxSpeedInMmPerSHP" Id="{8b174bcc-d00c-4edd-a2c0-74bf79ef296b}">
       <Declaration><![CDATA[PROPERTY P_MaxSpeedInMmPerSHP : REAL]]></Declaration>
       <Get Name="Get" Id="{a81abbf1-6270-437f-925f-8a4e30d7ff42}">

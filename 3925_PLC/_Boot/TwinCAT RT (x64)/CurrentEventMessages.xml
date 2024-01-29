@@ -1,19 +1,27 @@
 <?xml version="1.0"?>
 <TcEventSources Version="2">
 	<Source>
-		<GUID>{DB752835-D261-4A91-AC04-5A237E67E11B}</GUID>
+		<GUID>{D07611B4-C18E-4184-ACC9-38C58C8E1B3F}</GUID>
 		<Name LcId="1033">NewEventClass_DisplayText</Name>
 		<Event>
 			<Id>1</Id>
-			<Message LcId="1033">Event_DisplayText {0} {1}</Message>
-			<Detail>
-				<Name>DescriptionText</Name>
-				<Text LcId="1033">description text</Text>
-			</Detail>
-			<Detail>
-				<Name>Comment</Name>
-				<Text LcId="1033">comment</Text>
-			</Detail>
+			<Message LcId="1033">Error {0}: {1}</Message>
+		</Event>
+	</Source>
+	<Source>
+		<GUID>{323C9672-0E0E-45C7-8427-A786F6E38388}</GUID>
+		<Name LcId="1033">EventClass2_DisplayText</Name>
+		<Event>
+			<Id>1</Id>
+			<Message LcId="1033">Warning {0}: {1}</Message>
+		</Event>
+	</Source>
+	<Source>
+		<GUID>{F687D050-EDBA-4A00-8C8B-4F3FD86C6980}</GUID>
+		<Name LcId="1033">EventClass3_DisplayText</Name>
+		<Event>
+			<Id>1</Id>
+			<Message LcId="1033">Info {0}: {1}</Message>
 		</Event>
 	</Source>
 </TcEventSources>

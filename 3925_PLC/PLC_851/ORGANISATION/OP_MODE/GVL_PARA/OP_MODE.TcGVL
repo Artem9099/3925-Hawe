@@ -10,6 +10,7 @@ VAR_GLOBAL CONSTANT
 	INIT			: INT := 4;
 	INIT_OK			: INT := 5;
 	PAUSE			: INT := 6;
+  STOP      : INT := 15;
 	//OP MODE SECUNDARY
 	SAFETY_STOP		: INT := 7;
 	MACHINE_ERROR 	: INT := 8;	

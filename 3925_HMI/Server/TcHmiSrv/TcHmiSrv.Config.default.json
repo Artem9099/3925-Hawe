@@ -1922,6 +1922,13 @@
             "REQUIRED": true,
             "STARTUPTYPE": 1
         },
+        "TcHmiEventLogger": {
+            "ENABLED": true,
+            "NAME": "TcHmiEventLogger",
+            "PATH": "..\\..\\3925_PLC\\Packages\\Beckhoff.TwinCAT.HMI.EventLogger.19.0.102\\runtimes\\win-x64\\native\\",
+            "REQUIRED": false,
+            "STARTUPTYPE": 1
+        },
         "TcHmiLua": {
             "ENABLED": true,
             "NAME": "TcHmiLua",
@@ -4478,6 +4485,290 @@
             "SUBSYMBOL_MAPPING": "",
             "USEMAPPING": true
         },
+        "PLC1.PrgMeasure.bCheckMesurementExistSelected": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bCheckMesurementExistSelected",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bCheckTagExistSelected": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bCheckTagExistSelected",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteAllTagContentChecked": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteAllTagContentChecked",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteMeasurement": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteMeasurement",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteMeasurementResult": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteMeasurementResult",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteTag": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteTag",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteTagContentBlock": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteTagContentBlock",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteTagContentBlockResult": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteTagContentBlockResult",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bDeleteTagResult": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bDeleteTagResult",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bGetMeasurementExist": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bGetMeasurementExist",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bGetTagExist": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bGetTagExist",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bGetTotalMeasurements": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bGetTotalMeasurements",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bLifeBit": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bLifeBit",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "comment": "TwincatADSGateway parameter"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bMeasurementExist": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bMeasurementExist",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.bTagExist": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::bTagExist",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.dtFromFromCfg": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::dtFromFromCfg",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/DATE_AND_TIME"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.dtToFromCfg": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::dtToFromCfg",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/DATE_AND_TIME"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.fbInfluxDB.bADSState": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::fbInfluxDB::bADSState",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "propertyOrder": 48
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.fbInfluxDB.bDBLifeBit": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::fbInfluxDB::bDBLifeBit",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "comment": "From ADS",
+                        "propertyOrder": 22
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.fbInfluxDB.bInfluxDBState": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::fbInfluxDB::bInfluxDBState",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "propertyOrder": 52
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.fbInfluxDB.udiDatabaseSizeInMb": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::fbInfluxDB::udiDatabaseSizeInMb",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/UDINT"
+                    },
+                    {
+                        "propertyOrder": 24
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.sMeasurementNameFromCfg": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::sMeasurementNameFromCfg",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "comment": "Params from DB Settings",
+                        "maxLength": 255
+                    },
+                    {
+                        "$ref": "tchmi:general#/definitions/String"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.uiTagNameIDFromCfg": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::uiTagNameIDFromCfg",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgMeasure.uiTotalMeasurements": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgMeasure::uiTotalMeasurements",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgOrg.bAck": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -4488,31 +4779,11 @@
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgOrg.bInitOk": {
+        "PLC1.PrgOrg.bInitOK": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgOrg::bInitOk",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/BOOL"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgOrg.bInitRestart": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgOrg::bInitRestart",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/BOOL"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgOrg.bStop": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgOrg::bStop",
+            "MAPPING": "PLC1::PrgOrg::bInitOK",
             "SCHEMA": {
                 "$ref": "tchmi:general#/definitions/BOOL"
             },
@@ -4533,6 +4804,26 @@
                             "TcAddressType": "Output"
                         },
                         "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgOrg.fbFromSafety_KeySwitch_JogPos.bSwitch": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgOrg::fbFromSafety_KeySwitch_JogPos::bSwitch",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Input"
+                        },
+                        "propertyOrder": 1
                     }
                 ]
             },
@@ -4694,6 +4985,16 @@
                         "propertyOrder": 3
                     }
                 ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.bBusyInit": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::bBusyInit",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
             },
             "USEMAPPING": true
         },
@@ -5021,52 +5322,253 @@
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.fbHMICtrl.bReboot": {
+        "PLC1.PrgStation.fbEngine_CounterCyl1Pump_Start.bOut": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbHMICtrl::bReboot",
+            "MAPPING": "PLC1::PrgStation::fbEngine_CounterCyl1Pump_Start::bOut",
             "SCHEMA": {
                 "allOf": [
                     {
                         "$ref": "tchmi:general#/definitions/BOOL"
                     },
                     {
-                        "propertyOrder": 15
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
                     }
                 ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.fbHMICtrl.bShutdown": {
+        "PLC1.PrgStation.fbEngine_CounterCyl2Pump_Start.bOut": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbHMICtrl::bShutdown",
+            "MAPPING": "PLC1::PrgStation::fbEngine_CounterCyl2Pump_Start::bOut",
             "SCHEMA": {
                 "allOf": [
                     {
                         "$ref": "tchmi:general#/definitions/BOOL"
                     },
                     {
-                        "propertyOrder": 13
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
                     }
                 ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.fbHMICtrl.bTaskKill": {
+        "PLC1.PrgStation.fbEngine_CounterCyl3Pump_Start.bOut": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbHMICtrl::bTaskKill",
+            "MAPPING": "PLC1::PrgStation::fbEngine_CounterCyl3Pump_Start::bOut",
             "SCHEMA": {
                 "allOf": [
                     {
                         "$ref": "tchmi:general#/definitions/BOOL"
                     },
                     {
-                        "propertyOrder": 11
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_CounterCyl4Pump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_CounterCyl4Pump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_LowPressurePump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_LowPressurePump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_TestCyl1Pump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_TestCyl1Pump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_TestCyl2Pump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_TestCyl2Pump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_TestCyl3Pump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_TestCyl3Pump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbEngine_TestCyl4Pump_Start.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbEngine_TestCyl4Pump_Start::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbMachineLight.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbMachineLight::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbMainProcess.bBtnOkPressed": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbMainProcess::bBtnOkPressed",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "propertyOrder": 57
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbMainProcess.bEnableOkBtn": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbMainProcess::bEnableOkBtn",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "propertyOrder": 56
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbMainProcess.bShowMessage": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbMainProcess::bShowMessage",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "comment": "HMI interaction",
+                        "propertyOrder": 55
                     }
                 ]
             },
@@ -5084,41 +5586,6 @@
                     },
                     {
                         "propertyOrder": 7
-                    }
-                ]
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.fbMainProcess.eSeq": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbMainProcess::eSeq",
-            "SCHEMA": {
-                "allOf": [
-                    {
-                        "$ref": "tchmi:server#/definitions/PLC1.E_SEQ_PROCESS"
-                    },
-                    {
-                        "comment": "Step chain control",
-                        "propertyOrder": 25
-                    }
-                ]
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.fbMainProcess.stSeqCtrlGeneral.eActiveSeqState": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbMainProcess::stSeqCtrlGeneral::eActiveSeqState",
-            "SCHEMA": {
-                "allOf": [
-                    {
-                        "$ref": "tchmi:server#/definitions/PLC1.E_SEQ_GENERAL"
-                    },
-                    {
-                        "propertyOrder": 3
                     }
                 ]
             },
@@ -5158,6 +5625,23 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbNest1.lrDistanceInM": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::lrDistanceInM",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/LREAL"
+                    },
+                    {
+                        "propertyOrder": 57
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbNest1.rCurrentNokDifference": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -5192,6 +5676,150 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbNest1.stERParams.rLoadForceA": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rLoadForceA",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Load force A (counterload)",
+                        "propertyOrder": 14
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rLoadForceB": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rLoadForceB",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Load force B (counterload)",
+                        "propertyOrder": 15
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rLoadPressureA": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rLoadPressureA",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Load pressure A (counterload)",
+                        "propertyOrder": 12
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rLoadPressureB": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rLoadPressureB",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Load pressure B (counterload)",
+                        "propertyOrder": 13
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rWorkForceA": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rWorkForceA",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Work force testing cylinder A",
+                        "propertyOrder": 9
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rWorkForceB": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rWorkForceB",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Work force testing cylinder B",
+                        "propertyOrder": 10
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rWorkPressureA": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rWorkPressureA",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Work pressure testing cylinder A",
+                        "propertyOrder": 7
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest1.stERParams.rWorkPressureB": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest1::stERParams::rWorkPressureB",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "comment": "Work pressure testing cylinder B",
+                        "propertyOrder": 8
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbNest1.stSeqCtrlGeneral.bActiveStep": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -5205,23 +5833,6 @@
                     {
                         "comment": "Debug Option",
                         "propertyOrder": 16
-                    }
-                ]
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.fbNest1.stSeqCtrlGeneral.eActiveSeqState": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::fbNest1::stSeqCtrlGeneral::eActiveSeqState",
-            "SCHEMA": {
-                "allOf": [
-                    {
-                        "$ref": "tchmi:server#/definitions/PLC1.E_SEQ_GENERAL"
-                    },
-                    {
-                        "propertyOrder": 3
                     }
                 ]
             },
@@ -5347,6 +5958,23 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbNest2.lrDistanceInM": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest2::lrDistanceInM",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/LREAL"
+                    },
+                    {
+                        "propertyOrder": 49
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbNest2.rCurrentNokDifference": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -5449,6 +6077,23 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbNest3.lrDistanceInM": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest3::lrDistanceInM",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/LREAL"
+                    },
+                    {
+                        "propertyOrder": 49
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbNest3.rCurrentNokDifference": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -5546,6 +6191,23 @@
                     },
                     {
                         "propertyOrder": 9
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbNest4.lrDistanceInM": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbNest4::lrDistanceInM",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/LREAL"
+                    },
+                    {
+                        "propertyOrder": 49
                     }
                 ]
             },
@@ -5676,6 +6338,46 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbShutOffValve_Closed.bSwitch": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbShutOffValve_Closed::bSwitch",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Input"
+                        },
+                        "propertyOrder": 1
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbShutOffValve_Opened.bSwitch": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbShutOffValve_Opened::bSwitch",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Input"
+                        },
+                        "propertyOrder": 1
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbTestCyl1.bStartCalibrationClicked": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -5773,6 +6475,23 @@
                     },
                     {
                         "propertyOrder": 112
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbTestCyl1.rCurrentLowPressureForceInN": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbTestCyl1::rCurrentLowPressureForceInN",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "propertyOrder": 121
                     }
                 ]
             },
@@ -6186,6 +6905,806 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.fbValve22_CounterCyl1_JogMode_Off.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl1_JogMode_Off::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl1_SinkBlock_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl1_SinkBlock_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl2_JogMode_Off.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl2_JogMode_Off::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl2_SinkBlock_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl2_SinkBlock_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl3_JogMode_Off.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl3_JogMode_Off::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl3_SinkBlock_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl3_SinkBlock_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl4_JogMode_Off.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl4_JogMode_Off::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_CounterCyl4_SinkBlock_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_CounterCyl4_SinkBlock_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_PressureReservoir_A_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_PressureReservoir_A_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_PressureReservoir_B_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_PressureReservoir_B_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_Pump2_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_Pump2_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_Pump3_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_Pump3_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_Pump4_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_Pump4_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl1_A_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl1_A_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl1_B_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl1_B_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl2_A_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl2_A_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl2_B_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl2_B_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl3_A_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl3_A_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl3_B_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl3_B_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl4_A_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl4_A_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve22_TestCyl4_B_Open.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve22_TestCyl4_B_Open::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve32_SensorBreakPressure_A_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve32_SensorBreakPressure_A_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve32_SensorBreakPressure_B_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve32_SensorBreakPressure_B_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl1_Bypass_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl1_Bypass_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl1_LowPressureCircuit_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl1_LowPressureCircuit_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl2_Bypass_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl2_Bypass_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl2_LowPressureCircuit_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl2_LowPressureCircuit_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl3_Bypass_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl3_Bypass_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl3_LowPressureCircuit_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl3_LowPressureCircuit_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl4_Bypass_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl4_Bypass_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_CounterCyl4_LowPressureCircuit_Add.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_CounterCyl4_LowPressureCircuit_Add::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve42_LowPressureCircuit_Enable.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve42_LowPressureCircuit_Enable::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl1_Extend.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl1_Extend::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl1_Retract.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl1_Retract::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl2_Extend.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl2_Extend::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl2_Retract.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl2_Retract::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl3_Extend.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl3_Extend::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl3_Retract.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl3_Retract::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl4_Extend.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl4_Extend::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.fbValve43_CounterCyl4_Retract.bOut": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::fbValve43_CounterCyl4_Retract::bOut",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/BOOL"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "propertyOrder": 3
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.fbValve_TestCyl1.stHMI": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -6237,203 +7756,83 @@
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.iPressureConverted_CounterCyl1": {
+        "PLC1.PrgStation.iCounterCyl1_Pressure": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_CounterCyl1",
+            "MAPPING": "PLC1::PrgStation::iCounterCyl1_Pressure",
             "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 05.43"
+                    }
+                ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.iPressureConverted_CounterCyl2": {
+        "PLC1.PrgStation.iCounterCyl2_Pressure": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_CounterCyl2",
+            "MAPPING": "PLC1::PrgStation::iCounterCyl2_Pressure",
             "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 07.43"
+                    }
+                ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.iPressureConverted_CounterCyl3": {
+        "PLC1.PrgStation.iCounterCyl3_Pressure": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_CounterCyl3",
+            "MAPPING": "PLC1::PrgStation::iCounterCyl3_Pressure",
             "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 09.43"
+                    }
+                ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.iPressureConverted_CounterCyl4": {
+        "PLC1.PrgStation.iCounterCyl4_Pressure": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_CounterCyl4",
+            "MAPPING": "PLC1::PrgStation::iCounterCyl4_Pressure",
             "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_LowPressure": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_LowPressure",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1_A": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1_A",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1_B": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1_B",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1_BreakPressure_A": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1_BreakPressure_A",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1_BreakPressure_B": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1_BreakPressure_B",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl1_PressureReservoir": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl1_PressureReservoir",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl2": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl2",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl2_A": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl2_A",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl2_B": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl2_B",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl3": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl3",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl3_A": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl3_A",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl3_B": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl3_B",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl4": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl4",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl4_A": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl4_A",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
-            },
-            "USEMAPPING": true
-        },
-        "PLC1.PrgStation.iPressureConverted_TestCyl4_B": {
-            "ACCESS": 3,
-            "DOMAIN": "ADS",
-            "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::iPressureConverted_TestCyl4_B",
-            "SCHEMA": {
-                "$ref": "tchmi:general#/definitions/INT"
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 11.43"
+                    }
+                ]
             },
             "USEMAPPING": true
         },
@@ -6822,6 +8221,186 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.iTestCyl1_LowPressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iTestCyl1_LowPressure",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 04.30"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iTestCyl1_Pressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iTestCyl1_Pressure",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 04.13"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iTestCyl2_Pressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iTestCyl2_Pressure",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 06.16"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iTestCyl3_Pressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iTestCyl3_Pressure",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 08.16"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iTestCyl4_Pressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iTestCyl4_Pressure",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 10.16"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iValve43_TestCyl1": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iValve43_TestCyl1",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 04.48"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iValve43_TestCyl2": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iValve43_TestCyl2",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 06.38"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iValve43_TestCyl3": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iValve43_TestCyl3",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 08.38"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.iValve43_TestCyl4": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::iValve43_TestCyl4",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/INT"
+                    },
+                    {
+                        "attributes": {
+                            "TcAddressType": "Output"
+                        },
+                        "comment": "Hydraulic plan: 10.38"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.rMaxSpeedInMmPerSHP": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -6839,6 +8418,246 @@
             "MAPPING": "PLC1::PrgStation::rMaxSpeedInMmPerSWP",
             "SCHEMA": {
                 "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_CounterCyl1": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_CounterCyl1",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_CounterCyl2": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_CounterCyl2",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_CounterCyl3": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_CounterCyl3",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_CounterCyl4": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_CounterCyl4",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_LowPressure": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_LowPressure",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1_A": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1_A",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1_B": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1_B",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1_BreakPressure_A": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1_BreakPressure_A",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1_BreakPressure_B": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1_BreakPressure_B",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl1_PressureReservoir": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl1_PressureReservoir",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl2": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl2",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl2_A": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl2_A",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl2_B": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl2_B",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl3": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl3",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl3_A": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl3_A",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl3_B": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl3_B",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl4": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl4",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl4_A": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl4_A",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.rPressureConverted_TestCyl4_B": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::rPressureConverted_TestCyl4_B",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/REAL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.sTestCyl1SNo": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::sTestCyl1SNo",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.sTestCyl2SNo": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::sTestCyl2SNo",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.sTestCyl3SNo": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::sTestCyl3SNo",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/STRING%2880%29"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.sTestCyl4SNo": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::sTestCyl4SNo",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/STRING%2880%29"
             },
             "USEMAPPING": true
         },
@@ -8064,35 +9883,36 @@
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.stSettings.rRegulationFactor": {
+        "PLC1.PrgStation.stSettings.rPressureRegulationFactor": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::stSettings::rRegulationFactor",
+            "MAPPING": "PLC1::PrgStation::stSettings::rPressureRegulationFactor",
             "SCHEMA": {
                 "allOf": [
                     {
                         "$ref": "tchmi:general#/definitions/REAL"
                     },
                     {
-                        "propertyOrder": 6
+                        "comment": "Pressure regulation",
+                        "propertyOrder": 8
                     }
                 ]
             },
             "USEMAPPING": true
         },
-        "PLC1.PrgStation.stSettings.rRegulationTolerance": {
+        "PLC1.PrgStation.stSettings.rPressureRegulationTolerance": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
             "DYNAMIC": true,
-            "MAPPING": "PLC1::PrgStation::stSettings::rRegulationTolerance",
+            "MAPPING": "PLC1::PrgStation::stSettings::rPressureRegulationTolerance",
             "SCHEMA": {
                 "allOf": [
                     {
                         "$ref": "tchmi:general#/definitions/REAL"
                     },
                     {
-                        "propertyOrder": 7
+                        "propertyOrder": 9
                     }
                 ]
             },
@@ -8116,6 +9936,40 @@
             },
             "USEMAPPING": true
         },
+        "PLC1.PrgStation.stSettings.rSpeedRegulationFactor": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::stSettings::rSpeedRegulationFactor",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "propertyOrder": 6
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgStation.stSettings.rSpeedRegulationTolerance": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgStation::stSettings::rSpeedRegulationTolerance",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/REAL"
+                    },
+                    {
+                        "propertyOrder": 7
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
         "PLC1.PrgStation.stSettings.uiRecordDelay": {
             "ACCESS": 3,
             "DOMAIN": "ADS",
@@ -8129,6 +9983,223 @@
                     {
                         "comment": "Recording",
                         "propertyOrder": 8
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bCloseHMI": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bCloseHMI",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableAck": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableAck",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableAuto": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableAuto",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableBreakPressureDet": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableBreakPressureDet",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableDoorLock": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableDoorLock",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableEnduranceRun": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableEnduranceRun",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableHand": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableHand",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableInit": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableInit",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableJog": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableJog",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableLeakTest1": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableLeakTest1",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableLeakTest2": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableLeakTest2",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableManual": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableManual",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableOptions": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableOptions",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableParams": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableParams",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bEnableSelection": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bEnableSelection",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bHideKeyboard": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bHideKeyboard",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bMachineLightOn": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bMachineLightOn",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bOpenKeyboard": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bOpenKeyboard",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bRestartPc": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bRestartPc",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.bShutdownPc": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::bShutdownPc",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/BOOL"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.fbHMICtrl.udiFreeSpaceOnC": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::fbHMICtrl::udiFreeSpaceOnC",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/UDINT"
+                    },
+                    {
+                        "propertyOrder": 28
                     }
                 ]
             },
@@ -8694,6 +10765,73 @@
                         "propertyOrder": 3
                     }
                 ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbBreakPressureDet": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbBreakPressureDet",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbCylinder": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbCylinder",
+            "SCHEMA": {
+                "allOf": [
+                    {
+                        "$ref": "tchmi:general#/definitions/UINT"
+                    },
+                    {
+                        "comment": "Parameter: Selected ComboBox Index"
+                    }
+                ]
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbEnduranceRun": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbEnduranceRun",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbGeneralSettings": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbGeneralSettings",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbLeakTest1": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbLeakTest1",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
+            },
+            "USEMAPPING": true
+        },
+        "PLC1.PrgVisu.uiCmbLeakTest2": {
+            "ACCESS": 3,
+            "DOMAIN": "ADS",
+            "DYNAMIC": true,
+            "MAPPING": "PLC1::PrgVisu::uiCmbLeakTest2",
+            "SCHEMA": {
+                "$ref": "tchmi:general#/definitions/UINT"
             },
             "USEMAPPING": true
         },
@@ -14165,14 +16303,42 @@
                 "PLC1.GVL_AUTORUN.sSwivelLipControlInfo": 3,
                 "PLC1.GVL_AUTORUN.sVibrationBunkerControlInfo": 3,
                 "PLC1.GVL_AUTORUN.sVibrationFeederControlInfo": 3,
+                "PLC1.PrgMeasure.bCheckMesurementExistSelected": 3,
+                "PLC1.PrgMeasure.bCheckTagExistSelected": 3,
+                "PLC1.PrgMeasure.bDeleteAllTagContentChecked": 3,
+                "PLC1.PrgMeasure.bDeleteMeasurement": 3,
+                "PLC1.PrgMeasure.bDeleteMeasurementResult": 3,
+                "PLC1.PrgMeasure.bDeleteTag": 3,
+                "PLC1.PrgMeasure.bDeleteTagContentBlock": 3,
+                "PLC1.PrgMeasure.bDeleteTagContentBlockResult": 3,
+                "PLC1.PrgMeasure.bDeleteTagResult": 3,
+                "PLC1.PrgMeasure.bGetMeasurementExist": 3,
+                "PLC1.PrgMeasure.bGetTagExist": 3,
+                "PLC1.PrgMeasure.bGetTotalMeasurements": 3,
+                "PLC1.PrgMeasure.bLifeBit": 3,
+                "PLC1.PrgMeasure.bMeasurementExist": 3,
+                "PLC1.PrgMeasure.bTagExist": 3,
+                "PLC1.PrgMeasure.dtFromFromCfg": 3,
+                "PLC1.PrgMeasure.dtToFromCfg": 3,
+                "PLC1.PrgMeasure.fbInfluxDB.bADSState": 3,
+                "PLC1.PrgMeasure.fbInfluxDB.bDBLifeBit": 3,
+                "PLC1.PrgMeasure.fbInfluxDB.bInfluxDBState": 3,
+                "PLC1.PrgMeasure.fbInfluxDB.liDatabaseSizeInMb": 3,
+                "PLC1.PrgMeasure.fbInfluxDB.udiDatabaseSizeInMb": 3,
+                "PLC1.PrgMeasure.sMeasurementNameFromCfg": 3,
+                "PLC1.PrgMeasure.sTagNameIDFromCfg": 3,
+                "PLC1.PrgMeasure.uiTagNameIDFromCfg": 3,
+                "PLC1.PrgMeasure.uiTotalMeasurements": 3,
                 "PLC1.PrgOrg.bAck": 3,
                 "PLC1.PrgOrg.bEStopReset": 3,
+                "PLC1.PrgOrg.bInitOK": 3,
                 "PLC1.PrgOrg.bInitOk": 3,
                 "PLC1.PrgOrg.bInitRestart": 3,
                 "PLC1.PrgOrg.bStop": 3,
                 "PLC1.PrgOrg.bTest": 3,
                 "PLC1.PrgOrg.fbDruckluftIO.bSwitch": 3,
                 "PLC1.PrgOrg.fbErrorACK.bOut": 3,
+                "PLC1.PrgOrg.fbFromSafety_KeySwitch_JogPos.bSwitch": 3,
                 "PLC1.PrgOrg.fbFromSafety_SafetyDoor_Ok.bSwitch": 3,
                 "PLC1.PrgOrg.fbJog_KeySwitch.bSwitch": 3,
                 "PLC1.PrgOrg.fbLockDoor.bOut": 3,
@@ -14194,6 +16360,7 @@
                 "PLC1.PrgOrg.fbStateEStopWeighSide.bSwitch": 3,
                 "PLC1.PrgOrg.fbTemperatureIO.bSwitch": 3,
                 "PLC1.PrgOrg.fbVerbindungssteckerKontaktiert.bSwitch": 3,
+                "PLC1.PrgStation.bBusyInit": 3,
                 "PLC1.PrgStation.bConveyor1Start": 3,
                 "PLC1.PrgStation.bConveyor1StartStop": 3,
                 "PLC1.PrgStation.bConveyor1Stop": 3,
@@ -14308,11 +16475,24 @@
                 "PLC1.PrgStation.fbCrossConveyor2Control.bEmptyConveyor": 3,
                 "PLC1.PrgStation.fbCylinder1.stParams": 3,
                 "PLC1.PrgStation.fbCylinder1.stValve": 3,
+                "PLC1.PrgStation.fbEngine_CounterCyl1Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_CounterCyl2Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_CounterCyl3Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_CounterCyl4Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_LowPressurePump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_TestCyl1Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_TestCyl2Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_TestCyl3Pump_Start.bOut": 3,
+                "PLC1.PrgStation.fbEngine_TestCyl4Pump_Start.bOut": 3,
                 "PLC1.PrgStation.fbHMICtrl.bReboot": 3,
                 "PLC1.PrgStation.fbHMICtrl.bShutdown": 3,
                 "PLC1.PrgStation.fbHMICtrl.bTaskKill": 3,
+                "PLC1.PrgStation.fbMachineLight.bOut": 3,
+                "PLC1.PrgStation.fbMainProcess.bBtnOkPressed": 3,
                 "PLC1.PrgStation.fbMainProcess.bEmptyRunRunning": 3,
+                "PLC1.PrgStation.fbMainProcess.bEnableOkBtn": 3,
                 "PLC1.PrgStation.fbMainProcess.bInitRestart": 3,
+                "PLC1.PrgStation.fbMainProcess.bShowMessage": 3,
                 "PLC1.PrgStation.fbMainProcess.bShowPartChangedAbortClicked": 3,
                 "PLC1.PrgStation.fbMainProcess.bShowPartChangedPopup": 3,
                 "PLC1.PrgStation.fbMainProcess.bShowPartChangedStartClicked": 3,
@@ -14326,9 +16506,18 @@
                 "PLC1.PrgStation.fbMainProcess.strSeq": 3,
                 "PLC1.PrgStation.fbMySqlNest1Connection.stSeqCtrlGeneral": 3,
                 "PLC1.PrgStation.fbNest1.bEnable": 3,
+                "PLC1.PrgStation.fbNest1.lrDistanceInM": 3,
                 "PLC1.PrgStation.fbNest1.rActiveNokLimit": 3,
                 "PLC1.PrgStation.fbNest1.rCurrentNokDifference": 3,
                 "PLC1.PrgStation.fbNest1.sTimer": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rLoadForceA": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rLoadForceB": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rLoadPressureA": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rLoadPressureB": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rWorkForceA": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rWorkForceB": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rWorkPressureA": 3,
+                "PLC1.PrgStation.fbNest1.stERParams.rWorkPressureB": 3,
                 "PLC1.PrgStation.fbNest1.stSeqCtrlGeneral.bActiveStep": 3,
                 "PLC1.PrgStation.fbNest1.stSeqCtrlGeneral.eActiveSeqState": 3,
                 "PLC1.PrgStation.fbNest1.stSeqCtrlGeneral.strExtraInfo": 3,
@@ -14340,18 +16529,21 @@
                 "PLC1.PrgStation.fbNest1.udiERTotalCycles": 3,
                 "PLC1.PrgStation.fbNest1.uiCurrentNokLimitInPercent": 3,
                 "PLC1.PrgStation.fbNest2.bEnable": 3,
+                "PLC1.PrgStation.fbNest2.lrDistanceInM": 3,
                 "PLC1.PrgStation.fbNest2.rCurrentNokDifference": 3,
                 "PLC1.PrgStation.fbNest2.sTimer": 3,
                 "PLC1.PrgStation.fbNest2.udiCurrentCycle": 3,
                 "PLC1.PrgStation.fbNest2.udiERTotalCycles": 3,
                 "PLC1.PrgStation.fbNest2.uiCurrentNokLimitInPercent": 3,
                 "PLC1.PrgStation.fbNest3.bEnable": 3,
+                "PLC1.PrgStation.fbNest3.lrDistanceInM": 3,
                 "PLC1.PrgStation.fbNest3.rCurrentNokDifference": 3,
                 "PLC1.PrgStation.fbNest3.sTimer": 3,
                 "PLC1.PrgStation.fbNest3.udiCurrentCycle": 3,
                 "PLC1.PrgStation.fbNest3.udiERTotalCycles": 3,
                 "PLC1.PrgStation.fbNest3.uiCurrentNokLimitInPercent": 3,
                 "PLC1.PrgStation.fbNest4.bEnable": 3,
+                "PLC1.PrgStation.fbNest4.lrDistanceInM": 3,
                 "PLC1.PrgStation.fbNest4.rCurrentNokDifference": 3,
                 "PLC1.PrgStation.fbNest4.sTimer": 3,
                 "PLC1.PrgStation.fbNest4.udiCurrentCycle": 3,
@@ -14364,6 +16556,8 @@
                 "PLC1.PrgStation.fbScale1.lrTaraVal": 3,
                 "PLC1.PrgStation.fbScale2.lrAbsWeight": 3,
                 "PLC1.PrgStation.fbScale2.lrNettoWeight": 3,
+                "PLC1.PrgStation.fbShutOffValve_Closed.bSwitch": 3,
+                "PLC1.PrgStation.fbShutOffValve_Opened.bSwitch": 3,
                 "PLC1.PrgStation.fbTestCyl1.bStartCalibrationClicked": 3,
                 "PLC1.PrgStation.fbTestCyl1.bStartLPCalibrationClicked": 3,
                 "PLC1.PrgStation.fbTestCyl1.listCalibrationTable": 3,
@@ -14371,6 +16565,7 @@
                 "PLC1.PrgStation.fbTestCyl1.lrPos": 3,
                 "PLC1.PrgStation.fbTestCyl1.rCurrentForce": 3,
                 "PLC1.PrgStation.fbTestCyl1.rCurrentForceInKN": 3,
+                "PLC1.PrgStation.fbTestCyl1.rCurrentLowPressureForceInN": 3,
                 "PLC1.PrgStation.fbTestCyl1.rCurrentSpeedInMmPerS": 3,
                 "PLC1.PrgStation.fbTestCyl1.rStrokeLength": 3,
                 "PLC1.PrgStation.fbTestCyl1.stHMI": 3,
@@ -14407,6 +16602,46 @@
                 "PLC1.PrgStation.fbTestingCylinder4.stHMI": 3,
                 "PLC1.PrgStation.fbTestingCylinder4.stHMI.rPressure": 3,
                 "PLC1.PrgStation.fbTestingCylinder4.stSeqCtrlGeneral": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl1_JogMode_Off.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl1_SinkBlock_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl2_JogMode_Off.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl2_SinkBlock_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl3_JogMode_Off.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl3_SinkBlock_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl4_JogMode_Off.bOut": 3,
+                "PLC1.PrgStation.fbValve22_CounterCyl4_SinkBlock_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_PressureReservoir_A_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve22_PressureReservoir_B_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve22_Pump2_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve22_Pump3_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve22_Pump4_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl1_A_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl1_B_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl2_A_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl2_B_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl3_A_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl3_B_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl4_A_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve22_TestCyl4_B_Open.bOut": 3,
+                "PLC1.PrgStation.fbValve32_SensorBreakPressure_A_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve32_SensorBreakPressure_B_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl1_Bypass_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl1_LowPressureCircuit_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl2_Bypass_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl2_LowPressureCircuit_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl3_Bypass_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl3_LowPressureCircuit_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl4_Bypass_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_CounterCyl4_LowPressureCircuit_Add.bOut": 3,
+                "PLC1.PrgStation.fbValve42_LowPressureCircuit_Enable.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl1_Extend.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl1_Retract.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl2_Extend.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl2_Retract.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl3_Extend.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl3_Retract.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl4_Extend.bOut": 3,
+                "PLC1.PrgStation.fbValve43_CounterCyl4_Retract.bOut": 3,
                 "PLC1.PrgStation.fbValve_TestCyl1.stHMI": 3,
                 "PLC1.PrgStation.fbValve_TestCyl1_A_Unlock.stHMI": 3,
                 "PLC1.PrgStation.fbValve_TestCyl1_B_Unlock.stHMI": 3,
@@ -14418,6 +16653,10 @@
                 "PLC1.PrgStation.fbVibrationFeederControl.lrRemainingPartsVal": 3,
                 "PLC1.PrgStation.iCalibrationPointsScale1": 3,
                 "PLC1.PrgStation.iCalibrationPointsScale2": 3,
+                "PLC1.PrgStation.iCounterCyl1_Pressure": 3,
+                "PLC1.PrgStation.iCounterCyl2_Pressure": 3,
+                "PLC1.PrgStation.iCounterCyl3_Pressure": 3,
+                "PLC1.PrgStation.iCounterCyl4_Pressure": 3,
                 "PLC1.PrgStation.iDivisionOfMeasurements": 3,
                 "PLC1.PrgStation.iPressureConverted_CounterCyl1": 3,
                 "PLC1.PrgStation.iPressureConverted_CounterCyl2": 3,
@@ -14466,6 +16705,10 @@
                 "PLC1.PrgStation.iTestCyl2_Pressure": 3,
                 "PLC1.PrgStation.iTestCyl3_Pressure": 3,
                 "PLC1.PrgStation.iTestCyl4_Pressure": 3,
+                "PLC1.PrgStation.iValve43_TestCyl1": 3,
+                "PLC1.PrgStation.iValve43_TestCyl2": 3,
+                "PLC1.PrgStation.iValve43_TestCyl3": 3,
+                "PLC1.PrgStation.iValve43_TestCyl4": 3,
                 "PLC1.PrgStation.listTestCyl1Calibration": 3,
                 "PLC1.PrgStation.lrLoadPressure": 3,
                 "PLC1.PrgStation.lrPistonSurfaceHP": 3,
@@ -14482,6 +16725,26 @@
                 "PLC1.PrgStation.rMaxPathDifference": 3,
                 "PLC1.PrgStation.rMaxSpeedInMmPerSHP": 3,
                 "PLC1.PrgStation.rMaxSpeedInMmPerSWP": 3,
+                "PLC1.PrgStation.rPressureConverted_CounterCyl1": 3,
+                "PLC1.PrgStation.rPressureConverted_CounterCyl2": 3,
+                "PLC1.PrgStation.rPressureConverted_CounterCyl3": 3,
+                "PLC1.PrgStation.rPressureConverted_CounterCyl4": 3,
+                "PLC1.PrgStation.rPressureConverted_LowPressure": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1_A": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1_B": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1_BreakPressure_A": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1_BreakPressure_B": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl1_PressureReservoir": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl2": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl2_A": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl2_B": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl3": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl3_A": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl3_B": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl4": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl4_A": 3,
+                "PLC1.PrgStation.rPressureConverted_TestCyl4_B": 3,
                 "PLC1.PrgStation.rPressureMax": 3,
                 "PLC1.PrgStation.rPressureMin": 3,
                 "PLC1.PrgStation.rScale1DwellTimeAfter": 3,
@@ -14494,6 +16757,10 @@
                 "PLC1.PrgStation.sInfo": 3,
                 "PLC1.PrgStation.sItemName": 3,
                 "PLC1.PrgStation.sItemNumber": 3,
+                "PLC1.PrgStation.sTestCyl1SNo": 3,
+                "PLC1.PrgStation.sTestCyl2SNo": 3,
+                "PLC1.PrgStation.sTestCyl3SNo": 3,
+                "PLC1.PrgStation.sTestCyl4SNo": 3,
                 "PLC1.PrgStation.stChart": 3,
                 "PLC1.PrgStation.stConveyor1": 3,
                 "PLC1.PrgStation.stConveyor2": 3,
@@ -14602,9 +16869,13 @@
                 "PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles": 3,
                 "PLC1.PrgStation.stScale1Data": 3,
                 "PLC1.PrgStation.stScale2Data": 3,
+                "PLC1.PrgStation.stSettings.rPressureRegulationFactor": 3,
+                "PLC1.PrgStation.stSettings.rPressureRegulationTolerance": 3,
                 "PLC1.PrgStation.stSettings.rRegulationFactor": 3,
                 "PLC1.PrgStation.stSettings.rRegulationTolerance": 3,
                 "PLC1.PrgStation.stSettings.rSpeedEfficiencyFactor": 3,
+                "PLC1.PrgStation.stSettings.rSpeedRegulationFactor": 3,
+                "PLC1.PrgStation.stSettings.rSpeedRegulationTolerance": 3,
                 "PLC1.PrgStation.stSettings.uiRecordDelay": 3,
                 "PLC1.PrgStation.stTestCyl": 3,
                 "PLC1.PrgStation.tLeakTest1Duration": 3,
@@ -14618,25 +16889,45 @@
                 "PLC1.PrgVisu.bBoxWithFoil": 3,
                 "PLC1.PrgVisu.bBoxWithLid": 3,
                 "PLC1.PrgVisu.bBreakTestClicked": 3,
+                "PLC1.PrgVisu.bCloseHMI": 3,
                 "PLC1.PrgVisu.bEmptyRunClicked": 3,
                 "PLC1.PrgVisu.bEmptyRunRunning": 3,
+                "PLC1.PrgVisu.bEnableAck": 3,
+                "PLC1.PrgVisu.bEnableAuto": 3,
                 "PLC1.PrgVisu.bEnableAutorun": 3,
+                "PLC1.PrgVisu.bEnableBreakPressureDet": 3,
+                "PLC1.PrgVisu.bEnableDoorLock": 3,
                 "PLC1.PrgVisu.bEnableEStopReset": 3,
                 "PLC1.PrgVisu.bEnableEmptyRun": 3,
+                "PLC1.PrgVisu.bEnableEnduranceRun": 3,
+                "PLC1.PrgVisu.bEnableHand": 3,
                 "PLC1.PrgVisu.bEnableInit": 3,
                 "PLC1.PrgVisu.bEnableJog": 3,
                 "PLC1.PrgVisu.bEnableJogControl": 3,
+                "PLC1.PrgVisu.bEnableLeakTest1": 3,
+                "PLC1.PrgVisu.bEnableLeakTest2": 3,
+                "PLC1.PrgVisu.bEnableManual": 3,
+                "PLC1.PrgVisu.bEnableOptions": 3,
+                "PLC1.PrgVisu.bEnableParams": 3,
                 "PLC1.PrgVisu.bEnablePause": 3,
                 "PLC1.PrgVisu.bEnablePgmReset": 3,
                 "PLC1.PrgVisu.bEnablePgmSettings": 3,
+                "PLC1.PrgVisu.bEnableSelection": 3,
                 "PLC1.PrgVisu.bEnableStart": 3,
                 "PLC1.PrgVisu.bEnableStop": 3,
                 "PLC1.PrgVisu.bHeartbeat": 3,
+                "PLC1.PrgVisu.bHideKeyboard": 3,
+                "PLC1.PrgVisu.bMachineLightOn": 3,
                 "PLC1.PrgVisu.bOkClicked": 3,
+                "PLC1.PrgVisu.bOpenKeyboard": 3,
+                "PLC1.PrgVisu.bRestartPc": 3,
+                "PLC1.PrgVisu.bShutdownPc": 3,
                 "PLC1.PrgVisu.bStart": 3,
                 "PLC1.PrgVisu.bStopClicked": 3,
                 "PLC1.PrgVisu.diFillingStation1Quantity": 3,
                 "PLC1.PrgVisu.diFillingStation2Quantity": 3,
+                "PLC1.PrgVisu.fbHMICtrl.liFreeSpaceOnC": 3,
+                "PLC1.PrgVisu.fbHMICtrl.udiFreeSpaceOnC": 3,
                 "PLC1.PrgVisu.fbVisuOPMode.bBreakTestClicked": 3,
                 "PLC1.PrgVisu.fbVisuOPMode.bBreakTestMode": 3,
                 "PLC1.PrgVisu.fbVisuOPMode.bClick_Automatic": 3,
@@ -14693,6 +16984,7 @@
                 "PLC1.PrgVisu.iQuantityStation1InPercentTmp": 3,
                 "PLC1.PrgVisu.iQuantityStation2InPercent": 3,
                 "PLC1.PrgVisu.iTotalQuantityInPercent": 3,
+                "PLC1.PrgVisu.liFreeSpaceOnC": 3,
                 "PLC1.PrgVisu.rBoxHeight": 3,
                 "PLC1.PrgVisu.rBoxLength": 3,
                 "PLC1.PrgVisu.rBoxWeight": 3,
@@ -14720,6 +17012,13 @@
                 "PLC1.PrgVisu.sTimer": 3,
                 "PLC1.PrgVisu.strDifference": 3,
                 "PLC1.PrgVisu.tonHeartbeat.Q": 3,
+                "PLC1.PrgVisu.uiCmbBreakPressureDet": 3,
+                "PLC1.PrgVisu.uiCmbCylinder": 3,
+                "PLC1.PrgVisu.uiCmbEnduranceRun": 3,
+                "PLC1.PrgVisu.uiCmbGeneralSettings": 3,
+                "PLC1.PrgVisu.uiCmbLeakTest1": 3,
+                "PLC1.PrgVisu.uiCmbLeakTest2": 3,
+                "PLC1.PrgVisu.uiCylinder": 3,
                 "SetLocale": 3,
                 "SubscribeEvents": 3,
                 "TcHmiEventLogger.Diagnostics": 1,

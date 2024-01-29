@@ -6,25 +6,51 @@
                 "values": {
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.bEnableLeakTest1": true,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rDelay": 0.5,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA": 5.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB": 5.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA": 20.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB": 20.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP": 10.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP": 10.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA": 15.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB": 15.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA": 2.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB": 2.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB": 5.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.bEnableLeakTest1": true,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP": 10.0,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rRestDelay": 5.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.udiDurationPerTest": 1,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles": 20,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval": 10,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles": 4
+                }
+            },
+            "Zylinder2": {
+                "recipeTypeName": "Profiles::EnduranceRun",
+                "values": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.bEnableLeakTest1": true,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rDelay": 0.5,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA": 3.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB": 3.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB": 10.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointHP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rTurningPointWP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA": 8.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB": 8.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.bEnableLeakTest1": true,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosHP": 20.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rDistanceBeforeEndPosWP": 20.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceA": 5.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rLoadForceB": 5.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit": 5.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rRestDelay": 5.0,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.udiDurationPerTest": 1,
                     "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles": 100,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval": 2000,
-                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles": 10
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.udiLT1_Interval": 50,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeEnduranceRun.uiVentCycles": 4
                 }
             }
         },
@@ -45,7 +71,7 @@
             }
         },
         "ZYL": {
-            "Zylinder1": {
+            "Doppeltwirkend": {
                 "recipeTypeName": "Cylinder",
                 "values": {
                     "PLC1.PrgStation.stRecipeParams.stRecipeCyl.bDoubleActing": true,
@@ -57,6 +83,20 @@
                     "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sInfo": "",
                     "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemName": "Zylinder230",
                     "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemNumber": "5555"
+                }
+            },
+            "Einfachwirkend": {
+                "recipeTypeName": "Cylinder",
+                "values": {
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.bDoubleActing": false,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA": 314.159,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB": 314.159,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rMaxPremittedPressure": 200.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLength": 200.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.rStrokeLengthTol": 3.0,
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sInfo": "",
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemName": "ZylEW",
+                    "PLC1.PrgStation.stRecipeParams.stRecipeCyl.sItemNumber": "1212121"
                 }
             }
         }

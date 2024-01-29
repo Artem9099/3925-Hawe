@@ -9,6 +9,7 @@ VAR_INPUT
   /// Bar | Force in N | Percent 0-100 | Value 0-32767
   ePressureType:            E_PRESSURE_TYPE;
   rWorkPressure:            REAL;
+  bPressureRegulation:      BOOL;
   /// Just need for prop valve
   eSpeedType:               E_SPEED_TYPE;
   rSpeed:                   REAL;

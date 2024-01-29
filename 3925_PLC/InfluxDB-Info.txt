@@ -1,0 +1,11 @@
+Username: Administrator
+Password: HaweHAWE
+Organization Name: Hawe
+Organization ID: 9918ab0e7eaaf3af
+Bucket Name: 3925-HZP
+Token: uuCXIAtKyKQogtJvMvn-YKPCb3Lrs5u5MeJHUFr72mFltfcmOKww9xUi_wZfvped4zf7_qBnayjXvybSH7nHLw==
+
+
+// Local (Programmierer Laptop)
+Token: gz_Dt3IGzPbsfEcjDW-oOkjm2KqGJdgIBmdu2ghXHc_ScpoaOTjMbQ2HEPphWoU4VgTYM49AC1cVOAknNRP0Hg==
+Token2: m40wSpk50O5HE0LD3PCniEp_nGB5JPsQfjkOKBPNwN_6Ss8mhXh2gCioF7xkym3_a8Q6q9hiQBETjlYR515VYw==

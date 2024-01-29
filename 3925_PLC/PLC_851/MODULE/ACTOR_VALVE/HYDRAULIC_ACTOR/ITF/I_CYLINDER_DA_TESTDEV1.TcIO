@@ -51,6 +51,14 @@ END_VAR
         <Declaration><![CDATA[]]></Declaration>
       </Get>
     </Property>
+    <Property Name="P_CurrentLowPressureForceInN" Id="{5e2b2c64-35c9-423a-ab4c-e5c1337e4d8d}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_CurrentLowPressureForceInN : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{4ba0715f-eb60-41ce-bcb7-0dcb241875f2}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_LowPressure" Id="{60eaa627-61b2-4dad-8819-5f6ffa137b5e}">
       <Declaration><![CDATA[PROPERTY P_LowPressure : REAL]]></Declaration>
       <Get Name="Get" Id="{3744e1d0-0b5e-4245-b4ac-dd2d21e7db05}">

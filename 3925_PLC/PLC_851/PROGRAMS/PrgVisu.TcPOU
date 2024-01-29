@@ -9,16 +9,48 @@ VAR
   
   bInit : 									                      BOOL; 
   bSend : 									                      BOOL; 
-  fbMsg : 									                      FB_TcMessage; 
-  fbEventLogger:                                  FB_TcEventLogger;
+  fbMsg : 									                      FB_TcMessage;
   fbAlarm:                                        FB_TcAlarm;
+  bMachineLightOn:                                BOOL := TRUE;
+  fbEventLogger:                                  FB_EVENT_LOGGER();
 END_VAR
 VAR //HMI enables
+  fbHMICtrl:                                      FB_HMI_CTRL_ADS(itfOpMode:= PrgOrg.fbOpMode,
+                                                                  itfEventLogger:= PrgOrg.fbEventLogger);
   bEnableAuto:                                    BOOL;
+  bEnableEnduranceRun:                            BOOL;
+  bEnableLeakTest1:                               BOOL;
+  bEnableLeakTest2:                               BOOL;
+  bEnableBreakPressureDet:                        BOOL;
   bEnableManual:                                  BOOL;
+  bEnableHand:                                    BOOL;
+  bEnableJog:                                     BOOL;
   bEnableInit:                                    BOOL;
+  bEnableDoorLock:                                BOOL;
+  bEnableAck:                                     BOOL;
+  bEnableParams:                                  BOOL;
+  bEnableOptions:                                 BOOL;
+  bEnableSelection:                               BOOL;
+  bPumpsOn:                                       BOOL;
 END_VAR
-
+VAR
+  uiHMISeq:                                       UINT := 0;
+  bStartHMI:                                      BOOL;
+  bCloseHMI:                                      BOOL;
+  bOpenKeyboard:                                  BOOL;
+  bHideKeyboard:                                  BOOL;
+  bShutdownPc:                                    BOOL;
+  bRestartPc:                                     BOOL;
+  liFreeSpaceOnC:                                 LINT;
+END_VAR
+VAR // Parameter: Selected ComboBox Index
+  uiCmbCylinder:                                  UINT := 0;
+  uiCmbEnduranceRun:                              UINT := 0;
+  uiCmbGeneralSettings:                           UINT := 0;
+  uiCmbLeakTest1:                                 UINT := 0;
+  uiCmbLeakTest2:                                 UINT := 0;
+  uiCmbBreakPressureDet:                          UINT := 0;
+END_VAR
 
 
 
@@ -31,54 +63,257 @@ END_VAR
 
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbVisuOPMode();
+      <ST><![CDATA[(* Actions *)
+A_000_FBs();
+A_010_Init();
+A_020_Enables();
+A_030_HMIControl();
 
-tonHeartbeat(in:=NOT tonHeartbeat.Q, pt:=T#100MS);
 
-IF bInit THEN
-  bInit := FALSE; 
-  fbAlarm.CreateEx(TC_EVENTS.Errors.Test1, 1, 0); 
-END_IF
-
-IF bSend THEN 
-  bSend := FALSE; 
-  fbAlarm.ipArguments.Clear() .AddString('teststr') .AddInt(55);
-  fbAlarm.Raise(0);
-END_IF			   
-					
-// Enables
-bEnableAuto := TRUE
-               AND PrgOrg.fbOpMode.P_CONTROL_ON
-               AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
-               AND PrgOrg.bInitOk
-               AND PrgStation.fbBypassPump.P_State
-               AND PrgStation.fbCounterCyl1Pump.P_State
-               AND PrgStation.fbCounterCyl2Pump.P_State
-               AND PrgStation.fbCounterCyl3Pump.P_State
-               AND PrgStation.fbCounterCyl4Pump.P_State
-               AND PrgStation.fbLowPressurePump.P_State
-               AND PrgStation.fbOilCooler.P_State
-               AND PrgStation.fbTestCyl1Pump.P_State
-               AND PrgStation.fbTestCyl2Pump.P_State
-               AND PrgStation.fbTestCyl3Pump.P_State
-               AND PrgStation.fbTestCyl4Pump.P_State;
-               
 ]]></ST>
     </Implementation>
+    <Action Name="A_000_FBs" Id="{3ad0562e-dc41-4469-a303-d4bcd18631f0}">
+      <Implementation>
+        <ST><![CDATA[(* FBs *)
+fbVisuOPMode();
+fbHMICtrl(bLifeBit:= PrgMeasure.bLifeBit,
+          bAdsConnected:= PrgMeasure.bAdsConnected,
+          bReady:= PrgMeasure.bReady,
+          bBusy:= PrgMeasure.bBusy,
+          liFreeSpaceOnC=> liFreeSpaceOnC);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_010_Init" Id="{9b010455-adbc-4111-835d-ab6e35fe0008}">
+      <Implementation>
+        <ST><![CDATA[tonHeartbeat(in:=NOT tonHeartbeat.Q, pt:=T#100MS);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_020_Enables" Id="{a4d1ef06-8acd-445b-91f2-4e5dad43e372}">
+      <Implementation>
+        <ST><![CDATA[(* Enables *)
+bPumpsOn := TRUE
+            AND PrgStation.fbBypassPump.P_State
+            AND PrgStation.fbCounterCyl1Pump.P_State
+            AND PrgStation.fbCounterCyl2Pump.P_State
+            AND PrgStation.fbCounterCyl3Pump.P_State
+            AND PrgStation.fbCounterCyl4Pump.P_State
+            AND PrgStation.fbLowPressurePump.P_State
+            AND PrgStation.fbOilCooler.P_State
+            AND PrgStation.fbTestCyl1Pump.P_State
+            AND PrgStation.fbTestCyl2Pump.P_State
+            AND PrgStation.fbTestCyl3Pump.P_State
+            AND PrgStation.fbTestCyl4Pump.P_State;
+            
+bEnableAuto := TRUE
+               AND (bEnableEnduranceRun
+                 OR bEnableLeakTest1
+                 OR bEnableLeakTest2
+                 OR bEnableBreakPressureDet);
+
+bEnableEnduranceRun := TRUE
+               AND (NOT (fbVisuOPMode.b_Automatic OR fbVisuOPMode.b_Manual OR fbVisuOPMode.b_Reset)
+               AND PrgOrg.bInitOK
+               AND ((PrgStation.fbNest1.bEnable AND PrgStation.sTestCyl1SNo<>'') 
+                 OR (PrgStation.fbNest2.bEnable AND PrgStation.sTestCyl2SNo<>'') 
+                 OR (PrgStation.fbNest3.bEnable AND PrgStation.sTestCyl2SNo<>'')
+                 OR (PrgStation.fbNest4.bEnable AND PrgStation.sTestCyl2SNo<>''))
+               AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
+               AND bPumpsOn
+               AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+               
+bEnableLeakTest1 := TRUE
+                    AND (NOT (fbVisuOPMode.b_Automatic OR fbVisuOPMode.b_Manual OR fbVisuOPMode.b_Reset)
+                    AND PrgOrg.bInitOK
+                    AND ((PrgStation.fbNest1.bEnable AND PrgStation.sTestCyl1SNo<>'') 
+                      OR (PrgStation.fbNest2.bEnable AND PrgStation.sTestCyl2SNo<>'') 
+                      OR (PrgStation.fbNest3.bEnable AND PrgStation.sTestCyl2SNo<>'')
+                      OR (PrgStation.fbNest4.bEnable AND PrgStation.sTestCyl2SNo<>''))
+                    AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
+                    AND bPumpsOn
+                    AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+                    
+bEnableLeakTest2 := TRUE
+                    AND (NOT (fbVisuOPMode.b_Automatic OR fbVisuOPMode.b_Manual OR fbVisuOPMode.b_Reset)
+                    AND PrgOrg.bInitOK
+                    AND (PrgStation.fbNest1.bEnable AND PrgStation.sTestCyl1SNo<>'')
+                    AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
+                    AND bPumpsOn
+                    AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+                    
+bEnableBreakPressureDet := TRUE
+                           AND (NOT (fbVisuOPMode.b_Automatic OR fbVisuOPMode.b_Manual OR fbVisuOPMode.b_Reset)
+                           AND PrgOrg.bInitOK
+                           AND (PrgStation.fbNest1.bEnable AND PrgStation.sTestCyl1SNo<>'')
+                           AND NOT PrgOrg.fbOpMode.P_EMERGANCY_STOP
+                           AND bPumpsOn
+                           AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+               
+bEnableManual := TRUE
+                 AND (bEnableHand
+                   OR bEnableJog);
+               
+bEnableHand := TRUE
+               AND (NOT (fbVisuOPMode.b_Automatic 
+                 OR fbVisuOPMode.b_Manual 
+                 OR fbVisuOPMode.b_Reset) 
+               AND bPumpsOn
+               AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+                 
+bEnableJog := TRUE
+              AND (NOT (fbVisuOPMode.b_Automatic 
+                OR fbVisuOPMode.b_Manual 
+                OR fbVisuOPMode.b_Reset) 
+              AND bPumpsOn);
+                 
+bEnableInit := TRUE
+               AND (NOT (fbVisuOPMode.b_Automatic 
+                 OR fbVisuOPMode.b_Manual 
+                 OR fbVisuOPMode.b_Reset 
+                 OR PrgStation.bBusyInit)
+               AND PrgOrg.fbFromSafety_SafetyDoor_Ok.P_Active);
+                 
+bEnableDoorLock := TRUE
+                   AND (NOT (fbVisuOPMode.b_Automatic 
+                     OR fbVisuOPMode.b_Reset) 
+                   OR PrgStation.fbMainProcess.bShowMessage);
+                   
+bEnableAck := TRUE
+              AND (NOT (fbVisuOPMode.b_Automatic 
+                OR fbVisuOPMode.b_Reset));
+                
+bEnableParams := TRUE
+                 AND PrgOrg.fbOpMode.P_OP_MODE_STATE = OP_MODE.AUTO_TEMPORARY;
+                 
+bEnableSelection := TRUE
+                    AND NOT fbVisuOPMode.b_Automatic;
+                 
+bEnableOptions := TRUE
+                  AND (NOT (fbVisuOPMode.b_Automatic 
+                   OR fbVisuOPMode.b_Reset));
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_030_HMIControl" Id="{0e0f2f39-721f-4a9c-bcc0-625248f39cc1}">
+      <Implementation>
+        <ST><![CDATA[(* HMI control *)
+CASE uiHMISeq OF
+  0:
+    IF fbHMICtrl.M_SetReady() THEN
+      IF bStartHMI THEN
+        uiHMISeq := 1;
+      ELSIF bCloseHMI THEN
+        uiHMISeq := 2;
+      ELSIF bOpenKeyboard THEN
+        uiHMISeq := 3;
+      ELSIF bHideKeyboard THEN
+        uiHMISeq := 4;
+      ELSIF bShutdownPc THEN
+        uiHMISeq := 5;
+      ELSIF bRestartPc THEN
+        uiHMISeq := 6;
+			END_IF
+		END_IF
+  1:
+    IF fbHMICtrl.M_StartHMI() THEN
+      bStartHMI := FALSE;
+      uiHMISeq := 0;
+		END_IF
+  2:
+    IF fbHMICtrl.M_CloseHMI() THEN
+      bCloseHMI := FALSE;
+      uiHMISeq := 0;
+		END_IF
+  3:
+    IF fbHMICtrl.M_ShowWinKeyboard() THEN
+      bOpenKeyboard := FALSE;
+      uiHMISeq := 0;
+		END_IF
+  4:
+    IF fbHMICtrl.M_HideWinKeyboard() THEN
+      bHideKeyboard := FALSE;
+      uiHMISeq := 0;
+		END_IF
+  5:
+    IF fbHMICtrl.M_PCShutdown() THEN
+      bShutdownPc := FALSE;
+      uiHMISeq := 0;
+		END_IF
+  6:
+    IF fbHMICtrl.M_PCReboot() THEN
+      bRestartPc := FALSE;
+      uiHMISeq := 0;
+		END_IF
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
     <LineIds Name="PrgVisu">
-      <LineId Id="30958" Count="0" />
-      <LineId Id="32739" Count="0" />
-      <LineId Id="32738" Count="0" />
-      <LineId Id="32767" Count="7" />
-      <LineId Id="32783" Count="0" />
-      <LineId Id="32777" Count="0" />
-      <LineId Id="30790" Count="1" />
-      <LineId Id="30793" Count="0" />
-      <LineId Id="30797" Count="0" />
-      <LineId Id="32828" Count="0" />
-      <LineId Id="32814" Count="12" />
-      <LineId Id="32866" Count="0" />
+      <LineId Id="33009" Count="0" />
+      <LineId Id="33050" Count="0" />
+      <LineId Id="33053" Count="0" />
+      <LineId Id="33055" Count="1" />
+      <LineId Id="33120" Count="0" />
+      <LineId Id="32956" Count="0" />
       <LineId Id="32903" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgVisu.A_000_FBs">
+      <LineId Id="2" Count="5" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgVisu.A_010_Init">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgVisu.A_020_Enables">
+      <LineId Id="2" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="85" Count="9" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="157" Count="5" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="113" Count="6" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="108" Count="4" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="122" Count="4" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="164" Count="2" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="67" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="129" Count="3" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="78" Count="3" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="133" Count="9" />
+      <LineId Id="148" Count="2" />
+      <LineId Id="143" Count="1" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="73" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgVisu.A_030_HMIControl">
+      <LineId Id="2" Count="47" />
+      <LineId Id="1" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

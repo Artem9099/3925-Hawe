@@ -21,6 +21,11 @@ END_VAR
     <Method Name="M_MeasureStrokeLength" Id="{ed996126-2858-4368-8d8b-e6f77fde652f}">
       <Declaration><![CDATA[METHOD M_MeasureStrokeLength : BOOL
 VAR_INPUT
+  bCylinderDecoupled:             BOOL;
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR
 ]]></Declaration>
     </Method>
@@ -32,6 +37,12 @@ END_VAR
     </Method>
     <Method Name="M_Reset" Id="{d57b43d5-154c-4286-b50b-92504feea29a}">
       <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_ResetDistance" Id="{66beff43-dad1-4d8d-93b4-dddf76b7c287}">
+      <Declaration><![CDATA[METHOD M_ResetDistance : BOOL
 VAR_INPUT
 END_VAR
 ]]></Declaration>
@@ -62,7 +73,12 @@ END_VAR
     <Method Name="M_VentCylinder" Id="{785aa2c9-964a-47eb-8dc8-ea77ef867a89}">
       <Declaration><![CDATA[METHOD M_VentCylinder : BOOL
 VAR_INPUT
-  uiVentCount:                UINT;
+  bCylinderDecoupled:             BOOL;
+  uiVentCount:                    UINT;
+  rWorkForceA:                    REAL;
+  rWorkForceB:                    REAL;
+  rLoadForceA:                    REAL;
+  rLoadForceB:                    REAL;
 END_VAR
 ]]></Declaration>
     </Method>

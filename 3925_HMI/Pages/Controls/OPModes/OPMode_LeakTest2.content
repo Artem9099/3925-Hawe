@@ -1,6 +1,6 @@
 <div id="LeakTest2_Popup" data-tchmi-type="TcHmi.Controls.System.TcHmiContent" data-tchmi-top="0" data-tchmi-left="0" data-tchmi-width="1600" data-tchmi-height="620">
 <div id="TcHmiContainer_9" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height="81" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="0" data-tchmi-top-unit="px" data-tchmi-width="500" data-tchmi-width-unit="px" data-tchmi-is-enabled="true">
-<div id="nbxLT2_VentCycles" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="44" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true">
+<div id="nbxLT2_VentCycles" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="44" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -10,6 +10,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "nbxLT2_VentCycles.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_VentCycles.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 <div id="cbxCylindernest1_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="Entlüften und Hub ermitteln" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="480" data-tchmi-width-unit="px" data-tchmi-text-font-weight="Bold" data-tchmi-text-font-size="20" data-tchmi-toggle-state="Active" data-tchmi-is-enabled="false">
 </div>
@@ -103,7 +138,7 @@
   "color": "rgba(181, 178, 178, 1)"
 }
 </script>
-<div id="nbxLT2_Delay" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="3600" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="44" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rRestDelay|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true">
+<div id="nbxLT2_Delay" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="3600" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="44" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rRestDelay|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -113,10 +148,45 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "nbxLT2_Delay.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_Delay.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 <div id="lblActiveCycle_78" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="Prüfkraft A/B (kN)" data-tchmi-top="80" data-tchmi-top-unit="px" data-tchmi-width="260" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="nbxLT2_TestingForceA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="80" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true">
+<div id="nbxLT2_TestingForceA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="80" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -138,16 +208,46 @@
         "symbolExpression": "%ctrl%nbxLT2_TestingPressureA::Value%/ctrl%",
         "value": {
           "objectType": "FunctionExpression",
-          "functionExpression": "(10000 * %ctrl%nbxLT2_TestingForceA::Value%/ctrl%) / 1963.5"
+          "functionExpression": "(10000 * %ctrl%nbxLT2_TestingForceA::Value%/ctrl%) / %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%"
         },
         "asyncWait": true
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingForceA.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingForceA.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="nbxLT2_TestingForceB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="388" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="80" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true">
+<div id="nbxLT2_TestingForceB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="388" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="80" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -169,9 +269,39 @@
         "symbolExpression": "%ctrl%nbxLT2_TestingPressureB::Value%/ctrl%",
         "value": {
           "objectType": "FunctionExpression",
-          "functionExpression": "(10000 * %ctrl%nbxLT2_TestingForceB::Value%/ctrl%) / 962.11"
+          "functionExpression": "(10000 * %ctrl%nbxLT2_TestingForceB::Value%/ctrl%) / %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%"
         },
         "asyncWait": true
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingForceB.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingForceB.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
       }
     ]
   }
@@ -180,7 +310,7 @@
 </div>
 <div id="lblActiveCycle_79" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="Prüfdruck A/B (bar)" data-tchmi-top="116" data-tchmi-top-unit="px" data-tchmi-width="260" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="nbxLT2_TestingPressureA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="116" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureA|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true">
+<div id="nbxLT2_TestingPressureA" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="116" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureA|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -202,16 +332,46 @@
         "symbolExpression": "%ctrl%nbxLT2_TestingForceA::Value%/ctrl%",
         "value": {
           "objectType": "FunctionExpression",
-          "functionExpression": "(%ctrl%nbxLT2_TestingPressureA::Value%/ctrl% / 10000) * 1963.5"
+          "functionExpression": "(%ctrl%nbxLT2_TestingPressureA::Value%/ctrl% / 10000) * %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA%/s%"
         },
         "asyncWait": true
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingPressureA.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingPressureA.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
       }
     ]
   }
 ]
 </script>
 </div>
-<div id="nbxLT2_TestingPressureB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="388" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="116" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureB|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true">
+<div id="nbxLT2_TestingPressureB" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="388" data-tchmi-left-unit="px" data-tchmi-max-value="200" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="116" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureB|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -233,9 +393,39 @@
         "symbolExpression": "%ctrl%nbxLT2_TestingForceB::Value%/ctrl%",
         "value": {
           "objectType": "FunctionExpression",
-          "functionExpression": "(%ctrl%nbxLT2_TestingPressureB::Value%/ctrl% / 10000) * 962.11"
+          "functionExpression": "(%ctrl%nbxLT2_TestingPressureB::Value%/ctrl% / 10000) * %s%PLC1.PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB%/s%"
         },
         "asyncWait": true
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingPressureB.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingPressureB.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
       }
     ]
   }
@@ -244,7 +434,7 @@
 </div>
 <div id="lblActiveCycle_80" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="Testzeit pro Zyklus (min)" data-tchmi-top="152" data-tchmi-top-unit="px" data-tchmi-width="260" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="nbxLT2_TestingTime" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="7200" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="152" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.udiDurationPerTest|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-step="15" data-tchmi-auto-step="true">
+<div id="nbxLT2_TestingTime" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="7200" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="152" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.udiDurationPerTest|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-step="15" data-tchmi-auto-step="true" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -254,10 +444,45 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "nbxLT2_TestingTime.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_TestingTime.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 <div id="lblActiveCycle_81" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="Grenzwert (mm³, ml)" data-tchmi-top="188" data-tchmi-top-unit="px" data-tchmi-width="260" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="nbxLT2_LimitValue" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="0.1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="188" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rNokLimit|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true" data-tchmi-step="1">
+<div id="nbxLT2_LimitValue" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="278" data-tchmi-left-unit="px" data-tchmi-max-value="100" data-tchmi-min-value="0.1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="188" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stRecipeParams.stRecipeLeakTest2.rNokLimit|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="210" data-tchmi-width-unit="px" data-tchmi-auto-step="true" data-tchmi-step="1" data-tchmi-auto-select-text="true">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -267,6 +492,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "nbxLT2_LimitValue.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({ top: (56 + 310) + 'px', left: (510 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "nbxLT2_LimitValue.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboardNum').animate({top: '5000px', left: (510 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 </div>
 </div>

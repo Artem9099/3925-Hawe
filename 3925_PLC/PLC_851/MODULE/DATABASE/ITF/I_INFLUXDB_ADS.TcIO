@@ -89,6 +89,25 @@ VAR_OUTPUT
   bResult:              BOOL;
 END_VAR]]></Declaration>
     </Method>
+    <Method Name="M_DeleteTagContentBlock" Id="{cee02e52-e90c-4c11-9a56-05be34f32760}">
+      <Declaration><![CDATA[METHOD M_DeleteTagContentBlock : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+  /// Measurement Name
+  sMeasurementName:     T_MaxString;
+  /// Tag Name
+  sTagName:             T_MaxString;
+  /// Date and time from
+  dtFrom:               DT;
+  /// Date and Time to
+  dtTo:                 DT;
+END_VAR
+VAR_OUTPUT
+  /// Result
+  bResult:              BOOL;
+END_VAR]]></Declaration>
+    </Method>
     <Method Name="M_FieldExistCheck" Id="{788a0671-6798-4f19-a721-950e7abec066}">
       <Declaration><![CDATA[METHOD M_FieldExistCheck : BOOL
 VAR_INPUT
@@ -106,6 +125,19 @@ VAR_OUTPUT
   bResult:              BOOL;
 END_VAR
 ]]></Declaration>
+    </Method>
+    <Method Name="M_GetTotalMeasurements" Id="{98acedfa-acd6-4ef2-baea-997804b80257}">
+      <Declaration><![CDATA[METHOD M_GetTotalMeasurements : BOOL
+VAR_INPUT
+  /// Bucket name
+  sBucketName:          T_MaxString;
+END_VAR
+VAR_OUTPUT
+  /// Process success
+  bResult:              BOOL;
+  /// Result value
+  uiResult:             UINT;
+END_VAR]]></Declaration>
     </Method>
     <Method Name="M_MeasurementExistCheck" Id="{6bcb11f7-77bd-4d3b-9d3d-74f084faf46c}">
       <Declaration><![CDATA[METHOD M_MeasurementExistCheck : BOOL
@@ -153,23 +185,35 @@ END_VAR
       <Declaration><![CDATA[METHOD M_WriteStruct : BOOL
 VAR_INPUT
   /// Bucket name
-  sBucketName:          T_MaxString;
-  /// Name of the table that is to be read.
-  sMeasurementName:     T_MaxString;
-  /// Tag name
-  sTagName:                 T_MaxString;
-  /// Field names list
-  arrFieldNames:        ARRAY [0..99] OF T_MaxString;
-  /// Field datatype list
-  arrFieldDatatypes:    ARRAY [0..99] OF T_MaxString;
+	sBucketName:                  T_MaxString;
+	/// Name of the table that is to be read.
+	sMeasurementName:             T_MaxString;
+	/// Tag name
+	sTagName:                     T_MaxString;
   /// Field values list
-  arrFieldValues:       ARRAY [0..99] OF ST_DATABASE_RECORD;
+	stFieldValues:                ST_DATABASE_RECORD;
+  /// Field struct content (Variable names)
+  //pFieldStructContent:        POINTER TO ARRAY [0..99] OF T_MaxString;
+	/// Field names list: names that appear in the database
+	//pFieldNames:                POINTER TO ARRAY [0..99] OF T_MaxString;
 END_VAR
 VAR_OUTPUT
 	/// Result
 	bResult	: BOOL;
 END_VAR]]></Declaration>
     </Method>
+    <Property Name="P_ADSLifeBit" Id="{45014879-71dd-49ed-8686-2c335d4d29d2}">
+      <Declaration><![CDATA[PROPERTY P_ADSLifeBit : BOOL]]></Declaration>
+      <Get Name="Get" Id="{6af7a5fa-5458-4df5-9561-1da6f35bd531}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_ADSState" Id="{ed9b6413-4f61-4045-b0ce-2bdf6ddef539}">
+      <Declaration><![CDATA[PROPERTY P_ADSState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{368473b7-d912-489d-bbe6-b080809e86bb}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
     <Property Name="P_Connected" Id="{bb335fe8-81c2-467f-ba49-82e913a6c96c}">
       <Declaration><![CDATA[PROPERTY P_Connected : BOOL]]></Declaration>
       <Get Name="Get" Id="{b404539a-8b5c-4587-b77a-23449b126251}">
@@ -182,9 +226,15 @@ END_VAR]]></Declaration>
         <Declaration><![CDATA[]]></Declaration>
       </Get>
     </Property>
-    <Property Name="P_LifeBit" Id="{917d3f54-babb-4154-b8ad-57d8f4d1db23}">
-      <Declaration><![CDATA[PROPERTY P_LifeBit : BOOL]]></Declaration>
+    <Property Name="P_InfluxDBLifeBit" Id="{917d3f54-babb-4154-b8ad-57d8f4d1db23}">
+      <Declaration><![CDATA[PROPERTY P_InfluxDBLifeBit : BOOL]]></Declaration>
       <Get Name="Get" Id="{7c183ad5-35c8-46eb-98c6-25c8406720ae}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Property Name="P_InfluxDBState" Id="{e7d31142-16a8-4414-80a0-5ac8ca156b07}">
+      <Declaration><![CDATA[PROPERTY P_InfluxDBState : BOOL]]></Declaration>
+      <Get Name="Get" Id="{5089df90-ceac-43eb-b0fc-f496e81b0499}">
         <Declaration><![CDATA[]]></Declaration>
       </Get>
     </Property>

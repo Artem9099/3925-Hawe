@@ -1,0 +1,34 @@
+<div id="CylDecouple" data-tchmi-type="TcHmi.Controls.System.TcHmiContent" data-tchmi-top="0" data-tchmi-left="0" data-tchmi-width="1600" data-tchmi-height="620">
+
+<div id="TcHmiTextblock_297" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="250" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Der Zylinder muss von dem Gegenhaltezylinder entkoppelt werden. 
+
+Der Schlitten muss mit dem Prüfling gekoppelt sein und die Ausgleichsgewichte müssen montiert werden (nur bei der Losbrechdruckermittlung).
+
+Nach dem entkoppeln bitte mit &quot;OK&quot; bestätigen. Der Ablauf wird fortgesetzt." data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="502" data-tchmi-width-unit="px" data-tchmi-word-wrap="true">
+</div>
+<div id="TcHmiTextblock_298" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Anweisung: Gegenhaltezylinder entkoppeln!" data-tchmi-top="10" data-tchmi-top-unit="px" data-tchmi-width="502" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-font-size="20" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
+</div>
+<div id="TcHmiButton_78" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="OK" data-tchmi-top="560" data-tchmi-top-unit="px" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-is-enabled="%s%PLC1.PrgStation.fbMainProcess.bEnableOkBtn%/s%">
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "TcHmiButton_78.onMouseClick",
+    "actions": [
+      {
+        "objectType": "WriteToSymbol",
+        "active": true,
+        "symbolExpression": "%s%PLC1.PrgStation.fbMainProcess.bBtnOkPressed%/s%",
+        "value": {
+          "objectType": "StaticValue",
+          "valueType": "tchmi:general#/definitions/BOOL",
+          "value": true
+        },
+        "asyncWait": true
+      }
+    ]
+  }
+]
+</script>
+</div>
+</div>

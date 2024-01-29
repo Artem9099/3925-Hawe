@@ -2,26 +2,19 @@
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="PrgMeasure" Id="{863d4cd8-1269-4ff0-9112-1a4520e9c307}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM PrgMeasure
-VAR
-  uiSeq:                                                      UINT := 0;
+VAR_INPUT
+  bRecord:                                                    BOOL;
 END_VAR
 VAR
+  uiSeq:                                                      UINT := 0;
+  i:                                                          UINT;
+END_VAR
+VAR // Time
   fbLocalSystemTime:                                          FB_LocalSystemTime := ( bEnable := TRUE, dwCycle := 1 );
   systemTime:                                                 TIMESTRUCT;
   sCurrentDateTime:                                           STRING;
-  stNest1Record:                                              ST_DATABASE_RECORD;
-  stNest2Record:                                              ST_DATABASE_RECORD;
-  stNest3Record:                                              ST_DATABASE_RECORD;
-  stNest4Record:                                              ST_DATABASE_RECORD;
-  ColumnNames:                                                ARRAY [1..3] OF STRING(50);
-  ColumnInfo:                                                 ARRAY [1..3] OF ST_ColumnInfo;
-  sCmd:                                                       STRING(5000);
 END_VAR
 VAR // TwincatADSGateway parameter
-  bDeleteMeasureFromDB:                                       BOOL;
-  bDeleteFeedback:                                            BOOL;
-END_VAR
-VAR
   bLifeBit:                                                   BOOL;
   bAdsConnected:                                              BOOL;
   bReady:                                                     BOOL;
@@ -32,132 +25,251 @@ VAR
   bShutdownPc:                                                BOOL;
   bRestartPc:                                                 BOOL;
   sLog:                                                       T_MaxString;
-  bGetDBExist:                                                BOOL;
-  sDBName:                                                    T_MaxString := 'test';
-  bGetMeasurementExist:                                       BOOL;
-  sMeasurementName:                                           T_MaxString := 'Art123';
-  bDeleteMeasurement:                                         BOOL;
-  bDeleteAllMeasurements:                                     BOOL;
-  bWriteStructData:                                           BOOL;
-  sKeyName:                                                   T_MaxString := 'Dauerlauf';
+  stFieldValues:                                              ST_DATABASE_RECORD;
+  arrFieldStructContent:                                      ARRAY [0..99] OF T_MaxString;
   arrFieldNames:                                              ARRAY [0..99] OF T_MaxString;
-  arrFieldValues:                                             ARRAY [0..99] OF LREAL;
-  dtStartTime:                                                DT;
-  dtEndTime:                                                  DT;
-  
-  fbInfluxDB:                                                 FB_INFLUX_DB_ADS(itfLogEvents:= PrgStation.fbLogEvents, itfOpMode:= PrgOrg.fbOpMode);
-  bTest:                                                      BOOL;
-  uiDBSeq:                                                    UINT := 0;
-  bRes:                                                       BOOL;
-  liTest:                                                     ULINT;
+  liFreeSpaceOnC:                                             LINT;
+  fbInfluxDB:                                                 FB_INFLUX_DB_ADS(itfOpMode:= PrgOrg.fbOpMode,
+                                                                               itfEventLogger:= PrgOrg.fbEventLogger);
 END_VAR
-]]></Declaration>
+VAR // Params from DB Settings
+  sMeasurementNameFromCfg:                                    T_MaxString;
+  sTagNameFromCfg:                                            T_MaxString;
+  uiTagNameIDFromCfg:                                         UINT;
+  bCheckMesurementExistSelected:                              BOOL;
+  bCheckTagExistSelected:                                     BOOL;
+  dtFromFromCfg:                                              DT := DT#2024-01-01-00:00:00;
+  dtToFromCfg:                                                DT := DT#2024-01-01-00:00:00;
+  bDeleteAllTagContentChecked:                                BOOL;
+  sTest:                                                      STRING;
+END_VAR
+VAR // Get total measurements
+  uiTotalMeasurementsSeq:                                     UINT := 0;
+  uiTotalMeasurements:                                        UINT;
+  bGetTotalMeasurements:                                      BOOL;
+  bGetTotalMeasurementsProcessSuccess:                        BOOL;
+END_VAR
+VAR // Measurement exist
+  uiMeasurementExistSeq:                                      UINT := 0;
+  bGetMeasurementExist:                                       BOOL;
+  bMeasurementExist:                                          BOOL;
+END_VAR
+VAR // Tag exist
+  uiTagExistSeq:                                              UINT := 0;
+  bGetTagExist:                                               BOOL;
+  bTagExist:                                                  BOOL;
+END_VAR
+VAR // Delete measurement
+  uiDeleteMeasurementSeq:                                     UINT := 0;
+  bDeleteMeasurement:                                         BOOL;
+  bDeleteMeasurementResult:                                   BOOL;
+END_VAR
+VAR // Delete Tag
+  uiDeleteTagSeq:                                             UINT := 0;
+  bDeleteTag:                                                 BOOL;
+  bDeleteTagResult:                                           BOOL;
+END_VAR
+VAR // Delete Tag content block
+  uiDeleteTagContentBlockSeq:                                 UINT := 0;
+  bDeleteTagContentBlock:                                     BOOL;
+  bDeleteTagContentBlockResult:                               BOOL;
+END_VAR
+VAR // Timer
+  iSaveSeq:                                                   INT := 0;
+  iSeqCounter:                                                INT := 1;
+  bSaveTrigger:                                               BOOL;
+  bSaveBusy:                                                  BOOL;
+  tInterval:                                                  TIME := T#500MS;
+  tonInterval:                                                TON;
+  tSwitchTime:                                                TIME := T#10H;
+  tonSwitchTimer:                                             TON;
+  tFailedSaveLimitTime:                                       TIME := T#7M;
+  tonFailedSavelimitTimer:                                    TON;
+  uiAllowedSaveFail:                                          UINT := 3;
+END_VAR
+VAR // Params
+  sBucketName:                                                T_MaxString := '3925-HZP';
+  sMeasurementName:                                           T_MaxString := 'Artikel';
+  sTagName:                                                   T_MaxString := 'Dauerlauf777';
+  bSaveSuccess:                                               BOOL;
+  uiFailedSaveCounter:                                        UINT := 0;
+  
+  liTargetCycles:                                             LINT;
+  rTargetTestPressureInBarA:                                  REAL;
+  rTargetTestPressureInBarB:                                  REAL;
+  rTargetTestForceInKNA:                                      REAL;
+  rTargetTestForceInKNB:                                      REAL;
+  rTargetCounterPressureInBarA:                               REAL;
+  rTargetCounterPressureInBarB:                               REAL;
+  rTargetCounterForceInKNA:                                   REAL;
+  rTargetCounterForceInKNB:                                   REAL;
+  rTargetSpeedAInMmPerS:                                      REAL;
+  rTargetSpeedBInMmPerS:                                      REAL;
+  lrNokLimit:                                                 LREAL;
+END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[// FBs
+      <ST><![CDATA[(* Actions *)
+A_000_FBs();
+A_010_DBInit();
+A_100_SaveToDB();
+A_110_TotalMeasurements();
+A_120_MeasurementExistCheck();
+A_130_TagExistCheck();
+A_140_DeleteMeasurement();
+A_150_DeleteTag();
+A_160_DeleteTagContentBlock();
+
+sTest := TO_STRING(dtFromFromCfg);]]></ST>
+    </Implementation>
+    <Folder Name="InfluxDB" Id="{9633ff19-e69a-47c9-a183-0fb264e8147a}" />
+    <Action Name="A_000_FBs" Id="{721e6916-77a9-420d-b6cd-a2099159602d}">
+      <Implementation>
+        <ST><![CDATA[(* FBs *)
+fbLocalSystemTime(systemTime=> systemTime);
 fbInfluxDB(bResult:= bResult,
-           bLifeBit:= bLifeBit,
+           bADSLifeBit:= bLifeBit,
            bAdsConnected:= bAdsConnected,
            bReady:= bReady,
-           bBusy:= bBusy);
-
-// Init
-arrFieldNames[0] := 'Pressure';
-arrFieldNames[1] := 'Force';
-arrFieldNames[2] := 'Temperature';
-arrFieldValues[0] := 100;
-arrFieldValues[1] := 10;
-arrFieldValues[2] := 33;
-
-IF bTest THEN
-  CASE uiDBSeq OF
-    0:
-      IF fbInfluxDB.M_SetReady() THEN
-        uiDBSeq := 1;
-      END_IF
-      
-    1:
-      IF fbInfluxDB.M_FieldExistCheck(sBucketName:= 'test', 
-                                  sMeasurementName:= 'Art123', 
-                                  sTagName:= 'Dauerlauf',
-                                  sFieldName:= 'Force',
-                                  bResult=> bRes) 
-      THEN
-        bTest := FALSE;
-        uiDBSeq := 0;
-  		END_IF
-  END_CASE
-END_IF
-
-// FBs call
-fbLocalSystemTime(systemTime=> systemTime);
-//fbNest1_db();
-//fbNest2_db();
-//fbNest3_db();
-//fbNest4_db();
-
-// Save data to MySQL Server
-//A_010_DBInit();
-//A_020_DBNest1();
-]]></ST>
-    </Implementation>
-    <Action Name="A_010_DBInit" Id="{6bf0f23b-ec9b-4edc-a183-4c73385e1f55}">
+           bBusy:= bBusy);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_010_DBInit" Id="{6bf0f23b-ec9b-4edc-a183-4c73385e1f55}" FolderPath="InfluxDB\">
       <Implementation>
-        <ST><![CDATA[(*
-// Config
-ColumnInfo[0].sName := 'colBigInt';     ColumnInfo[0].eType := E_ColumnType.BigInt;     ColumnInfo[0].nLength := 8;     ColumnInfo[0].sProperty := 'IDENTITY(1,1)';
-ColumnInfo[1].sName := 'colInteger';    ColumnInfo[1].eType := E_ColumnType.Integer;    ColumnInfo[1].nLength := 4;
-ColumnInfo[2].sName := 'colSmallInt';   ColumnInfo[2].eType := E_ColumnType.SmallInt;   ColumnInfo[2].nLength := 2;
-ColumnInfo[3].sName := 'colTinyInt';    ColumnInfo[3].eType := E_ColumnType.TinyInt;    ColumnInfo[3].nLength := 1;
-ColumnInfo[4].sName := 'colBit';        ColumnInfo[4].eType := E_ColumnType.BIT_;       ColumnInfo[4].nLength := 1;
-ColumnInfo[5].sName := 'colMoney';      ColumnInfo[5].eType := E_ColumnType.Money;      ColumnInfo[5].nLength := 8;
-ColumnInfo[6].sName := 'colFloat';      ColumnInfo[6].eType := E_ColumnType.Float;      ColumnInfo[6].nLength := 8;
-ColumnInfo[7].sName := 'colReal';       ColumnInfo[7].eType := E_ColumnType.REAL_;      ColumnInfo[7].nLength := 4;
-ColumnInfo[8].sName := 'colDateTime';   ColumnInfo[8].eType := E_ColumnType.DateTime;   ColumnInfo[8].nLength := 4;
-ColumnInfo[9].sName := 'colNText';      ColumnInfo[9].eType := E_ColumnType.NText;      ColumnInfo[9].nLength := 256;
-ColumnInfo[10].sName := 'colNChar';     ColumnInfo[10].eType := E_ColumnType.NChar;     ColumnInfo[10].nLength := 10;
-ColumnInfo[11].sName := 'colImage';     ColumnInfo[11].eType := E_ColumnType.Image;     ColumnInfo[11].nLength := 256;
-ColumnInfo[12].sName := 'colNVarChar';  ColumnInfo[12].eType := E_ColumnType.NVarChar;  ColumnInfo[12].nLength := 50;
-ColumnInfo[13].sName := 'colBinary';    ColumnInfo[13].eType := E_ColumnType.Binary;    ColumnInfo[13].nLength := 30;
-ColumnInfo[14].sName := 'colVarBinary'; ColumnInfo[14].eType := E_ColumnType.VarBinary; ColumnInfo[14].nLength := 20;
-*)
+        <ST><![CDATA[(* Define struct content names *)
+// assign variable names to struct content list
+arrFieldStructContent[0] := 'sTimeStamp';
+arrFieldStructContent[1] := 'sTimer';
+arrFieldStructContent[2] := 'liTargetCycles';
+arrFieldStructContent[3] := 'liActiveCycle';
+arrFieldStructContent[4] := 'iTestDirection';
+arrFieldStructContent[5] := 'rTargetTestPressureInBarA';
+arrFieldStructContent[6] := 'rTargetTestPressureInBarB';
+arrFieldStructContent[7] := 'rCurrentTestPressureInBar';
+arrFieldStructContent[8] := 'rTargetTestForceInKNA';
+arrFieldStructContent[9] := 'rTargetTestForceInKNB';
+arrFieldStructContent[10] := 'rCurrentTestForceInKN';
+arrFieldStructContent[11] := 'rTestPressureAInBar';
+arrFieldStructContent[12] := 'rTestPressureBInBar';
+arrFieldStructContent[13] := 'rBreakawayPressureInBar';
+arrFieldStructContent[14] := 'rBreakawayPressureAInBar';
+arrFieldStructContent[15] := 'rBreakawayPressureBInBar';
+arrFieldStructContent[16] := 'rReservoirPressureInBar';
+arrFieldStructContent[17] := 'rTargetCounterPressureInBarA';
+arrFieldStructContent[18] := 'rTargetCounterPressureInBarB';
+arrFieldStructContent[19] := 'rCurrentCounterPressureInBar';
+arrFieldStructContent[20] := 'rTargetCounterForceInKNA';
+arrFieldStructContent[21] := 'rTargetCounterForceInKNB';
+arrFieldStructContent[22] := 'rCurrentCounterForceInKN';
+arrFieldStructContent[23] := 'lrPosition';
+arrFieldStructContent[24] := 'lrPositionMin';
+arrFieldStructContent[25] := 'lrPositionMax';
+arrFieldStructContent[26] := 'lrCylStrokeLength';
+arrFieldStructContent[27] := 'lrTemperature';
+arrFieldStructContent[28] := 'lrCylPistonSurfaceA';
+arrFieldStructContent[29] := 'lrCylPistonSurfaceB';
+arrFieldStructContent[30] := 'lrNokLimit';
+arrFieldStructContent[31] := 'lrCurrentNokDifference';
+arrFieldStructContent[32] := 'lrCurrentNokLimitInPercent';
+arrFieldStructContent[33] := 'lrTargetSpeedAInMmPerS';
+arrFieldStructContent[34] := 'lrTargetSpeedBInMmPerS';
+arrFieldStructContent[35] := 'lrCurrentSpeedInMmPerS';
 
-// Define header
-ColumnNames[1] :=  ColumnInfo[1].sName := 'sZeitstempel';                              ColumnInfo[1].eType := E_ColumnType.NText;     ColumnInfo[1].nLength := 256;
-ColumnNames[2] :=  ColumnInfo[2].sName := 'sPruefart';                                 ColumnInfo[2].eType := E_ColumnType.NText;     ColumnInfo[2].nLength := 256;
-ColumnNames[3] :=  ColumnInfo[3].sName := 'sTimer';                                    ColumnInfo[3].eType := E_ColumnType.NText;     ColumnInfo[3].nLength := 256;
-//ColumnNames[4] :=  ColumnInfo[4].sName := 'liSollzyklen';                              ColumnInfo[4].eType := E_ColumnType.BigInt;    ColumnInfo[4].nLength := 8;
-//ColumnNames[5] :=  ColumnInfo[5].sName := 'liAktiverZyklus';                           ColumnInfo[5].eType := E_ColumnType.BigInt;    ColumnInfo[5].nLength := 8;
-//ColumnNames[6] :=  ColumnInfo[6].sName := 'sPrüfrichtung';                             ColumnInfo[6].eType := E_ColumnType.NText;     ColumnInfo[6].nLength := 256;
-//ColumnNames[7] :=  ColumnInfo[7].sName := 'lrSollprüfdruck_bar_A';                     ColumnInfo[7].eType := E_ColumnType.REAL_;     ColumnInfo[7].nLength := 4;
-//ColumnNames[8] :=  ColumnInfo[8].sName := 'lrSollprüfdruck_bar_B';                     ColumnInfo[8].eType := E_ColumnType.REAL_;     ColumnInfo[8].nLength := 4;
-//ColumnNames[9] :=  ColumnInfo[9].sName := 'lrIstprüfdruck_bar';                        ColumnInfo[9].eType := E_ColumnType.REAL_;     ColumnInfo[9].nLength := 4;
-//ColumnNames[10] := ColumnInfo[10].sName := 'lrSollprüfkraft_KN_A';                     ColumnInfo[10].eType := E_ColumnType.REAL_;    ColumnInfo[10].nLength := 4;
-//ColumnNames[11] := ColumnInfo[11].sName := 'lrSollprüfkraft_KN_B';                     ColumnInfo[11].eType := E_ColumnType.REAL_;    ColumnInfo[11].nLength := 4;
-//ColumnNames[12] := ColumnInfo[12].sName := 'lrIstprüfkraft_KN';                        ColumnInfo[12].eType := E_ColumnType.REAL_;    ColumnInfo[12].nLength := 4;
-//ColumnNames[13] := ColumnInfo[13].sName := 'lrPrüfdruck_bar_A';                        ColumnInfo[13].eType := E_ColumnType.REAL_;    ColumnInfo[13].nLength := 4;
-//ColumnNames[14] := ColumnInfo[14].sName := 'lrPrüfdruck_bar_B';                        ColumnInfo[14].eType := E_ColumnType.REAL_;    ColumnInfo[14].nLength := 4;
-//ColumnNames[15] := ColumnInfo[15].sName := 'lrLosbrechdruck_bar';                      ColumnInfo[15].eType := E_ColumnType.REAL_;    ColumnInfo[15].nLength := 4;
-//ColumnNames[16] := ColumnInfo[16].sName := 'lrLosbrechdruck_bar_A';                    ColumnInfo[16].eType := E_ColumnType.REAL_;    ColumnInfo[16].nLength := 4;
-//ColumnNames[17] := ColumnInfo[17].sName := 'lrLosbrechdruck_bar_B';                    ColumnInfo[17].eType := E_ColumnType.REAL_;    ColumnInfo[17].nLength := 4;
-//ColumnNames[18] := ColumnInfo[18].sName := 'lrSpeicherdruck_bar';                      ColumnInfo[18].eType := E_ColumnType.REAL_;    ColumnInfo[18].nLength := 4;
-//ColumnNames[19] := ColumnInfo[19].sName := 'lrSollgegenhaltedruck_bar_A';              ColumnInfo[19].eType := E_ColumnType.REAL_;    ColumnInfo[19].nLength := 4;
-//ColumnNames[20] := ColumnInfo[20].sName := 'lrSollgegenhaltedruck_bar_B';              ColumnInfo[20].eType := E_ColumnType.REAL_;    ColumnInfo[20].nLength := 4;
-//ColumnNames[21] := ColumnInfo[21].sName := 'lrIstgegenhaltedruck_bar';                 ColumnInfo[21].eType := E_ColumnType.REAL_;    ColumnInfo[21].nLength := 4;
-//ColumnNames[22] := ColumnInfo[22].sName := 'lrSollgegenhaltekraft_KN_A';               ColumnInfo[22].eType := E_ColumnType.REAL_;    ColumnInfo[22].nLength := 4;
-//ColumnNames[23] := ColumnInfo[23].sName := 'lrSollgegenhaltekraft_KN_B';               ColumnInfo[23].eType := E_ColumnType.REAL_;    ColumnInfo[23].nLength := 4;
-//ColumnNames[24] := ColumnInfo[24].sName := 'lrIstgegenhaltekraft_KN';                  ColumnInfo[24].eType := E_ColumnType.REAL_;    ColumnInfo[24].nLength := 4;
-//ColumnNames[25] := ColumnInfo[25].sName := 'lrPosition';                               ColumnInfo[25].eType := E_ColumnType.REAL_;    ColumnInfo[25].nLength := 4;
-//ColumnNames[26] := ColumnInfo[26].sName := 'lrPosition_Min';                           ColumnInfo[26].eType := E_ColumnType.REAL_;    ColumnInfo[26].nLength := 4;
-//ColumnNames[27] := ColumnInfo[27].sName := 'lrPosition_Max';                           ColumnInfo[27].eType := E_ColumnType.REAL_;    ColumnInfo[27].nLength := 4;
-//ColumnNames[28] := ColumnInfo[28].sName := 'lrKolbenlänge';                            ColumnInfo[28].eType := E_ColumnType.REAL_;    ColumnInfo[28].nLength := 4;
-//ColumnNames[29] := ColumnInfo[29].sName := 'lrTemperatur';                             ColumnInfo[29].eType := E_ColumnType.REAL_;    ColumnInfo[29].nLength := 4;
-//ColumnNames[30] := ColumnInfo[30].sName := 'lrKolbenfläche_A';                         ColumnInfo[30].eType := E_ColumnType.REAL_;    ColumnInfo[30].nLength := 4;
-//ColumnNames[31] := ColumnInfo[31].sName := 'lrKolbenfläche_B';                         ColumnInfo[31].eType := E_ColumnType.REAL_;    ColumnInfo[31].nLength := 4;
-//ColumnNames[32] := ColumnInfo[32].sName := 'lrNokUnterschied';                         ColumnInfo[32].eType := E_ColumnType.REAL_;    ColumnInfo[32].nLength := 4;
-//ColumnNames[33] := ColumnInfo[33].sName := 'lrNokLimit_Prozent';                       ColumnInfo[33].eType := E_ColumnType.REAL_;    ColumnInfo[33].nLength := 4;
-//ColumnNames[34] := ColumnInfo[34].sName := 'lrSollgeschwindigkeit_mmProS_A';           ColumnInfo[34].eType := E_ColumnType.REAL_;    ColumnInfo[34].nLength := 4;
-//ColumnNames[35] := ColumnInfo[35].sName := 'lrSollgeschwindigkeit_mmProS_B';           ColumnInfo[35].eType := E_ColumnType.REAL_;    ColumnInfo[35].nLength := 4;
-//ColumnNames[36] := ColumnInfo[36].sName := 'lrIstgeschwindigkeit_mmProS';              ColumnInfo[36].eType := E_ColumnType.REAL_;    ColumnInfo[36].nLength := 4;
+// assign variable names to database content
+arrFieldNames[0] := 'Zeitstempel';
+arrFieldNames[1] := 'Timer';
+arrFieldNames[2] := 'SollZyklen';
+arrFieldNames[3] := 'AktiverZyklus';
+arrFieldNames[4] := 'Prüfrichtung';
+arrFieldNames[5] := 'TestdruckInBarA_Soll';
+arrFieldNames[6] := 'TestdruckInBarB_Soll';
+arrFieldNames[7] := 'TestdruckInBar_Ist';
+arrFieldNames[8] := 'TestkraftInKNA_Soll';
+arrFieldNames[9] := 'TestkraftInKNB_Soll';
+arrFieldNames[10] := 'TestkraftInKN_Ist';
+arrFieldNames[11] := 'TestDruckAInBar';
+arrFieldNames[12] := 'TestDruckBInBar';
+arrFieldNames[13] := 'LosbrechdruckInBar';
+arrFieldNames[14] := 'LosbrechdruckAInBar';
+arrFieldNames[15] := 'LosbrechdruckBInBar';
+arrFieldNames[16] := 'DruckspeicherdruckInBar';
+arrFieldNames[17] := 'GegenhaltezylinderdruckInBarA_Soll';
+arrFieldNames[18] := 'GegenhaltezylinderdruckInBarB_Soll';
+arrFieldNames[19] := 'GegenhaltezylinderdruckInBar_Ist';
+arrFieldNames[20] := 'GegenhaltezylinderkraftInKNA_Soll';
+arrFieldNames[21] := 'GegenhaltezylinderkraftInKNB_Soll';
+arrFieldNames[22] := 'GegenhaltezylinderkraftInKN_Ist';
+arrFieldNames[23] := 'Position';
+arrFieldNames[24] := 'PositionMin';
+arrFieldNames[25] := 'PositionMax';
+arrFieldNames[26] := 'HublängeInMm';
+arrFieldNames[27] := 'TemperaturInC';
+arrFieldNames[28] := 'KolbenflächeA';
+arrFieldNames[29] := 'KolbenflächeB';
+arrFieldNames[30] := 'NOKDifferenzLimit';
+arrFieldNames[31] := 'NOKDifferenz_Ist';
+arrFieldNames[32] := 'NOKDifferenzInProzent_Ist';
+arrFieldNames[33] := 'GeschwindigkeitAInMmProS_Soll';
+arrFieldNames[34] := 'GeschwindigkeitBInMmProS_Soll';
+arrFieldNames[35] := 'GeschwindigkeitInMmProS_Ist';
+
+// Set
+IF PrgVisu.fbVisuOPMode.P_EnduranceRunSelected THEN
+  sTagName := 'Dauerlauf';
+  liTargetCycles := PrgStation.stRecipeParams.stRecipeEnduranceRun.udiCycles;
+  rTargetTestPressureInBarA := PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkPressureA;
+  rTargetTestPressureInBarB := PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkPressureB;
+  rTargetTestForceInKNA := PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceA;
+  rTargetTestForceInKNB := PrgStation.stRecipeParams.stRecipeEnduranceRun.rWorkForceB;
+  rTargetCounterPressureInBarA := PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadPressureA;
+  rTargetCounterPressureInBarB := PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadPressureB;
+  rTargetCounterForceInKNA := PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceA;
+  rTargetCounterForceInKNB := PrgStation.stRecipeParams.stRecipeEnduranceRun.rLoadForceB;
+  rTargetSpeedAInMmPerS := PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedA;
+  rTargetSpeedBInMmPerS := PrgStation.stRecipeParams.stRecipeEnduranceRun.rSpeedB;
+  lrNokLimit := PrgStation.stRecipeParams.stRecipeEnduranceRun.stLT1_Params.rNokLimit;
+ELSIF PrgVisu.fbVisuOPMode.P_BreakPressureDetSelected THEN
+  sTagName := 'Losbrechdruck';
+  liTargetCycles := PrgStation.stRecipeParams.stRecipeBreakPressure.uiVentCycles;
+  rTargetTestPressureInBarA := 0.0;
+  rTargetTestPressureInBarB := 0.0;
+  rTargetTestForceInKNA := 0.0;
+  rTargetTestForceInKNB := 0.0;
+  rTargetCounterPressureInBarA := 0.0;
+  rTargetCounterPressureInBarB := 0.0;
+  rTargetCounterForceInKNA := 0.0;
+  rTargetCounterForceInKNB := 0.0;
+  rTargetSpeedAInMmPerS := PrgStation.stRecipeParams.stRecipeBreakPressure.rMinSpeedInMmPerS;
+  rTargetSpeedBInMmPerS := PrgStation.stRecipeParams.stRecipeBreakPressure.rMinSpeedInMmPerS;
+  lrNokLimit := PrgStation.stRecipeParams.stRecipeBreakPressure.rNokLimit;
+ELSIF PrgVisu.fbVisuOPMode.P_LeakTest1Selected THEN
+  sTagName := 'Dichtheitsprüfung1';
+  liTargetCycles := PrgStation.stRecipeParams.stRecipeLeakTest1.uiVentCycles;
+  rTargetTestPressureInBarA := 0.0;
+  rTargetTestPressureInBarB := 0.0;
+  rTargetTestForceInKNA := 0.0;
+  rTargetTestForceInKNB := 0.0;
+  rTargetCounterPressureInBarA := PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadPressureA;
+  rTargetCounterPressureInBarB := PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadPressureB;
+  rTargetCounterForceInKNA := PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceA;
+  rTargetCounterForceInKNB := PrgStation.stRecipeParams.stRecipeLeakTest1.rLoadForceB;
+  rTargetSpeedAInMmPerS := 0.0;
+  rTargetSpeedBInMmPerS := 0.0;
+  lrNokLimit := PrgStation.stRecipeParams.stRecipeLeakTest1.rNokLimit;
+ELSIF PrgVisu.fbVisuOPMode.P_LeakTest2Selected THEN
+  sTagName := 'Dichtheitsprüfung2';
+  liTargetCycles := PrgStation.stRecipeParams.stRecipeLeakTest2.uiVentCycles;
+  rTargetTestPressureInBarA := PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureA;
+  rTargetTestPressureInBarB := PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadPressureB;
+  rTargetTestForceInKNA := PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceA;
+  rTargetTestForceInKNB := PrgStation.stRecipeParams.stRecipeLeakTest2.rLoadForceB;
+  rTargetCounterPressureInBarA := 0.0;
+  rTargetCounterPressureInBarB := 0.0;
+  rTargetCounterForceInKNA := 0.0;
+  rTargetCounterForceInKNB := 0.0;
+  rTargetSpeedAInMmPerS := 0.0;
+  rTargetSpeedBInMmPerS := 0.0;
+  lrNokLimit := PrgStation.stRecipeParams.stRecipeLeakTest2.rNokLimit;
+END_IF
 
 // Current Timestamp
 sCurrentDateTime := CONCAT(TO_STRING(systemTime.wYear), '_');
@@ -174,86 +286,623 @@ sCurrentDateTime := CONCAT(sCurrentDateTime, TO_STRING(systemTime.wSecond));
 ]]></ST>
       </Implementation>
     </Action>
-    <Action Name="A_020_DBNest1" Id="{aecf5f8e-87ac-46d9-ad92-8292f5baf49e}">
+    <Action Name="A_020_DBNest1" Id="{aecf5f8e-87ac-46d9-ad92-8292f5baf49e}" FolderPath="InfluxDB\">
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[// Assign Nest1 values to database
+sMeasurementName := PrgStation.sTestCyl1SNo;
+
+stFieldValues.sTimeStamp := sCurrentDateTime;
+stFieldValues.sTimer := PrgStation.fbTimerNest1.M_GetTimerET(FALSE, '');
+stFieldValues.liTargetCycles := liTargetCycles;
+stFieldValues.liActiveCycle := PrgStation.fbMainProcess.P_CurrentCycleNest1;
+stFieldValues.iTestDirection := PrgStation.fbTestCyl1.P_ActiveDirection;
+stFieldValues.rTargetTestPressureInBarA := rTargetTestPressureInBarA;
+stFieldValues.rTargetTestPressureInBarB := rTargetTestPressureInBarB;
+stFieldValues.rCurrentTestPressureInBar := PrgStation.rPressureConverted_TestCyl1;
+stFieldValues.rTargetTestForceInKNA := rTargetTestForceInKNA;
+stFieldValues.rTargetTestForceInKNB := rTargetTestForceInKNB;
+stFieldValues.rCurrentTestForceInKN := PrgStation.fbTestCyl1.P_CurrentForceInKN;
+stFieldValues.rTestPressureAInBar := PrgStation.rPressureConverted_TestCyl1_A;
+stFieldValues.rTestPressureBInBar := PrgStation.rPressureConverted_TestCyl1_B;
+stFieldValues.rBreakawayPressureInBar := PrgStation.rPressureConverted_LowPressure;
+stFieldValues.rBreakawayPressureAInBar := PrgStation.rPressureConverted_TestCyl1_BreakPressure_A;
+stFieldValues.rBreakawayPressureBInBar := PrgStation.rPressureConverted_TestCyl1_BreakPressure_B;
+stFieldValues.rReservoirPressureInBar := PrgStation.rPressureConverted_TestCyl1_PressureReservoir;
+stFieldValues.rTargetCounterPressureInBarA := rTargetCounterPressureInBarA;
+stFieldValues.rTargetCounterPressureInBarB := rTargetCounterPressureInBarB;
+stFieldValues.rCurrentCounterPressureInBar := PrgStation.rPressureConverted_CounterCyl1;
+stFieldValues.rTargetCounterForceInKNA := rTargetCounterForceInKNA;
+stFieldValues.rTargetCounterForceInKNB := rTargetCounterForceInKNB;
+stFieldValues.rCurrentCounterForceInKN := PrgStation.fbCounterCyl1.P_CurrentForceInKN;
+stFieldValues.lrPosition := PrgStation.fbTestCyl1.P_Position;
+stFieldValues.lrPositionMin := PrgStation.fbTestCyl1.P_MinPosVal;
+stFieldValues.lrPositionMax := PrgStation.fbTestCyl1.P_MaxPosVal;
+stFieldValues.lrCylStrokeLength := PrgStation.fbTestCyl1.P_StrokeLength;
+stFieldValues.lrTemperature := 0; // Programmieren????
+stFieldValues.lrCylPistonSurfaceA := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA;
+stFieldValues.lrCylPistonSurfaceB := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB;
+stFieldValues.lrNokLimit := lrNokLimit;
+stFieldValues.lrCurrentNokDifference := PrgStation.fbNest1.P_NokDifference;
+stFieldValues.lrCurrentNokLimitInPercent := PrgStation.fbNest1.P_NokLimitInPercent;
+stFieldValues.lrTargetSpeedAInMmPerS := rTargetSpeedAInMmPerS;
+stFieldValues.lrTargetSpeedBInMmPerS := rTargetSpeedBInMmPerS;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_030_DBNest2" Id="{87633ed4-68f7-41de-bbb8-8a3d33418e3d}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Assign Nest2 values to database
+sMeasurementName := PrgStation.sTestCyl2SNo;
+
+stFieldValues.sTimeStamp := sCurrentDateTime;
+stFieldValues.sTimer := PrgStation.fbTimerNest2.M_GetTimerET(FALSE, '');
+stFieldValues.liTargetCycles := liTargetCycles;
+stFieldValues.liActiveCycle := PrgStation.fbMainProcess.P_CurrentCycleNest2;
+stFieldValues.iTestDirection := PrgStation.fbTestCyl2.P_ActiveDirection;
+stFieldValues.rTargetTestPressureInBarA := rTargetTestPressureInBarA;
+stFieldValues.rTargetTestPressureInBarB := rTargetTestPressureInBarB;
+stFieldValues.rCurrentTestPressureInBar := PrgStation.rPressureConverted_TestCyl2;
+stFieldValues.rTargetTestForceInKNA := rTargetTestForceInKNA;
+stFieldValues.rTargetTestForceInKNB := rTargetTestForceInKNB;
+stFieldValues.rCurrentTestForceInKN := PrgStation.fbTestCyl2.P_CurrentForceInKN;
+stFieldValues.rTestPressureAInBar := PrgStation.rPressureConverted_TestCyl2_A;
+stFieldValues.rTestPressureBInBar := PrgStation.rPressureConverted_TestCyl2_B;
+stFieldValues.rBreakawayPressureInBar := 0.0;
+stFieldValues.rBreakawayPressureAInBar := 0.0;
+stFieldValues.rBreakawayPressureBInBar := 0.0;
+stFieldValues.rReservoirPressureInBar := 0.0;
+stFieldValues.rTargetCounterPressureInBarA := rTargetCounterPressureInBarA;
+stFieldValues.rTargetCounterPressureInBarB := rTargetCounterPressureInBarB;
+stFieldValues.rCurrentCounterPressureInBar := PrgStation.rPressureConverted_CounterCyl2;
+stFieldValues.rTargetCounterForceInKNA := rTargetCounterForceInKNA;
+stFieldValues.rTargetCounterForceInKNB := rTargetCounterForceInKNB;
+stFieldValues.rCurrentCounterForceInKN := PrgStation.fbCounterCyl2.P_CurrentForceInKN;
+stFieldValues.lrPosition := PrgStation.fbTestCyl2.P_Position;
+stFieldValues.lrPositionMin := PrgStation.fbTestCyl2.P_MinPosVal;
+stFieldValues.lrPositionMax := PrgStation.fbTestCyl2.P_MaxPosVal;
+stFieldValues.lrCylStrokeLength := PrgStation.fbTestCyl2.P_StrokeLength;
+stFieldValues.lrTemperature := 0; // Programmieren????
+stFieldValues.lrCylPistonSurfaceA := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA;
+stFieldValues.lrCylPistonSurfaceB := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB;
+stFieldValues.lrNokLimit := lrNokLimit;
+stFieldValues.lrCurrentNokDifference := PrgStation.fbNest2.P_NokDifference;
+stFieldValues.lrCurrentNokLimitInPercent := PrgStation.fbNest2.P_NokLimitInPercent;
+stFieldValues.lrTargetSpeedAInMmPerS := rTargetSpeedAInMmPerS;
+stFieldValues.lrTargetSpeedBInMmPerS := rTargetSpeedBInMmPerS;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_040_DBNest3" Id="{0f20151f-7425-43ca-9234-a52f3cc0246d}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Assign Nest3 values to database
+sMeasurementName := PrgStation.sTestCyl3SNo;
+
+stFieldValues.sTimeStamp := sCurrentDateTime;
+stFieldValues.sTimer := PrgStation.fbTimerNest3.M_GetTimerET(FALSE, '');
+stFieldValues.liTargetCycles := liTargetCycles;
+stFieldValues.liActiveCycle := PrgStation.fbMainProcess.P_CurrentCycleNest3;
+stFieldValues.iTestDirection := PrgStation.fbTestCyl3.P_ActiveDirection;
+stFieldValues.rTargetTestPressureInBarA := rTargetTestPressureInBarA;
+stFieldValues.rTargetTestPressureInBarB := rTargetTestPressureInBarB;
+stFieldValues.rCurrentTestPressureInBar := PrgStation.rPressureConverted_TestCyl3;
+stFieldValues.rTargetTestForceInKNA := rTargetTestForceInKNA;
+stFieldValues.rTargetTestForceInKNB := rTargetTestForceInKNB;
+stFieldValues.rCurrentTestForceInKN := PrgStation.fbTestCyl3.P_CurrentForceInKN;
+stFieldValues.rTestPressureAInBar := PrgStation.rPressureConverted_TestCyl3_A;
+stFieldValues.rTestPressureBInBar := PrgStation.rPressureConverted_TestCyl3_B;
+stFieldValues.rBreakawayPressureInBar := 0.0;
+stFieldValues.rBreakawayPressureAInBar := 0.0;
+stFieldValues.rBreakawayPressureBInBar := 0.0;
+stFieldValues.rReservoirPressureInBar := 0.0;
+stFieldValues.rTargetCounterPressureInBarA := rTargetCounterPressureInBarA;
+stFieldValues.rTargetCounterPressureInBarB := rTargetCounterPressureInBarB;
+stFieldValues.rCurrentCounterPressureInBar := PrgStation.rPressureConverted_CounterCyl3;
+stFieldValues.rTargetCounterForceInKNA := rTargetCounterForceInKNA;
+stFieldValues.rTargetCounterForceInKNB := rTargetCounterForceInKNB;
+stFieldValues.rCurrentCounterForceInKN := PrgStation.fbCounterCyl3.P_CurrentForceInKN;
+stFieldValues.lrPosition := PrgStation.fbTestCyl3.P_Position;
+stFieldValues.lrPositionMin := PrgStation.fbTestCyl3.P_MinPosVal;
+stFieldValues.lrPositionMax := PrgStation.fbTestCyl3.P_MaxPosVal;
+stFieldValues.lrCylStrokeLength := PrgStation.fbTestCyl3.P_StrokeLength;
+stFieldValues.lrTemperature := 0; // Programmieren????
+stFieldValues.lrCylPistonSurfaceA := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA;
+stFieldValues.lrCylPistonSurfaceB := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB;
+stFieldValues.lrNokLimit := lrNokLimit;
+stFieldValues.lrCurrentNokDifference := PrgStation.fbNest3.P_NokDifference;
+stFieldValues.lrCurrentNokLimitInPercent := PrgStation.fbNest3.P_NokLimitInPercent;
+stFieldValues.lrTargetSpeedAInMmPerS := rTargetSpeedAInMmPerS;
+stFieldValues.lrTargetSpeedBInMmPerS := rTargetSpeedBInMmPerS;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_050_DBNest4" Id="{0bb378cd-7527-4176-9ede-3c340ad5e3ab}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Assign Nest3 values to database
+sMeasurementName := PrgStation.sTestCyl4SNo;
+
+stFieldValues.sTimeStamp := sCurrentDateTime;
+stFieldValues.sTimer := PrgStation.fbTimerNest4.M_GetTimerET(FALSE, '');
+stFieldValues.liTargetCycles := liTargetCycles;
+stFieldValues.liActiveCycle := PrgStation.fbMainProcess.P_CurrentCycleNest4;
+stFieldValues.iTestDirection := PrgStation.fbTestCyl4.P_ActiveDirection;
+stFieldValues.rTargetTestPressureInBarA := rTargetTestPressureInBarA;
+stFieldValues.rTargetTestPressureInBarB := rTargetTestPressureInBarB;
+stFieldValues.rCurrentTestPressureInBar := PrgStation.rPressureConverted_TestCyl4;
+stFieldValues.rTargetTestForceInKNA := rTargetTestForceInKNA;
+stFieldValues.rTargetTestForceInKNB := rTargetTestForceInKNB;
+stFieldValues.rCurrentTestForceInKN := PrgStation.fbTestCyl4.P_CurrentForceInKN;
+stFieldValues.rTestPressureAInBar := PrgStation.rPressureConverted_TestCyl4_A;
+stFieldValues.rTestPressureBInBar := PrgStation.rPressureConverted_TestCyl4_B;
+stFieldValues.rBreakawayPressureInBar := 0.0;
+stFieldValues.rBreakawayPressureAInBar := 0.0;
+stFieldValues.rBreakawayPressureBInBar := 0.0;
+stFieldValues.rReservoirPressureInBar := 0.0;
+stFieldValues.rTargetCounterPressureInBarA := rTargetCounterPressureInBarA;
+stFieldValues.rTargetCounterPressureInBarB := rTargetCounterPressureInBarB;
+stFieldValues.rCurrentCounterPressureInBar := PrgStation.rPressureConverted_CounterCyl4;
+stFieldValues.rTargetCounterForceInKNA := rTargetCounterForceInKNA;
+stFieldValues.rTargetCounterForceInKNB := rTargetCounterForceInKNB;
+stFieldValues.rCurrentCounterForceInKN := PrgStation.fbCounterCyl4.P_CurrentForceInKN;
+stFieldValues.lrPosition := PrgStation.fbTestCyl4.P_Position;
+stFieldValues.lrPositionMin := PrgStation.fbTestCyl4.P_MinPosVal;
+stFieldValues.lrPositionMax := PrgStation.fbTestCyl4.P_MaxPosVal;
+stFieldValues.lrCylStrokeLength := PrgStation.fbTestCyl4.P_StrokeLength;
+stFieldValues.lrTemperature := 0; // Programmieren????
+stFieldValues.lrCylPistonSurfaceA := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceA;
+stFieldValues.lrCylPistonSurfaceB := PrgStation.stRecipeParams.stRecipeCyl.lrPistonSurfaceB;
+stFieldValues.lrNokLimit := lrNokLimit;
+stFieldValues.lrCurrentNokDifference := PrgStation.fbNest4.P_NokDifference;
+stFieldValues.lrCurrentNokLimitInPercent := PrgStation.fbNest4.P_NokLimitInPercent;
+stFieldValues.lrTargetSpeedAInMmPerS := rTargetSpeedAInMmPerS;
+stFieldValues.lrTargetSpeedBInMmPerS := rTargetSpeedBInMmPerS;]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_100_SaveToDB" Id="{6d3721e8-c1ca-49a2-96eb-a764e4045a04}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[(* Timer *)
+// Abort condition
+tonFailedSavelimitTimer(IN:= NOT tonFailedSavelimitTimer.Q, PT:= tFailedSaveLimitTime);
+IF tonFailedSavelimitTimer.Q THEN
+  uiFailedSaveCounter := 0;
+ELSE
+  IF uiFailedSaveCounter >= uiAllowedSaveFail THEN
+    bRecord := FALSE;
+    ;// Error and abort
+	END_IF
+END_IF
+
+// Save to database
+tonSwitchTimer();
+tonInterval();
+IF bRecord THEN
+  // First xxmin save interval = 0.5s and then 2min
+  tonSwitchTimer(IN:= TRUE, PT:= tSwitchTime);
+  IF tonSwitchTimer.Q THEN
+    uiAllowedSaveFail := 2;
+    tInterval := T#2M;
+  ELSE
+    uiAllowedSaveFail := 10;
+    tInterval := T#500MS;
+  END_IF
+  // Save interval
+  tonInterval(IN:= TRUE, PT:= tInterval);
+  IF tonInterval.Q AND NOT bSaveBusy THEN
+    bSaveTrigger := TRUE;
+  END_IF
+ELSE
+  // Reset
+  tonSwitchTimer.IN := FALSE;
+  tonInterval.IN := FALSE;
+  //iSaveSeq := 0;
+END_IF
+// Save action
+IF bSaveTrigger THEN
+  bSaveBusy := TRUE;
+  CASE iSaveSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+          iSeqCounter := iSeqCounter + 1;
+          iSaveSeq := iSeqCounter;
+      END_IF
+    1:
+      A_020_DBNest1();
+      IF PrgStation.fbNest1.bEnable THEN
+        IF TRUE
+        AND fbInfluxDB.M_WriteStruct(sBucketName:= sBucketName,
+                                    sMeasurementName:= sMeasurementName,
+                                    sTagName:= sTagName,
+                                    stFieldValues:= stFieldValues,
+                                    bResult=> bSaveSuccess) 
+        THEN
+          IF bSaveSuccess THEN
+            bSaveSuccess := FALSE;
+          ELSE
+            // Warningmessage/-log, but no abort (Abort with tonFailedSavelimitTimer)
+            // ...
+            uiFailedSaveCounter := uiFailedSaveCounter + 1;
+					END_IF
+          iSaveSeq := 0;
+        END_IF
+      ELSE
+        iSaveSeq := 0;
+      END_IF
+    2:
+      A_030_DBNest2();
+      IF PrgStation.fbNest2.bEnable THEN
+        IF TRUE
+        AND fbInfluxDB.M_WriteStruct(sBucketName:= sBucketName,
+                                    sMeasurementName:= sMeasurementName,
+                                    sTagName:= sTagName,
+                                    stFieldValues:= stFieldValues,
+                                    bResult=> bSaveSuccess) 
+        THEN
+          IF bSaveSuccess THEN
+            bSaveSuccess := FALSE;
+          ELSE
+            // Warningmessage/-log, but no abort (Abort with tonFailedSavelimitTimer)
+            // ...
+            uiFailedSaveCounter := uiFailedSaveCounter + 1;
+					END_IF
+          iSaveSeq := 0;
+        END_IF
+      ELSE
+        iSaveSeq := 0;
+      END_IF
+    3:
+      A_040_DBNest3();
+      IF PrgStation.fbNest3.bEnable THEN
+        IF TRUE
+        AND fbInfluxDB.M_WriteStruct(sBucketName:= sBucketName,
+                                    sMeasurementName:= sMeasurementName,
+                                    sTagName:= sTagName,
+                                    stFieldValues:= stFieldValues,
+                                    bResult=> bSaveSuccess) 
+        THEN
+          IF bSaveSuccess THEN
+            bSaveSuccess := FALSE;
+          ELSE
+            // Warningmessage/-log, but no abort (Abort with tonFailedSavelimitTimer)
+            // ...
+            uiFailedSaveCounter := uiFailedSaveCounter + 1;
+					END_IF
+          iSaveSeq := 0;
+        END_IF
+      ELSE
+        iSaveSeq := 0;
+      END_IF
+    4:
+      A_050_DBNest4();
+      IF PrgStation.fbNest4.bEnable THEN
+        IF TRUE
+        AND fbInfluxDB.M_WriteStruct(sBucketName:= sBucketName,
+                                    sMeasurementName:= sMeasurementName,
+                                    sTagName:= sTagName,
+                                    stFieldValues:= stFieldValues,
+                                    bResult=> bSaveSuccess) 
+        THEN
+          IF bSaveSuccess THEN
+            bSaveSuccess := FALSE;
+          ELSE
+            // Warningmessage/-log, but no abort (Abort with tonFailedSavelimitTimer)
+            // ...
+            uiFailedSaveCounter := uiFailedSaveCounter + 1;
+					END_IF
+          iSaveSeq := 0;
+        END_IF
+      END_IF
+      iSaveSeq := 0;
+      iSeqCounter := 0;
+      bSaveTrigger := FALSE;
+      tonInterval.IN := FALSE;
+      bSaveBusy := FALSE;
+  END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_110_TotalMeasurements" Id="{4faf74ff-8768-4a94-8d01-3ea73becc59a}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[IF bGetTotalMeasurements THEN
+  CASE uiTotalMeasurementsSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+          uiTotalMeasurementsSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_GetTotalMeasurements(sBucketName:= sBucketName, 
+                                           bResult=> bGetTotalMeasurementsProcessSuccess, 
+                                           uiResult=> uiTotalMeasurements) 
+      THEN
+        IF bGetTotalMeasurementsProcessSuccess THEN
+          bGetTotalMeasurementsProcessSuccess := FALSE;
+        ELSE
+          // Warningmessage/-log, but no abort (Abort with tonFailedSavelimitTimer)
+          // ...
+				END_IF
+        bGetTotalMeasurements := FALSE;
+        uiTotalMeasurementsSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_120_MeasurementExistCheck" Id="{cab01917-2545-4f2e-ac9b-9095c7fa523d}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Init
+
+// General
+IF bGetMeasurementExist THEN
+  CASE uiMeasurementExistSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+          uiMeasurementExistSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_MeasurementExistCheck(sBucketName:= sBucketName,
+                                            sMeasurementName:= sMeasurementNameFromCfg, 
+                                            bResult=> bMeasurementExist) 
+      THEN
+        bGetMeasurementExist := FALSE;
+        uiMeasurementExistSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_130_TagExistCheck" Id="{153431f8-bec0-4415-b737-1c04ba743e50}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Init
+CASE uiTagNameIDFromCfg OF
+  1:
+    sTagNameFromCfg := 'Dauerlauf';
+  2:
+    sTagNameFromCfg := 'Dichtheitsprüfung1';
+  3:
+    sTagNameFromCfg := 'Dichtheitsprüfung2';
+  4:
+    sTagNameFromCfg := 'Losbrechdruck';
+  5:
+    sTagNameFromCfg := '';
+END_CASE
+
+// General
+IF bGetTagExist THEN
+  CASE uiTagExistSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+          uiTagExistSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_TagExistCheck(sBucketName:= sBucketName,
+                                    sMeasurementName:= sMeasurementNameFromCfg,
+                                    sTagName:= sTagNameFromCfg, 
+                                    bResult=> bTagExist) 
+      THEN
+        bGetTagExist := FALSE;
+        uiTagExistSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_140_DeleteMeasurement" Id="{3c388993-6215-456b-bc88-0f210088f54f}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Init
+
+// General
+IF bDeleteMeasurement THEN
+  CASE uiDeleteMeasurementSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+        uiDeleteMeasurementSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_DeleteMeasurement(sBucketName:= sBucketName,
+                                        sMeasurementName:= sMeasurementNameFromCfg, 
+                                        bResult=> bDeleteMeasurementResult) 
+      THEN
+        bDeleteMeasurement := FALSE;
+        uiDeleteMeasurementSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_150_DeleteTag" Id="{462df232-a3f5-4ea6-9bb6-ff0989681535}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Init
+CASE uiTagNameIDFromCfg OF
+  1:
+    sTagNameFromCfg := 'Dauerlauf';
+  2:
+    sTagNameFromCfg := 'Dichtheitsprüfung1';
+  3:
+    sTagNameFromCfg := 'Dichtheitsprüfung2';
+  4:
+    sTagNameFromCfg := 'Losbrechdruck';
+  5:
+    sTagNameFromCfg := '';
+END_CASE
+
+// General
+IF bDeleteTag THEN
+  CASE uiDeleteTagSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+        uiDeleteTagSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_DeleteTag(sBucketName:= sBucketName,
+                                        sMeasurementName:= sMeasurementNameFromCfg, 
+                                        sTagName:= sTagNameFromCfg,
+                                        bResult=> bDeleteTagResult) 
+      THEN
+        bDeleteTag := FALSE;
+        uiDeleteTagSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_160_DeleteTagContentBlock" Id="{7f0cc6ea-5c30-4032-83d1-f47f2324604a}" FolderPath="InfluxDB\">
+      <Implementation>
+        <ST><![CDATA[// Init
+CASE uiTagNameIDFromCfg OF
+  1:
+    sTagNameFromCfg := 'Dauerlauf';
+  2:
+    sTagNameFromCfg := 'Dichtheitsprüfung1';
+  3:
+    sTagNameFromCfg := 'Dichtheitsprüfung2';
+  4:
+    sTagNameFromCfg := 'Losbrechdruck';
+  5:
+    sTagNameFromCfg := '';
+END_CASE
+
+// General
+IF bDeleteTagContentBlock THEN
+  CASE uiDeleteTagContentBlockSeq OF
+    0:
+      IF fbInfluxDB.M_SetReady() THEN
+        uiDeleteTagContentBlockSeq := 1;
+      END_IF
+    1:
+      IF fbInfluxDB.M_DeleteTagContentBlock(sBucketName:= sBucketName,
+                                            sMeasurementName:= sMeasurementNameFromCfg, 
+                                            sTagName:= sTagNameFromCfg,
+                                            dtFrom:= dtFromFromCfg,
+                                            dtTo:= dtToFromCfg,
+                                            bResult=> bDeleteTagContentBlockResult) 
+      THEN
+        bDeleteTagContentBlock := FALSE;
+        uiDeleteTagContentBlockSeq := 0;
+			END_IF
+	END_CASE
+END_IF]]></ST>
       </Implementation>
     </Action>
     <LineIds Name="PrgMeasure">
-      <LineId Id="1732" Count="0" />
-      <LineId Id="1628" Count="0" />
-      <LineId Id="1731" Count="0" />
-      <LineId Id="1724" Count="2" />
-      <LineId Id="1733" Count="0" />
-      <LineId Id="1629" Count="0" />
-      <LineId Id="1518" Count="0" />
-      <LineId Id="1520" Count="4" />
-      <LineId Id="1624" Count="0" />
-      <LineId Id="1606" Count="1" />
-      <LineId Id="1612" Count="0" />
-      <LineId Id="1614" Count="0" />
-      <LineId Id="1616" Count="0" />
-      <LineId Id="1627" Count="0" />
-      <LineId Id="1619" Count="0" />
-      <LineId Id="1617" Count="0" />
-      <LineId Id="1620" Count="0" />
-      <LineId Id="1630" Count="1" />
-      <LineId Id="1730" Count="0" />
-      <LineId Id="1728" Count="0" />
-      <LineId Id="1634" Count="0" />
-      <LineId Id="1626" Count="0" />
-      <LineId Id="1622" Count="1" />
-      <LineId Id="1613" Count="0" />
-      <LineId Id="1608" Count="0" />
-      <LineId Id="1519" Count="0" />
-      <LineId Id="1068" Count="0" />
-      <LineId Id="1295" Count="0" />
-      <LineId Id="1069" Count="2" />
-      <LineId Id="1073" Count="0" />
-      <LineId Id="1309" Count="0" />
       <LineId Id="1074" Count="0" />
+      <LineId Id="2318" Count="0" />
       <LineId Id="1288" Count="0" />
-      <LineId Id="1075" Count="0" />
-      <LineId Id="1440" Count="0" />
+      <LineId Id="1879" Count="0" />
+      <LineId Id="2384" Count="0" />
+      <LineId Id="2393" Count="3" />
+      <LineId Id="2526" Count="0" />
+      <LineId Id="2427" Count="0" />
+      <LineId Id="2092" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_000_FBs">
+      <LineId Id="2" Count="5" />
+      <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="PrgMeasure.A_010_DBInit">
-      <LineId Id="2" Count="0" />
-      <LineId Id="66" Count="0" />
-      <LineId Id="3" Count="14" />
-      <LineId Id="65" Count="0" />
-      <LineId Id="18" Count="1" />
-      <LineId Id="52" Count="0" />
-      <LineId Id="51" Count="0" />
-      <LineId Id="20" Count="0" />
-      <LineId Id="60" Count="0" />
-      <LineId Id="53" Count="0" />
-      <LineId Id="41" Count="0" />
-      <LineId Id="56" Count="0" />
-      <LineId Id="81" Count="0" />
-      <LineId Id="32" Count="0" />
-      <LineId Id="57" Count="0" />
-      <LineId Id="82" Count="0" />
-      <LineId Id="40" Count="0" />
-      <LineId Id="33" Count="5" />
-      <LineId Id="83" Count="0" />
-      <LineId Id="58" Count="0" />
-      <LineId Id="39" Count="0" />
-      <LineId Id="59" Count="0" />
-      <LineId Id="84" Count="0" />
-      <LineId Id="43" Count="1" />
-      <LineId Id="46" Count="2" />
-      <LineId Id="45" Count="0" />
-      <LineId Id="49" Count="1" />
-      <LineId Id="54" Count="1" />
-      <LineId Id="62" Count="0" />
-      <LineId Id="85" Count="0" />
-      <LineId Id="61" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="89" Count="28" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="118" Count="4" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="132" Count="29" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="162" Count="2" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="171" Count="1" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="173" Count="12" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="186" Count="12" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="199" Count="12" />
+      <LineId Id="226" Count="0" />
+      <LineId Id="212" Count="10" />
+      <LineId Id="170" Count="0" />
       <LineId Id="67" Count="10" />
       <LineId Id="80" Count="0" />
       <LineId Id="22" Count="0" />
       <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="PrgMeasure.A_020_DBNest1">
+      <LineId Id="1" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="2" Count="29" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="32" Count="3" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_030_DBNest2">
+      <LineId Id="2" Count="36" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_040_DBNest3">
+      <LineId Id="2" Count="36" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_050_DBNest4">
+      <LineId Id="2" Count="36" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_100_SaveToDB">
+      <LineId Id="2" Count="33" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="36" Count="101" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_110_TotalMeasurements">
+      <LineId Id="1" Count="1" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="6" Count="2" />
+      <LineId Id="14" Count="7" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="3" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_120_MeasurementExistCheck">
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="2" Count="7" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="18" Count="4" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_130_TagExistCheck">
+      <LineId Id="2" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="23" Count="8" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="3" Count="10" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="14" Count="5" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_140_DeleteMeasurement">
+      <LineId Id="14" Count="6" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="22" Count="3" />
+      <LineId Id="27" Count="3" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_150_DeleteTag">
+      <LineId Id="2" Count="0" />
+      <LineId Id="21" Count="10" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="4" Count="9" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="14" Count="5" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgMeasure.A_160_DeleteTagContentBlock">
+      <LineId Id="2" Count="24" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="27" Count="5" />
       <LineId Id="1" Count="0" />
     </LineIds>
   </POU>

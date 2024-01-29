@@ -3,29 +3,29 @@
   <DUT Name="ST_DATABASE_RECORD" Id="{747294ec-98f0-45a2-a883-500944c36880}">
     <Declaration><![CDATA[TYPE ST_DATABASE_RECORD :
 STRUCT
-  sTimeStamp:                         STRING(255);
-  sTimer:                             STRING(255);
+  sTimeStamp:                         T_MaxString;
+  sTimer:                             T_MaxString;
   liTargetCycles:                     LINT;
   liActiveCycle:                      LINT;
-  sTestDirection:                     STRING;
-  lrTargetTestPressureInBarA:         LREAL;
-  lrTargetTestPressureInBarB:         LREAL;
-  lrCurrentTestPressureInBar:         LREAL;
-  lrTargetTestForceInKNA:             LREAL;
-  lrTargetTestForceInKNB:             LREAL;
-  lrCurrentTestForceInKN:             LREAL;
-  lrTestPressureAInBar:               LREAL;
-  lrTestPressureBInBar:               LREAL;
-  lrBreakawayPressureInBar:           LREAL;
-  lrBreakawayPressureAInBar:          LREAL;
-  lrBreakawayPressureBInBar:          LREAL;
-  lrReservoirPressureInBar:           LREAL;
-  lrTargetCounterPressureInBarA:      LREAL;
-  lrTargetCounterPressureInBarB:      LREAL;
-  lrCurrentCounterPressureInBar:      LREAL;
-  lrTargetCounterForceInKNA:          LREAL;
-  lrTargetCounterForceInKNB:          LREAL;
-  lrCurrentCounterForceInKN:          LREAL;
+  iTestDirection:                     SINT;
+  rTargetTestPressureInBarA:          REAL;
+  rTargetTestPressureInBarB:          REAL;
+  rCurrentTestPressureInBar:          REAL;
+  rTargetTestForceInKNA:              REAL;
+  rTargetTestForceInKNB:              REAL;
+  rCurrentTestForceInKN:              REAL;
+  rTestPressureAInBar:                REAL;
+  rTestPressureBInBar:                REAL;
+  rBreakawayPressureInBar:            REAL;
+  rBreakawayPressureAInBar:           REAL;
+  rBreakawayPressureBInBar:           REAL;
+  rReservoirPressureInBar:            REAL;
+  rTargetCounterPressureInBarA:       REAL;
+  rTargetCounterPressureInBarB:       REAL;
+  rCurrentCounterPressureInBar:       REAL;
+  rTargetCounterForceInKNA:           REAL;
+  rTargetCounterForceInKNB:           REAL;
+  rCurrentCounterForceInKN:           REAL;
   lrPosition:                         LREAL;
   lrPositionMin:                      LREAL;
   lrPositionMax:                      LREAL;
@@ -33,6 +33,7 @@ STRUCT
   lrTemperature:                      LREAL;
   lrCylPistonSurfaceA:                LREAL;
   lrCylPistonSurfaceB:                LREAL;
+  lrNokLimit:                         LREAL;
   lrCurrentNokDifference:             LREAL;
   lrCurrentNokLimitInPercent:         LREAL;
   lrTargetSpeedAInMmPerS:             LREAL;

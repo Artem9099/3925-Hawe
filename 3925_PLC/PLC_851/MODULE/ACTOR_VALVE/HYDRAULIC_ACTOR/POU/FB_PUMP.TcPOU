@@ -12,8 +12,8 @@ VAR //General
 	bAck:												                            BOOL;	
 END_VAR
 VAR   // From FB_init	
-	itfLogEvents: 										                      I_HANDLE_EVENTS;
-  itfOpMode:											                        I_OP_MODE; 
+	itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER;
   itfOn:                                                  I_BINARY_OUTPUT;
 END_VAR                                      				
 VAR	// Step chain control                				
@@ -472,14 +472,14 @@ VAR_INPUT
 	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
   
-  itfLogEvents: 										                      I_HANDLE_EVENTS;
   itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER;
   itfOn:                                                  I_BINARY_OUTPUT;
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[THIS^.itfLogEvents := itfLogEvents;
-THIS^.itfOpMode := itfOpMode;
+        <ST><![CDATA[THIS^.itfOpMode := itfOpMode;
+THIS^.itfEventLogger := itfEventLogger;
 THIS^.itfOn := itfOn;]]></ST>
       </Implementation>
     </Method>
@@ -806,8 +806,8 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PUMP.FB_init">
-      <LineId Id="7" Count="0" />
       <LineId Id="13" Count="0" />
+      <LineId Id="26" Count="0" />
       <LineId Id="15" Count="0" />
     </LineIds>
     <LineIds Name="FB_PUMP.M_Off">

@@ -4,9 +4,13 @@
     <Declaration><![CDATA[{attribute 'global_init_slot' := '40010'}
 //{warning 'Safety überarbeiten 170119'}
 PROGRAM PrgOrg
+VAR_INPUT
+  bInitOK:                                 BOOL;
+END_VAR
 VAR
 	fbLocalSysTime: 				                    FB_LOC_SYS_TIME;
-	fbEventHandler: 				                    FB_HANDLE_EVENTS_TXT(itfLocSysTime:=fbLocalSysTime, strPath:='C:\Event\Event.csv');
+	//fbEventHandler: 				                    FB_HANDLE_EVENTS_TXT(itfLocSysTime:=fbLocalSysTime, strPath:='C:\Event\Event.csv');
+  fbEventLogger:                              FB_EVENT_LOGGER();
 	
 // Safety IO  
 // Input Sensors
@@ -54,7 +58,7 @@ VAR
   fbLiquiphant_ValveBlocks_Triggered:             FB_BINARY_SWITCH(bInNC:= FALSE);
 	
   // Other                   			
-	fbOpMode:							                      FB_OP_MODE_PAUSE( itfHandleEvents:= fbEventHandler, 
+	fbOpMode:							                      FB_OP_MODE_PAUSE( itfEventLogger:= fbEventLogger, 
 	                                                              itfPowerAdapter24V_Hydraulics_Ok:= fbPowerAdapter24V_Hydraulics_Ok, 
 	                                                              itfSelectivityModules_Ok:= fbSelectivityModules_Ok, 
 	                                                              itfCircuitBreaker_Ok:= fbCircuitBreaker_Ok, 
@@ -82,13 +86,14 @@ VAR
                                                                 itfFromSafety_StateServiceValve4:= fbFromSafety_StateServiceValve4,
                                                                 itfFromSafety_ServiceMode_Ok:= fbFromSafety_ServiceMode_Ok,
                                                                 itfFromSafety_ServiceValves_Ok:= fbFromSafety_ServiceValves_Ok);
-                            	
+  fbTrafficLight:                             FB_TrafficLight(itfLightGreen:= PrgStation.fbTrafficLight_Green, 
+                                                              itfLightYellow:= PrgStation.fbTrafficLight_Yellow, 
+                                                              itfLightRed:= PrgStation.fbTrafficLight_Red, 
+                                                              itfBeep:= PrgStation.fbTrafficLight_Beep);
 	fbUserMng: 							                    FB_USER_MANAGER_OLD;
 
 	
   // From Safety
-	bInit: 								                      BOOL:=TRUE;	
-	iCaseOpMode: 						                    INT:=1;
 	tonInitQuit:						                    TON;
 	
 	fbErrorACK: 						                    FB_BINARY_OUTPUT;
@@ -128,29 +133,40 @@ VAR
   fbFromSafety_ServiceValves_Ok:              FB_BINARY_SWITCH(bInNC:= FALSE);
 END_VAR
 VAR
-  bInitRestart:                               BOOL;
-  uiOpStep:                                   UINT;
-  bStop:                                      BOOL;
-  bResetModeSelectionTrigger:                 BOOL;
-  bInitOk:                                    BOOL;
+  iOPModeStateInfo:                           INT;
+  bStartSafety:                               BOOL;
 END_VAR]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbEventHandler();
-fbOpMode();
-fbUserMng();
-
-// Actions
-A_010_Ack();
-A_040_BypassPumpAndOilCooler();
-A_030_SetReady();
-A_020_EStopAndErrorHandling();
-A_050_InitAndAutomatic();
-A_070_ResetModeSelection();
-A_060_StopHandling();]]></ST>
+      <ST><![CDATA[(* Actions *)
+A_000_FBs();
+A_010_Init();
+A_020_Ack();
+A_030_TrafficLight();
+A_040_OPMode();]]></ST>
     </Implementation>
-    <Action Name="A_010_Ack" Id="{f0436991-81ef-4c69-a70c-5e070e2af3d5}">
+    <Action Name="A_000_FBs" Id="{4c37654a-86ef-43a7-9ba0-a127a459771a}">
       <Implementation>
-        <ST><![CDATA[IF bAck THEN
+        <ST><![CDATA[(* FBs *)
+fbOpMode();
+fbEventLogger();
+fbUserMng();
+fbTrafficLight();
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_010_Init" Id="{2c47754a-8a4d-456f-9dce-51d743486014}">
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_020_Ack" Id="{f0436991-81ef-4c69-a70c-5e070e2af3d5}">
+      <Implementation>
+        <ST><![CDATA[IF NOT fbSafetyRun.P_State THEN
+  fbSafetyRun.M_Set();
+END_IF
+
+IF bAck THEN
   CASE uiAckSeq OF
     0:
       fbErrorACK.M_Set();
@@ -175,177 +191,79 @@ A_060_StopHandling();]]></ST>
 END_IF]]></ST>
       </Implementation>
     </Action>
-    <Action Name="A_020_EStopAndErrorHandling" Id="{ba4794b9-c929-400d-8163-d23b4b97b537}">
+    <Action Name="A_030_TrafficLight" Id="{63522a44-dcb6-4eea-83b0-ba3fcbe4b6c8}">
       <Implementation>
-        <ST><![CDATA[IF NOT fbSafetyRun.P_State THEN
-  fbSafetyRun.M_Set();
-END_IF
+        <ST><![CDATA[iOPModeStateInfo := fbOpMode.P_OP_MODE_STATE;
 
-IF fbOpMode.P_EMERGANCY_STOP OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR THEN
-  bInitOk := FALSE;
+CASE fbOpMode.P_OP_MODE_STATE OF
+  OP_MODE.AUTO:
+    fbTrafficLight.M_Green(bEnable:= TRUE, uiBlinkFrequency:= 0, bResetOther:= TRUE);
+  OP_MODE.INIT, OP_MODE.INIT_OK:
+    fbTrafficLight.M_Yellow(bEnable:= TRUE, uiBlinkFrequency:= 0, bResetOther:= TRUE);
+  OP_MODE.MANUAL:
+    fbTrafficLight.M_Multicolor(bGreen:= TRUE, bYellow:= TRUE, bRed:= FALSE, uiBlinkFrequency:= 0);
+  OP_MODE.CONTROL_ON:
+    fbTrafficLight.M_Yellow(bEnable:= TRUE, uiBlinkFrequency:= 1, bResetOther:= TRUE);
+  OP_MODE.AUTO_TEMPORARY, OP_MODE.RESET_TEMPORARY:
+    fbTrafficLight.M_Multicolor(bGreen:= TRUE, bYellow:= TRUE, bRed:= FALSE, uiBlinkFrequency:= 1);
+  OP_MODE.MACHINE_ERROR:
+    fbTrafficLight.M_Red(bEnable:= TRUE, uiBlinkFrequency:= 1, bResetOther:= TRUE);
+  OP_MODE.MANUAL_TEMPORARY:
+    fbTrafficLight.M_Multicolor(bGreen:= TRUE, bYellow:= TRUE, bRed:= FALSE, uiBlinkFrequency:= 1);
+  OP_MODE.SAFETY_STOP, OP_MODE.STOP:
+    fbTrafficLight.M_Red(bEnable:= TRUE, uiBlinkFrequency:= 0, bResetOther:= TRUE);
+END_CASE]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_040_OPMode" Id="{579c7bc1-c0e1-4519-866b-38e40e6e798c}">
+      <Implementation>
+        <ST><![CDATA[(* OP Mode *)
+fbOpMode.P_INIT_OK := bInitOK;
+
+IF fbFromSafety_KeySwitch_JogPos.P_Active AND fbLockDoor.P_State THEN
   fbLockDoor.M_Reset();
-END_IF
-
-// Safety
-IF TRUE
-AND (fbOpMode.P_EMERGANCY_STOP 
-OR fbOpMode.P_OP_MODE_STATE = OP_MODE.MACHINE_ERROR) 
-THEN
-  CASE uiOpStep OF
-    0:;
-      IF PrgStation.fbMainProcess.M_SetReady() THEN
-        bInitOk := FALSE;
-        uiOpStep := 1;
-			END_IF
-    1:;
-      IF PrgStation.fbMainProcess.M_EStop() THEN
-        bResetModeSelectionTrigger := TRUE;
-        bStop := FALSE;
-        uiOpStep := 0;
-	    END_IF
-	END_CASE
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_030_SetReady" Id="{3604e0fa-4680-40b0-8f2f-ab5cc5fafc2a}">
-      <Implementation>
-        <ST><![CDATA[IF TRUE
-AND (fbOpMode.P_OP_MODE_STATE = OP_MODE.CONTROL_ON OR fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
-AND NOT PrgStation.fbMainProcess.P_ReadyState
-AND NOT bStop
-THEN
-  PrgStation.fbMainProcess.M_SetReady();
-  uiOpStep := 0;
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_040_BypassPumpAndOilCooler" Id="{9c41afdc-4e65-41b2-861b-9faa1a5360a0}">
-      <Implementation>
-        <ST><![CDATA[// Bypass and oil cooler control
-IF TRUE
-AND NOT PrgStation.fbOilCooler.P_State 
-THEN
-  PrgStation.fbOilCooler.M_On();
-END_IF
-IF TRUE
-AND NOT PrgStation.fbBypassPump.P_State
-THEN
-  PrgStation.fbBypassPump.M_On();
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_050_InitAndAutomatic" Id="{46255bae-9a31-4529-83fc-3249f3d41398}">
-      <Implementation>
-        <ST><![CDATA[IF TRUE
-AND bInitRestart
-THEN
-  bInitRestart := FALSE;
-  bInitOk := FALSE;
-  fbOpMode.P_INIT_OK := FALSE;
-END_IF
-
-IF TRUE
-AND fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT
-AND NOT (fbOpMode.P_OP_MODE_STATE = OP_MODE.INIT_OK)
-AND NOT bStop
-THEN
-  IF PrgStation.fbMainProcess.M_Reset() THEN
-    bResetModeSelectionTrigger := TRUE;
-    bInitOk := TRUE;
-	END_IF
-ELSIF TRUE
-AND fbOpMode.P_OP_MODE_STATE = OP_MODE.AUTO
-AND NOT bStop
-THEN
-  IF PrgVisu.fbVisuOPMode.P_EnduranceRunSelected THEN
-    IF PrgStation.fbMainProcess.M_EnduranceRun(stEnduranceRunParams:= PrgStation.stRecipeParams.stRecipeEnduranceRun) THEN
-      bResetModeSelectionTrigger := TRUE;
-		END_IF
-  ELSIF PrgVisu.fbVisuOPMode.P_BreakPressureDetSelected THEN
-    IF PrgStation.fbMainProcess.M_BreakPressureDet(stBreakPressureParams:= PrgStation.stRecipeParams.stRecipeBreakPressure) THEN
-      bResetModeSelectionTrigger := TRUE;
-		END_IF
-  ELSIF PrgVisu.fbVisuOPMode.P_LeakTest1Selected THEN
-    IF PrgStation.fbMainProcess.M_LeakTest1(stLeakTest1Params:= PrgStation.stRecipeParams.stRecipeLeakTest1) THEN
-      bResetModeSelectionTrigger := TRUE;
-		END_IF
-  ELSIF PrgVisu.fbVisuOPMode.P_LeakTest2Selected THEN
-    IF PrgStation.fbMainProcess.M_LeakTest2(stLeakTest2Params:= PrgStation.stRecipeParams.stRecipeLeakTest2) THEN
-      bResetModeSelectionTrigger := TRUE;
-		END_IF
-	END_IF
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_060_StopHandling" Id="{bc9f315e-7fb3-49b2-abe0-c3dc2d962ebb}">
-      <Implementation>
-        <ST><![CDATA[IF TRUE
-AND bStop
-THEN
-  CASE uiOpStep OF
-    0:;
-      IF PrgStation.fbMainProcess.M_SetReady() THEN
-        uiOpStep := 1;
-			END_IF
-    1:;
-      IF PrgStation.fbMainProcess.M_Stop() THEN
-        bStop := FALSE;
-        bInitOk := FALSE;
-        bResetModeSelectionTrigger := TRUE;
-        uiOpStep := 0;
-	    END_IF
-	END_CASE
-END_IF]]></ST>
-      </Implementation>
-    </Action>
-    <Action Name="A_070_ResetModeSelection" Id="{1a929c2c-679c-443a-85c1-d016ae96ca89}">
-      <Implementation>
-        <ST><![CDATA[IF bResetModeSelectionTrigger THEN
-  fbOpMode.M_OP_MODE_OFF();
-  IF PrgVisu.fbVisuOPMode.M_ResetModeSelection() THEN
-    bResetModeSelectionTrigger := FALSE;
-    IF bInitOk THEN
-      fbOpMode.P_INIT_OK := TRUE;
-    ELSE
-      fbOpMode.P_INIT_OK := FALSE;
-		END_IF
-  END_IF
 END_IF]]></ST>
       </Implementation>
     </Action>
     <LineIds Name="PrgOrg">
-      <LineId Id="5736" Count="10" />
-      <LineId Id="5653" Count="0" />
+      <LineId Id="6203" Count="1" />
+      <LineId Id="6206" Count="0" />
+      <LineId Id="6205" Count="0" />
+      <LineId Id="6194" Count="0" />
+      <LineId Id="6207" Count="0" />
     </LineIds>
-    <LineIds Name="PrgOrg.A_010_Ack">
+    <LineIds Name="PrgOrg.A_000_FBs">
+      <LineId Id="6" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_010_Init">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PrgOrg.A_020_Ack">
+      <LineId Id="26" Count="1" />
+      <LineId Id="24" Count="1" />
       <LineId Id="2" Count="21" />
       <LineId Id="1" Count="0" />
     </LineIds>
-    <LineIds Name="PrgOrg.A_020_EStopAndErrorHandling">
-      <LineId Id="2" Count="6" />
-      <LineId Id="1" Count="0" />
-      <LineId Id="10" Count="18" />
+    <LineIds Name="PrgOrg.A_030_TrafficLight">
+      <LineId Id="28" Count="1" />
+      <LineId Id="7" Count="0" />
       <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="2" />
+      <LineId Id="16" Count="11" />
+      <LineId Id="3" Count="0" />
     </LineIds>
-    <LineIds Name="PrgOrg.A_030_SetReady">
-      <LineId Id="2" Count="6" />
+    <LineIds Name="PrgOrg.A_040_OPMode">
       <LineId Id="1" Count="0" />
-    </LineIds>
-    <LineIds Name="PrgOrg.A_040_BypassPumpAndOilCooler">
-      <LineId Id="2" Count="9" />
-      <LineId Id="1" Count="0" />
-    </LineIds>
-    <LineIds Name="PrgOrg.A_050_InitAndAutomatic">
-      <LineId Id="2" Count="37" />
-      <LineId Id="1" Count="0" />
-    </LineIds>
-    <LineIds Name="PrgOrg.A_060_StopHandling">
-      <LineId Id="2" Count="15" />
-      <LineId Id="1" Count="0" />
-    </LineIds>
-    <LineIds Name="PrgOrg.A_070_ResetModeSelection">
-      <LineId Id="2" Count="9" />
-      <LineId Id="1" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
     </LineIds>
   </POU>
 </TcPlcObject>

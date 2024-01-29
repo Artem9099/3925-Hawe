@@ -156,7 +156,7 @@
         </script>
       </div>
 
-      <div id="TcHmiLocalizationSelect_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiLocalizationSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center">
+      <div id="TcHmiLocalizationSelect_Settings_Localization" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiLocalizationSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
         <script data-tchmi-target-attribute="data-tchmi-localization-mapping" type="application/json">
           [
           {
@@ -180,7 +180,7 @@
 
       </div>
 
-    <div id="TcHmiThemeSelect_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiThemeSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-drop-down-vertical-alignment="Center">
+    <div id="TcHmiThemeSelect_Settings_Theme" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiThemeSelect" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-drop-down-vertical-alignment="Center" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
           {
           "top": 3,
@@ -215,7 +215,7 @@
 </div>
 <div id="TcHmiTextblock_285" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Proportionalfaktor" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
 </div>
-<div id="TcHmiSpinboxInput_76" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="1000" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true">
+<div id="TcHmiSpinboxInput_76" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="1000" data-tchmi-min-value="10" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="10" data-tchmi-auto-step="true" data-tchmi-auto-select-text="false" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rPressureRegulationTolerance|BindingMode=TwoWay%/s%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -226,7 +226,7 @@
 </script>
 
 </div>
-<div id="TcHmiSpinboxInput_77" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="0.1" data-tchmi-min-value="0.01" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.01">
+<div id="TcHmiSpinboxInput_77" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="0.1" data-tchmi-min-value="0.01" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.01" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rPressureRegulationFactor|BindingMode=TwoWay%/s%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -256,7 +256,7 @@
       </div>
 <div id="TcHmiTextblock_278" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Fehlertoleranz (mm/s)" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
 </div>
-<div id="TcHmiSpinboxInput_68" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="10" data-tchmi-min-value="0.1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rRegulationTolerance|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.1">
+<div id="TcHmiSpinboxInput_68" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="1" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="10" data-tchmi-min-value="0.1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rSpeedRegulationTolerance|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.1" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -269,7 +269,7 @@
 </div>
 <div id="TcHmiTextblock_279" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Proportionalfaktor" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
 </div>
-<div id="TcHmiSpinboxInput_69" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="0.1" data-tchmi-min-value="0.01" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rRegulationFactor|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.01">
+<div id="TcHmiSpinboxInput_69" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="0.1" data-tchmi-min-value="0.01" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rSpeedRegulationFactor|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.01" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -282,7 +282,7 @@
 </div>
 <div id="TcHmiTextblock_280" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Wirkungsgrad für max. v" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
 </div>
-<div id="TcHmiSpinboxInput_70" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="1" data-tchmi-min-value="0.5" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rSpeedEfficiencyFactor|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.05">
+<div id="TcHmiSpinboxInput_70" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="2" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="1" data-tchmi-min-value="0.5" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="118" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.stSettings.rSpeedEfficiencyFactor|BindingMode=TwoWay%/s%" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="0.05" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -313,7 +313,7 @@
       </div>
 <div id="TcHmiTextblock_281" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Verweilzeit Aufzeichnung (s)" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-width="150" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-horizontal-alignment="Left" data-tchmi-text-vertical-alignment="Center">
 </div>
-<div id="TcHmiSpinboxInput_75" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="20" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true" data-tchmi-value="%s%PLC1.PrgStation.stSettings.uiRecordDelay|BindingMode=TwoWay%/s%">
+<div id="TcHmiSpinboxInput_75" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiSpinboxInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="170" data-tchmi-left-unit="px" data-tchmi-max-value="20" data-tchmi-min-value="1" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="46" data-tchmi-top-unit="px" data-tchmi-value-horizontal-alignment="Center" data-tchmi-width="108" data-tchmi-width-unit="px" data-tchmi-step="1" data-tchmi-auto-step="true" data-tchmi-value="%s%PLC1.PrgStation.stSettings.uiRecordDelay|BindingMode=TwoWay%/s%" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -626,7 +626,7 @@
           ]
         </script>
       </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnCloseHMI_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="45" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="HMI beenden">
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnCloseHMI_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="45" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="HMI beenden" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -635,7 +635,7 @@
       {
         "objectType": "WriteToSymbol",
         "active": true,
-        "symbolExpression": "%s%PLC1.PrgStation.fbHMICtrl.bTaskKill%/s%",
+        "symbolExpression": "%s%PLC1.PrgVisu.bCloseHMI%/s%",
         "value": {
           "objectType": "StaticValue",
           "valueType": "tchmi:general#/definitions/BOOL",
@@ -648,7 +648,7 @@
 ]
 </script>
 </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnRestart_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="105" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC neustarten">
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnRestart_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="105" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC neustarten" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -657,7 +657,7 @@
       {
         "objectType": "WriteToSymbol",
         "active": true,
-        "symbolExpression": "%s%PLC1.PrgStation.fbHMICtrl.bReboot%/s%",
+        "symbolExpression": "%s%PLC1.PrgVisu.bRestartPc%/s%",
         "value": {
           "objectType": "StaticValue",
           "valueType": "tchmi:general#/definitions/BOOL",
@@ -670,7 +670,7 @@
 ]
 </script>
 </div>
-<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnShutdown_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="165" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC herunterfahren">
+<div data-tchmi-grid-row-index="0" data-tchmi-grid-column-index="0" id="btnShutdown_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="50" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-top="165" data-tchmi-top-unit="px" data-tchmi-width="95" data-tchmi-width-unit="%" data-tchmi-word-wrap="true" data-tchmi-background-image-horizontal-alignment="Center" data-tchmi-background-image-vertical-alignment="Center" data-tchmi-text="PC herunterfahren" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableOptions%/s%">
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
   {
@@ -679,7 +679,7 @@
       {
         "objectType": "WriteToSymbol",
         "active": true,
-        "symbolExpression": "%s%PLC1.PrgStation.fbHMICtrl.bShutdown%/s%",
+        "symbolExpression": "%s%PLC1.PrgVisu.bShutdownPc%/s%",
         "value": {
           "objectType": "StaticValue",
           "valueType": "tchmi:general#/definitions/BOOL",

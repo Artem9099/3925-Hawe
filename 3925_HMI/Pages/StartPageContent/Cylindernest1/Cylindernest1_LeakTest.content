@@ -30,7 +30,7 @@
 </div>
 <div id="lblHub_30" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="10" data-tchmi-left-unit="px" data-tchmi-text="Lastdruck (bar/kN)" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-width="160" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="nbxHub_32" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="180" data-tchmi-left-unit="px" data-tchmi-max-value="1000" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.iPressureConverted_CounterCyl1%/s%" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
+<div id="nbxHub_32" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiNumericInput" data-tchmi-auto-focus-out="true" data-tchmi-decimal-digits="0" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="180" data-tchmi-left-unit="px" data-tchmi-max-value="1000" data-tchmi-min-value="0" data-tchmi-reset-to-last-valid-value="true" data-tchmi-top="82" data-tchmi-top-unit="px" data-tchmi-value="%s%PLC1.PrgStation.rPressureConverted_CounterCyl1%/s%" data-tchmi-width="100" data-tchmi-width-unit="px" data-tchmi-is-enabled="false">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -164,7 +164,7 @@
     "fillMode": "None",
     "fillColor": "%tr%Control::TcHmi.Controls.Beckhoff.TcHmiLineChart::LineGraphDescriptionFillColor%/tr%",
     "fillTransparency": 50.0,
-    "symbol": "PLC1.PrgStation.iPressureConverted_TestCyl1"
+    "symbol": "PLC1.PrgStation.rPressureConverted_TestCyl1"
   },
   {
     "yAxisId": 1,
@@ -184,7 +184,7 @@
     "fillMode": "None",
     "fillColor": "%tr%Control::TcHmi.Controls.Beckhoff.TcHmiLineChart::LineGraphDescriptionFillColor%/tr%",
     "fillTransparency": 50.0,
-    "symbol": "PLC1.PrgStation.iPressureConverted_CounterCyl1"
+    "symbol": "PLC1.PrgStation.rPressureConverted_CounterCyl1"
   },
   {
     "yAxisId": 1,
@@ -204,7 +204,7 @@
     "fillMode": "None",
     "fillColor": "%tr%Control::TcHmi.Controls.Beckhoff.TcHmiLineChart::LineGraphDescriptionFillColor%/tr%",
     "fillTransparency": 50.0,
-    "symbol": "PLC1.PrgStation.iPressureConverted_TestCyl1_A"
+    "symbol": "PLC1.PrgStation.rPressureConverted_TestCyl1_A"
   },
   {
     "yAxisId": 1,
@@ -224,7 +224,7 @@
     "fillMode": "None",
     "fillColor": "%tr%Control::TcHmi.Controls.Beckhoff.TcHmiLineChart::LineGraphDescriptionFillColor%/tr%",
     "fillTransparency": 50.0,
-    "symbol": "PLC1.PrgStation.iPressureConverted_TestCyl1_B"
+    "symbol": "PLC1.PrgStation.rPressureConverted_TestCyl1_B"
   }
 ]
 </script>

@@ -1,0 +1,1407 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_HMI_CTRL_ADS" Id="{ba3d1f1d-d6e9-42a8-aacb-d62e3ed66e90}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HMI_CTRL_ADS IMPLEMENTS I_HMI_CTRL
+VAR_INPUT
+  bLifeBit:                                               BOOL;
+  bAdsConnected:                                          BOOL;
+  bReady:                                                 BOOL;
+  bBusy:                                                  BOOL;
+END_VAR
+VAR_OUTPUT
+  liFreeSpaceOnC:                                         LINT;
+END_VAR
+VAR //General
+	{attribute 'instance-path'} 
+  {attribute 'noinit'} 
+	strInstancePath:									                      STRING;
+	bInit: 												                          BOOL:=TRUE;
+	strFullObjectPath: 								                      STRING;
+	stEvent:											                          ST_EVENT;
+	bAck:												                            BOOL;
+	
+END_VAR
+VAR   // From FB_init	
+	itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER; 
+END_VAR                                      				
+VAR	// Step chain control                				
+  eSeq, eLastSeq, eNextSeq:					                      E_SEQ_HMI; 
+                  				
+  //eActiveSeqState, eLastActiveSeqState:                 E_SEQ_GENERAL;
+	(*
+  iInternalSeqStateCase, iLastInternalSeqStateCase:       INT:=0;       
+	tonDelay, tonTimeOut, tonStepTime:						          TON;
+	tDelay:													                        TIME := T#100MS;
+	tTimeOut:												                        TIME := T#100MS;
+	tTimeOutExt:											                      TIME := T#100MS;
+	bDelayActive, bTimeOutActiveQuit, bTimeOutActiveNoQuit:	BOOL;//Timer Option
+	bActiveStep, bDebugAcitve, bDebugNext:					        BOOL;//Debug Option
+	i:														                          INT;
+ 	iError:													                        INT; //ERROR-CODE                    	                   		
+	listLastSteps:											                    ARRAY[0..49] OF ST_LAST_STEPS;	
+	strExtraInfo:											                      STRING; 
+	eStep_Type:												                      E_STEP_STATE_TYPE; 
+	bDebugModeActive:										                    BOOL;   
+	bWaitForBreakpoint:										                  BOOL;
+	bBreakpointActive:										                  BOOL;
+	bDebugResume:											                      BOOL;   
+	listBreakpoint:											                    ARRAY[0..10] OF  INT;    
+*)
+i:														                            INT;
+stSeqCtrlGeneral:											                    ST_SEQ_CTRL_GEN;     	
+END_VAR                                             		
+VAR                                                 		
+	bMethodeFromExtStarted:									                BOOL;
+	bMethodeFromExtActive:									                BOOL;
+	bMethodeFromExtDone:									                  BOOL;
+	strTemp:												                        STRING;
+END_VAR   
+VAR
+  // From ADS
+  bDBLifeBit:                                             BOOL;
+  // To ADS
+  bOpenKeyboard:                                          BOOL;
+  bStartHMI:                                              BOOL;
+  bCloseHMI:                                              BOOL;
+  bShutdownPc:                                            BOOL;
+  bRestartPc:                                             BOOL;
+  udiFreeSpaceOnC:                                        UDINT;
+END_VAR                  	
+VAR_TEMP                    	
+	iTemp:										                              INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Set FBs and Interfaces ready after switch internal step
+IF stSeqCtrlGeneral.iInternalSeqStateCase <> stSeqCtrlGeneral.iLastInternalSeqStateCase AND NOT stSeqCtrlGeneral.bExitSetReadyState THEN
+  IF TRUE
+  THEN
+    stSeqCtrlGeneral.bExitSetReadyState := TRUE;
+  ELSE
+    RETURN;
+  END_IF
+END_IF
+
+stSeqCtrlGeneral.strObject := F_CreateObjectName(strInstancePath);
+
+udiFreeSpaceOnC := TO_UDINT(liFreeSpaceOnC);
+
+// First method call
+_m_SequenceManager();
+//_m_SaveLastStep();
+
+CASE eSeq OF 
+  E_SEQ_HMI.BASE:;
+  
+	E_SEQ_HMI.INIT: _m_Seq_INIT();
+		IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+		
+	E_SEQ_HMI.SETUP:;
+  
+	// Process
+  E_SEQ_HMI.START_HMI: _m_Seq_START_HMI();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+    
+  E_SEQ_HMI.CLOSE_HMI: _m_Seq_CLOSE_HMI();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+    
+  E_SEQ_HMI.PC_REBOOT: _m_Seq_PC_REBOOT();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+    
+  E_SEQ_HMI.PC_SHUTDOWN: _m_Seq_PC_SHUTDOWN();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+    
+  E_SEQ_HMI.SHOW_WIN_KEYBOARD: _m_Seq_SHOW_WIN_KEYBOARD();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+    
+  E_SEQ_HMI.HIDE_WIN_KEYBOARD: _m_Seq_HIDE_WIN_KEYBOARD();
+    IF TRUE
+		AND (stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE) 
+		THEN
+			eSeq := E_SEQ_HMI.BASE;
+		END_IF
+
+  // End
+	E_SEQ_HMI.END:;
+	E_SEQ_HMI.ERROR_SEQ:;	
+END_CASE
+
+strTemp:=TO_STRING(eSeq);]]></ST>
+    </Implementation>
+    <Folder Name="PRIVAT" Id="{e72ae1e1-907e-4a9b-89b9-588dc9ef095d}" />
+    <Folder Name="SEQUENCE" Id="{ef315335-f79c-45da-9a88-350aa093158f}" />
+    <Method Name="_m_DebugManager" Id="{98d8e17e-a6b8-4e74-b573-78def1f28f58}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_DebugManager
+VAR_INPUT
+	iStepID: int;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF TRUE
+AND THIS^.stSeqCtrlGeneral.bDebugModeActive 
+AND NOT THIS^.stSeqCtrlGeneral.bActiveStep
+THEN
+
+
+THIS^.stSeqCtrlGeneral.bBreakpointActive:=FALSE;
+
+FOR i:=0 TO 10 DO
+	
+	IF TRUE
+	AND iStepID=THIS^.stSeqCtrlGeneral.listBreakpoint[i] 
+	AND iStepID<>0
+	THEN
+		EXIT;
+	END_IF
+END_FOR
+IF (i<=10) THEN
+	THIS^.stSeqCtrlGeneral.bBreakpointActive:=TRUE;
+END_IF
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Delay" Id="{48477e8f-77bf-4b6f-989e-5481c13782fa}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Delay : BOOL
+VAR_INPUT
+	DelayTime:	TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bDelayActive:=TRUE;
+THIS^.stSeqCtrlGeneral.tDelay:=DelayTime;
+_m_Delay:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonDelay.Q THEN
+	_m_Delay:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_GeneralStepSetting" Id="{efb79e24-1011-4575-a358-e77035e5a1c4}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_GeneralStepSetting : BOOL
+VAR_INPUT
+	StepType:			    	E_STEP_STATE_TYPE;
+	InfoTextID:					STRING(20);
+	EnableDebug:	   			BOOL;	
+	
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	THIS^.stSeqCtrlGeneral.eStep_Type:=StepType;
+	THIS^.stSeqCtrlGeneral.strExtraInfo:= GenLib.F_RET_TXTLIST_ENTRY(strPortNr:='851',strID:='',strTxtLstName:=InfoTextID);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SaveLastStep" Id="{bb61b541-886d-4565-a7be-70ac1710b32b}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SaveLastStep : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i: dint;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT THIS^.stSeqCtrlGeneral.bActiveStep THEN
+	
+	FOR i:=49 TO 1 BY -1 DO
+			stSeqCtrlGeneral.listLastSteps[i].strStepName:=stSeqCtrlGeneral.listLastSteps[i-1].strStepName;
+			stSeqCtrlGeneral.listLastSteps[i].tStepTime:=stSeqCtrlGeneral.listLastSteps[i-1].tStepTime;
+			stSeqCtrlGeneral.listLastSteps[i].tDelayTime:=stSeqCtrlGeneral.listLastSteps[i-1].tDelayTime;
+	END_FOR
+	stSeqCtrlGeneral.listLastSteps[0].strStepName:=TO_STRING(THIS^.eSeq);
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[1].tStepTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;
+ELSE
+	stSeqCtrlGeneral.listLastSteps[0].tStepTime:=THIS^.stSeqCtrlGeneral.tonStepTime.ET;
+	stSeqCtrlGeneral.listLastSteps[0].tDelayTime:=THIS^.stSeqCtrlGeneral.tonDelay.ET;	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_CLOSE_HMI" Id="{20d29686-dbab-4e5e-b695-2a5411900766}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_CLOSE_HMI : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bCloseHMI := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bCloseHMI
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_HIDE_WIN_KEYBOARD" Id="{15daf304-0661-422c-94bc-28f6d1bb33d0}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_HIDE_WIN_KEYBOARD : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bOpenKeyboard := FALSE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_INIT" Id="{f0c8214a-39d0-4637-bb6c-1a309531ae10}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_INIT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+		0:	// Entrance step
+      IF TRUE
+			THEN 
+        THIS^.bOpenKeyboard := FALSE;
+        THIS^.bCloseHMI := FALSE;
+        THIS^.bShutdownPc := FALSE;
+        THIS^.bRestartPc := FALSE;
+				THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000:	// Exit step
+      IF TRUE
+			THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+      END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+E_SEQ_GENERAL.DONE:;
+E_SEQ_GENERAL.ERROR:;
+E_SEQ_GENERAL.TIME_OUT:; 
+
+IF TRUE
+AND THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit 
+THEN
+  THIS^.stSeqCtrlGeneral.strExtraInfo := 'Bitte quittieren und erneut testen';
+  IF TRUE
+  //AND itfOpMode.P_QUIT
+  THEN
+    THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+	END_IF
+  
+END_IF
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_PC_REBOOT" Id="{d926a532-3fe2-4949-9d84-e772d5356b45}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_PC_REBOOT : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bRestartPc := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bRestartPc
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_PC_SHUTDOWN" Id="{2e217e53-83cd-4835-8ed2-9b8b2f415b75}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_PC_SHUTDOWN : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bShutdownPc := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bShutdownPc
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_SHOW_WIN_KEYBOARD" Id="{70279e8f-2354-419a-9696-7b11c704642b}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_SHOW_WIN_KEYBOARD : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bOpenKeyboard := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq_START_HMI" Id="{0ec81270-7cf5-4432-af36-87d638ba4be7}" FolderPath="SEQUENCE\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq_START_HMI : E_SEQ_PROCESS
+VAR_INPUT
+END_VAR
+VAR
+	ActiveSeq: STRING;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^._m_GeneralStepSetting(StepType:=E_STEP_STATE_TYPE.INIT,
+ActiveSeq := TO_STRING(THIS^.eSeq);
+
+CASE THIS^.stSeqCtrlGeneral.eActiveSeqState OF
+E_SEQ_GENERAL.READY:;
+	
+E_SEQ_GENERAL.EXECUTE:;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.RESET;
+	END_IF
+  
+E_SEQ_GENERAL.RESET:;
+	THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 0;
+	IF TRUE
+	THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.BUSY;
+	END_IF
+  
+E_SEQ_GENERAL.BUSY:;
+	CASE THIS^.stSeqCtrlGeneral.iInternalSeqStateCase OF
+    0:  // Execute
+      IF TRUE 
+      AND THIS^.bAdsConnected
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+			THEN 
+        THIS^.bStartHMI := TRUE;
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 10;
+			END_IF
+
+    10:	// Wait for done
+      IF TRUE 
+      AND NOT THIS^.bBusy
+      AND THIS^.bReady
+      AND NOT THIS^.bStartHMI
+			THEN 
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 1000;
+			END_IF
+      
+    1000: // Exit step
+      IF TRUE
+      THEN
+        THIS^.stSeqCtrlGeneral.iInternalSeqStateCase := 9999;
+			END_IF
+      
+	ELSE
+		THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.DONE;  
+	END_CASE
+	THIS^.stSeqCtrlGeneral.strExtraInfo := CONCAT('Internal state: ', TO_STRING(THIS^.stSeqCtrlGeneral.iInternalSeqStateCase));
+
+E_SEQ_GENERAL.DONE:;
+
+E_SEQ_GENERAL.ERROR:;
+
+E_SEQ_GENERAL.TIME_OUT:; 
+
+ELSE
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.ERROR;
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_SequenceManager" Id="{3d1b659a-eebe-413d-b5cf-741da047f66a}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_SequenceManager
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FALSE
+//AND THIS^.eActiveSeqState=DONE 
+AND eLastSeq<>eSeq
+THEN
+	IF THIS^.stSeqCtrlGeneral.eActiveSeqState<>E_SEQ_GENERAL.EXECUTE THEN
+		THIS^.stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.READY;
+	END_IF
+END_IF
+
+eSeq := eNextSeq;
+
+//DelayTimer und TimeOut Timer verwalten
+stSeqCtrlGeneral.bActiveStep:=	TRUE
+				AND eLastSeq					=	eSeq
+				AND stSeqCtrlGeneral.eLastActiveSeqState			=	stSeqCtrlGeneral.eActiveSeqState
+				AND	stSeqCtrlGeneral.iLastInternalSeqStateCase	=	stSeqCtrlGeneral.iInternalSeqStateCase
+				;
+			
+IF NOT stSeqCtrlGeneral.bActiveStep THEN
+	stSeqCtrlGeneral.bDelayActive:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveQuit:=FALSE;
+	stSeqCtrlGeneral.bTimeOutActiveNoQuit:=FALSE;
+  THIS^.stSeqCtrlGeneral.strExtraInfo:='';
+END_IF
+
+_m_SaveLastStep();
+stSeqCtrlGeneral.tonDelay	(IN:=stSeqCtrlGeneral.bActiveStep AND stSeqCtrlGeneral.bDelayActive, 		PT:=stSeqCtrlGeneral.tDelay);
+stSeqCtrlGeneral.tonTimeOut	(IN:=stSeqCtrlGeneral.bActiveStep AND (stSeqCtrlGeneral.bTimeOutActiveNoQuit OR stSeqCtrlGeneral.bTimeOutActiveQuit), 	PT:=stSeqCtrlGeneral.tTimeOut);
+stSeqCtrlGeneral.tonStepTime	(IN:= stSeqCtrlGeneral.bActiveStep, PT:= T#24H);
+
+IF stSeqCtrlGeneral.tonTimeOut.Q  THEN
+	stSeqCtrlGeneral.eActiveSeqState:=E_SEQ_GENERAL.TIME_OUT;
+END_IF
+
+IF stSeqCtrlGeneral.iError<>0 THEN
+	eSeq:=E_SEQ_HMI.ERROR_SEQ;
+END_IF
+
+
+
+eLastSeq					:=	eSeq;
+stSeqCtrlGeneral.eLastActiveSeqState			:=	stSeqCtrlGeneral.eActiveSeqState;
+stSeqCtrlGeneral.iLastInternalSeqStateCase	:=	stSeqCtrlGeneral.iInternalSeqStateCase;
+
+// Reset set ready state
+IF THIS^.stSeqCtrlGeneral.bExitSetReadyState THEN
+  THIS^.stSeqCtrlGeneral.bExitSetReadyState := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_TimeOut" Id="{cf16e500-d80d-4afc-ba30-76a2046956f3}" FolderPath="PRIVAT\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_TimeOut : BOOL
+VAR_INPUT
+	bTimeoutActiveToQuit:	BOOL;
+	bTimeOutActiveNoQuit:	BOOL;
+	tTimeOut:				TIME;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.stSeqCtrlGeneral.bTimeOutActiveQuit:=	bTimeoutActiveToQuit;
+THIS^.stSeqCtrlGeneral.bTimeOutActiveNoQuit:=	bTimeOutActiveNoQuit;
+THIS^.stSeqCtrlGeneral.tTimeOut:=			tTimeOut;
+_m_TimeOut:=FALSE;
+IF THIS^.stSeqCtrlGeneral.tonTimeOut.Q THEN
+	_m_TimeOut:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{c86cb371-b030-4fdf-9fec-60f493257876}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+  
+  itfOpMode:											                        I_OP_MODE; 
+  itfEventLogger:                                         I_EVENT_LOGGER; 
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfOpMode := itfOpMode;
+THIS^.itfEventLogger := itfEventLogger;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CloseHMI" Id="{4d2be694-341e-45dc-bedb-5525f4915af5}">
+      <Declaration><![CDATA[METHOD M_CloseHMI : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_CloseHMI := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+              AND NOT THIS^.bCloseHMI;
+              
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.CLOSE_HMI;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_HideWinKeyboard" Id="{4c8e8310-cd9d-4822-9d2d-baa100244616}">
+      <Declaration><![CDATA[METHOD M_HideWinKeyboard : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_HideWinKeyboard := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+                     AND NOT THIS^.bOpenKeyboard;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.HIDE_WIN_KEYBOARD;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PCReboot" Id="{1479a7d5-4033-44f5-bb02-cedfca325c6a}">
+      <Declaration><![CDATA[METHOD M_PCReboot : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_PCReboot := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+              AND NOT THIS^.bRestartPc;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.PC_REBOOT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PCShutdown" Id="{308da37b-d8dd-4f7b-884b-77a5424576a4}">
+      <Declaration><![CDATA[METHOD M_PCShutdown : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_PCShutdown := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+                AND NOT THIS^.bShutdownPc;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.PC_SHUTDOWN;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{f980c120-01b1-47d6-92c6-6da8712d8aa3}">
+      <Declaration><![CDATA[METHOD M_Reset : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Reset := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.INIT;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Run" Id="{9bed7e4a-32b3-402e-b1e4-edc051a6a0b2}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+(*=== Method: M_Run  ============================================
+
+ @brief: Here is the global code (Timer, Event, Flange,...)*)
+METHOD M_Run
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetReady" Id="{f1c4e0b1-ddc0-457e-ac05-61ed66110236}">
+      <Declaration><![CDATA[METHOD M_SetReady : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_SetReady := TRUE
+              AND THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY
+              AND THIS^.eSeq = E_SEQ_HMI.BASE;
+
+THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.READY;
+THIS^.eNextSeq := E_SEQ_HMI.BASE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ShowWinKeyboard" Id="{f44c9cee-84d7-4edf-8a07-1f406a0cd00b}">
+      <Declaration><![CDATA[METHOD M_ShowWinKeyboard : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_ShowWinKeyboard := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+                     AND THIS^.bOpenKeyboard;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.SHOW_WIN_KEYBOARD;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StartHMI" Id="{0f9d5651-47b5-4662-b2d8-ffcefda792c0}">
+      <Declaration><![CDATA[METHOD M_StartHMI : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_StartHMI := THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.DONE
+              AND NOT THIS^.bStartHMI;
+
+// General
+IF THIS^.stSeqCtrlGeneral.eActiveSeqState = E_SEQ_GENERAL.READY THEN
+  THIS^.eNextSeq := E_SEQ_HMI.START_HMI;
+  THIS^.stSeqCtrlGeneral.eActiveSeqState := E_SEQ_GENERAL.EXECUTE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_ErrorMsg" Id="{87869c29-da73-4204-849f-41ad2cf1906a}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+PROPERTY P_ErrorMsg : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{fceb1453-19b3-4bf0-a047-c2a108354c8b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{c1a9482c-bf09-41e0-9224-bc7521378b1c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Event" Id="{3003a158-4c12-49ae-8842-6ae991ca2e1a}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Event  ============================================
+
+ @param [set]: 	Set the Structure "ST_EVENT" from another Object
+ @param [get]: 	Return the Structure "ST_EVENT", it contains the actual 
+					event of the Object *)
+PROPERTY P_Event : GenLib.ST_EVENT
+]]></Declaration>
+      <Get Name="Get" Id="{09eafdcd-f78a-4543-954f-37ceb9e39a6c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a74e7bee-c97b-4d6f-b84f-071bae96f220}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_FullObjectPath" Id="{07aa8fc0-69a3-41ba-875a-9ec317ccd17e}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_FullObjectPath  ============================================
+
+ @param [set]: 	Set the Object Path (Clear String of Object)
+ @param [get]: 	Return the Objectpath *)
+PROPERTY P_FullObjectPath : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{6ddf5049-2728-43b7-bd6c-e78213398fdf}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{78bc4764-4638-4a2e-bddc-de125e1e5496}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_Global_Ack" Id="{2b40a1b0-fa10-4bf9-9fb6-0a6bc5b137d4}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_Global_Ack  ============================================
+
+ @param [set]: 	Set the Bit for Ack from another Object
+ @param [get]: 	Return the state of Ack Bit*)
+PROPERTY P_Global_Ack : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{40b5f572-5593-4319-a380-533272252fc0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{caf92865-c9af-4924-b1ac-31bc025f3a04}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="P_GlobalID" Id="{ba159cb3-043a-43eb-a229-cbb9ea0ed6d1}">
+      <Declaration><![CDATA[{warning 'Eigenschaftenimplementierung hinzufügen'}
+(*=== Property: P_GlobalID  ============================================
+
+ @param [set]: 	-
+ @param [get]: 	Return the string of instance path*)
+PROPERTY P_GlobalID : STRING
+]]></Declaration>
+      <Get Name="Get" Id="{50c42ce1-4719-43ba-9386-5332415b2798}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_HMI_CTRL_ADS">
+      <LineId Id="340" Count="10" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="351" Count="16" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="429" Count="4" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="462" Count="0" />
+      <LineId Id="464" Count="4" />
+      <LineId Id="463" Count="0" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="436" Count="4" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="443" Count="4" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="450" Count="4" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="457" Count="4" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="417" Count="5" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_DebugManager">
+      <LineId Id="5" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Delay">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_GeneralStepSetting">
+      <LineId Id="37" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="41" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_SaveLastStep">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_CLOSE_HMI">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="2" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_HIDE_WIN_KEYBOARD">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_INIT">
+      <LineId Id="45" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="208" Count="2" />
+      <LineId Id="207" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="178" Count="1" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="14" Count="2" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_PC_REBOOT">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="2" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_PC_SHUTDOWN">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="2" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_SHOW_WIN_KEYBOARD">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_Seq_START_HMI">
+      <LineId Id="153" Count="4" />
+      <LineId Id="159" Count="15" />
+      <LineId Id="335" Count="2" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="347" Count="2" />
+      <LineId Id="362" Count="1" />
+      <LineId Id="413" Count="1" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="373" Count="3" />
+      <LineId Id="378" Count="0" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="213" Count="10" />
+      <LineId Id="235" Count="3" />
+      <LineId Id="127" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_SequenceManager">
+      <LineId Id="14" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="23" Count="11" />
+      <LineId Id="59" Count="4" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="74" Count="3" />
+      <LineId Id="73" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS._m_TimeOut">
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="17" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_CloseHMI">
+      <LineId Id="7" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="8" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_HideWinKeyboard">
+      <LineId Id="5" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="4" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_PCReboot">
+      <LineId Id="7" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_PCShutdown">
+      <LineId Id="6" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="7" Count="4" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_Reset">
+      <LineId Id="6" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_Run">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_SetReady">
+      <LineId Id="5" Count="4" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_ShowWinKeyboard">
+      <LineId Id="6" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="7" Count="4" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.M_StartHMI">
+      <LineId Id="7" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="8" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_ErrorMsg.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_ErrorMsg.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_Event.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_Event.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_FullObjectPath.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_FullObjectPath.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_Global_Ack.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_Global_Ack.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_HMI_CTRL_ADS.P_GlobalID.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

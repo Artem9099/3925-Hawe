@@ -181,6 +181,69 @@
   "color": "rgba(181, 178, 178, 1)"
 }
 </script>
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "%s%PLC1.PrgStation.fbMainProcess.bShowMessage%/s%",
+    "actions": [
+      {
+        "objectType": "Condition",
+        "active": true,
+        "parts": [
+          {
+            "if": [
+              {
+                "compare1": {
+                  "objectType": "Symbol",
+                  "valueType": "tchmi:general#/definitions/String",
+                  "symbolExpression": "%s%PLC1.PrgStation.fbMainProcess.bShowMessage%/s%"
+                },
+                "compare2": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "value": true
+                },
+                "compareOperator": "==",
+                "logic": null
+              }
+            ],
+            "then": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%regionMain::TargetContent%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/ContentPath",
+                  "value": "Pages/Instructions/CylDecouple.content"
+                },
+                "asyncWait": true
+              }
+            ]
+          },
+          {
+            "else": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%regionMain::TargetContent%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/ContentPath",
+                  "value": "Pages/StartPageContent/OPModeOverview.content"
+                },
+                "asyncWait": true
+              }
+            ]
+          }
+        ],
+        "asyncWait": true
+      }
+    ]
+  }
+]
+</script>
 </div>
 <div id="TcHmiContainer_38" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height="93" data-tchmi-height-unit="px" data-tchmi-left="0" data-tchmi-left-unit="px" data-tchmi-top="200" data-tchmi-top-unit="px" data-tchmi-width="400" data-tchmi-width-unit="px">
 <div id="TcHmiButton_31" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiButton" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="105" data-tchmi-left-unit="px" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-background-image="Images/Icons/Light/Process_Light.png" data-tchmi-background-image-width-unit="%" data-tchmi-background-image-width="100">
@@ -331,20 +394,6 @@
                 },
                 "compareOperator": "==",
                 "logic": null
-              },
-              {
-                "compare1": {
-                  "objectType": "Symbol",
-                  "valueType": "tchmi:general#/definitions/BOOL",
-                  "symbolExpression": "%s%PLC1.PrgVisu.fbVisuOPMode.bLeakTest2Mode%/s%"
-                },
-                "compare2": {
-                  "objectType": "StaticValue",
-                  "valueType": "tchmi:general#/definitions/BOOL",
-                  "value": true
-                },
-                "compareOperator": "==",
-                "logic": "OR"
               }
             ],
             "then": [
@@ -387,6 +436,37 @@
                   "objectType": "StaticValue",
                   "valueType": "tchmi:framework#/definitions/ContentPath",
                   "value": "Pages/StartPageContent/Cylindernest1/Cylindernest1_BreakPressureDet.content"
+                },
+                "asyncWait": true
+              }
+            ]
+          },
+          {
+            "elseif": [
+              {
+                "compare1": {
+                  "objectType": "Symbol",
+                  "valueType": "tchmi:general#/definitions/String",
+                  "symbolExpression": "%s%PLC1.PrgVisu.fbVisuOPMode.bLeakTest2Mode%/s%"
+                },
+                "compare2": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:general#/definitions/BOOL",
+                  "value": true
+                },
+                "compareOperator": "==",
+                "logic": null
+              }
+            ],
+            "then": [
+              {
+                "objectType": "WriteToSymbol",
+                "active": true,
+                "symbolExpression": "%ctrl%regionCylindernest1::TargetContent%/ctrl%",
+                "value": {
+                  "objectType": "StaticValue",
+                  "valueType": "tchmi:framework#/definitions/ContentPath",
+                  "value": "Pages/StartPageContent/Cylindernest1/Cylindernest1_LeakTest2.content"
                 },
                 "asyncWait": true
               }
@@ -744,7 +824,7 @@
 }
 </script>
 </div>
-<div id="TcHmiCheckbox" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="TcHmiCheckbox" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableSelection%/s%">
 
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
@@ -867,7 +947,7 @@
 ]
 </script>
 </div>
-<div id="txtCyl1PartNr_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="txtCyl1PartNr_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%" data-tchmi-text="%s%PLC1.PrgStation.sTestCyl1SNo|BindingMode=TwoWay%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -877,6 +957,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "txtCyl1PartNr_1.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({top: '5000px', left: (330 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "txtCyl1PartNr_1.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({ top: (56 + 310) + 'px', left: (330 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 <div id="lblActiveCycle_82" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="S/N" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
@@ -1443,7 +1558,7 @@
 }
 </script>
 </div>
-<div id="TcHmiCheckbox_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="TcHmiCheckbox_1" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableSelection%/s%">
 
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
@@ -1568,7 +1683,7 @@
 </div>
 <div id="lblActiveCycle_83" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="S/N" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="txtCyl1PartNr_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="txtCyl1PartNr_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%" data-tchmi-text="%s%PLC1.PrgStation.sTestCyl2SNo|BindingMode=TwoWay%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -1578,6 +1693,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "txtCyl1PartNr_2.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({ top: (56 + 310) + 'px', left: (330 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "txtCyl1PartNr_2.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({top: '5000px', left: (330 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 </div>
 <div id="TcHmiContainer_40" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height="93" data-tchmi-height-unit="px" data-tchmi-left="800" data-tchmi-left-unit="px" data-tchmi-top="200" data-tchmi-top-unit="px" data-tchmi-width="400" data-tchmi-width-unit="px">
@@ -2142,7 +2292,7 @@
 }
 </script>
 </div>
-<div id="TcHmiCheckbox_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="TcHmiCheckbox_2" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableSelection%/s%">
 
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
@@ -2267,7 +2417,7 @@
 </div>
 <div id="lblActiveCycle_84" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="S/N" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="txtCyl1PartNr_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="txtCyl1PartNr_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="57" data-tchmi-top-unit="px" data-tchmi-width="330" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%" data-tchmi-text="%s%PLC1.PrgStation.sTestCyl3SNo|BindingMode=TwoWay%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -2277,6 +2427,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "txtCyl1PartNr_3.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({ top: (56 + 310) + 'px', left: (330 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "txtCyl1PartNr_3.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({top: '5000px', left: (330 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 </div>
 <div id="TcHmiContainer_41" data-tchmi-type="TcHmi.Controls.System.TcHmiContainer" data-tchmi-height="93" data-tchmi-height-unit="px" data-tchmi-left="1200" data-tchmi-left-unit="px" data-tchmi-top="200" data-tchmi-top-unit="px" data-tchmi-width="400" data-tchmi-width-unit="px">
@@ -2841,7 +3026,7 @@
 }
 </script>
 </div>
-<div id="TcHmiCheckbox_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="TcHmiCheckbox_3" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiCheckbox" data-tchmi-height="40" data-tchmi-height-unit="px" data-tchmi-left="8" data-tchmi-left-unit="px" data-tchmi-text="" data-tchmi-top="8" data-tchmi-top-unit="px" data-tchmi-width="40" data-tchmi-width-unit="px" data-tchmi-is-enabled="%s%PLC1.PrgVisu.bEnableSelection%/s%">
 
 <script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
 [
@@ -2966,7 +3151,7 @@
 </div>
 <div id="lblActiveCycle_85" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextblock" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="9" data-tchmi-left-unit="px" data-tchmi-text="S/N" data-tchmi-top="58" data-tchmi-top-unit="px" data-tchmi-width="39" data-tchmi-width-unit="px" data-tchmi-word-wrap="true" data-tchmi-text-vertical-alignment="Center" data-tchmi-text-horizontal-alignment="Left">
 </div>
-<div id="txtCyl1PartNr_4" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="59" data-tchmi-top-unit="px" data-tchmi-width="328" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%">
+<div id="txtCyl1PartNr_4" data-tchmi-type="TcHmi.Controls.Beckhoff.TcHmiTextbox" data-tchmi-height="26" data-tchmi-height-unit="px" data-tchmi-left="58" data-tchmi-left-unit="px" data-tchmi-top="59" data-tchmi-top-unit="px" data-tchmi-width="328" data-tchmi-width-unit="px" data-tchmi-placeholder="Hier die Seriennummer eingeben..." data-tchmi-auto-select-text="true" data-tchmi-text-horizontal-alignment="Right" data-tchmi-is-enabled="%f%!(%s%PLC1.PrgVisu.fbVisuOPMode.b_Automatic%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Manual%/s%||%s%PLC1.PrgVisu.fbVisuOPMode.b_Reset%/s%)%/f%" data-tchmi-text="%s%PLC1.PrgStation.sTestCyl4SNo|BindingMode=TwoWay%/s%">
 <script data-tchmi-target-attribute="data-tchmi-content-padding" type="application/json">
 {
   "top": 3,
@@ -2976,6 +3161,41 @@
 }
 </script>
 
+
+<script data-tchmi-target-attribute="data-tchmi-trigger" type="application/json">
+[
+  {
+    "event": "txtCyl1PartNr_4.onFocusIn",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({ top: (56 + 310) + 'px', left: (330 + 320) + 'px' });"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  },
+  {
+    "event": "txtCyl1PartNr_4.onFocusOut",
+    "actions": [
+      {
+        "objectType": "JavaScript",
+        "active": true,
+        "sourceLines": [
+          "$('#keyboard').animate({top: '5000px', left: (330 + 320) + 'px'});"
+        ],
+        "injectContextObject": false,
+        "asyncWait": true,
+        "waitMode": "Synchronous"
+      }
+    ]
+  }
+]
+</script>
 </div>
 </div>
 </div>

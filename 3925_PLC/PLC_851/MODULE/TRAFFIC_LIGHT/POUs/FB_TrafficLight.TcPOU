@@ -1,0 +1,463 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_TrafficLight" Id="{4955e38f-b553-42fd-9d30-661533e415c0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TrafficLight IMPLEMENTS I_TrafficLight
+VAR	// Input aus FB_init
+	itfLightGreen:			            I_BINARY_OUTPUT;
+	itfLightYellow:			            I_BINARY_OUTPUT;
+	itfLightRed:			              I_BINARY_OUTPUT;
+	itfBeep:				                I_BINARY_OUTPUT;
+END_VAR
+VAR	// Method input variables
+	bEnable_Green:			            BOOL;
+	bEnable_Yellow:			            BOOL;
+	bEnable_Red:			              BOOL;
+	bEnable_Beep:			              BOOL;
+	uiBlinkFrequency: 		          ARRAY [1..4] OF UINT;
+	bResetOther:			              ARRAY [1..3] OF BOOL;
+END_VAR
+VAR	// Trigger
+	bTrigger_Green:			            BOOL;
+	bTrigger_Yellow:		            BOOL;
+	bTrigger_Red:			              BOOL;
+	bTrigger_Beep:			            BOOL;
+	bTrigger_Multicolor:	          BOOL;
+END_VAR
+VAR
+	uiSeq:					                ARRAY [1..4] OF UINT := [0,0,0,0];
+	tonFreq:				                ARRAY [1..4] OF TON;
+	tFreq:					                ARRAY [1..4] OF TIME;
+	bBlink_Green:			              BOOL;
+	bBlink_Yellow:			            BOOL;
+	bBlink_Red:				              BOOL;
+	bBlink_Beep:			              BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Sequences *)
+_m_Seq010_Green();
+_m_Seq020_Yellow();
+_m_Seq030_Red();
+_m_Seq040_Beep();]]></ST>
+    </Implementation>
+    <Folder Name="SEQ" Id="{c94122ec-357d-4293-b112-c48df49a7673}" />
+    <Method Name="_m_Seq010_Green" Id="{5b2e7539-fd0b-4425-8636-0db698be3eec}" FolderPath="SEQ\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq010_Green
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bEnable_Green := uiBlinkFrequency[1] <= 0 
+				 AND bTrigger_Green
+				 AND NOT bResetOther[2]
+				 AND NOT bResetOther[3];
+bBlink_Green := uiBlinkFrequency[1] > 0 
+				AND bTrigger_Green
+				AND NOT bResetOther[2]
+				AND NOT bResetOther[3];
+
+tFreq[1] := TO_TIME(uiBlinkFrequency[1] * 1000);
+tonFreq[1](IN:= NOT tonFreq[1].Q, PT:= tFreq[1]);
+IF bBlink_Green THEN
+	CASE uiSeq[1] OF
+		0:
+			bEnable_Green := TRUE;
+			IF tonFreq[1].Q THEN
+				uiSeq[1] := 1;
+			END_IF
+		1:
+			bEnable_Green := FALSE;
+			IF tonFreq[1].Q THEN
+				uiSeq[1] := 0;
+			END_IF
+	END_CASE
+END_IF
+
+IF bEnable_Green THEN
+  itfLightGreen.M_Set();
+ELSE
+  itfLightGreen.M_Reset();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq020_Yellow" Id="{252f7266-4ee4-4815-ab82-ebb1db6985ad}" FolderPath="SEQ\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq020_Yellow
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bEnable_Yellow := uiBlinkFrequency[2] <= 0 
+				 AND bTrigger_Yellow
+				 AND NOT bResetOther[1]
+				 AND NOT bResetOther[3];
+bBlink_Yellow := uiBlinkFrequency[2] > 0 
+				AND bTrigger_Yellow
+				AND NOT bResetOther[1]
+				AND NOT bResetOther[3];
+
+tFreq[2] := TO_TIME(uiBlinkFrequency[2] * 1000);
+tonFreq[2](IN:= NOT tonFreq[2].Q, PT:= tFreq[2]);
+IF bBlink_Yellow THEN
+	CASE uiSeq[2] OF
+		0:
+			bEnable_Yellow := TRUE;
+			IF tonFreq[2].Q THEN
+				uiSeq[2] := 1;
+			END_IF
+		1:
+			bEnable_Yellow := FALSE;
+			IF tonFreq[2].Q THEN
+				uiSeq[2] := 0;
+			END_IF
+	END_CASE
+END_IF
+
+IF bEnable_Yellow THEN
+  itfLightYellow.M_Set();
+ELSE
+  itfLightYellow.M_Reset();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq030_Red" Id="{dd404fff-9206-4348-a1f8-797d3be50a6b}" FolderPath="SEQ\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq030_Red
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bEnable_Red := uiBlinkFrequency[3] <= 0 
+				 AND bTrigger_Red
+				 AND NOT bResetOther[1]
+				 AND NOT bResetOther[2];
+bBlink_Red := uiBlinkFrequency[3] > 0 
+				AND bTrigger_Red
+				AND NOT bResetOther[1]
+				AND NOT bResetOther[2];
+
+tFreq[3] := TO_TIME(uiBlinkFrequency[3] * 1000);
+tonFreq[3](IN:= NOT tonFreq[3].Q, PT:= tFreq[3]);
+IF bBlink_Red THEN
+	CASE uiSeq[3] OF
+		0:
+			bEnable_Red := TRUE;
+			IF tonFreq[3].Q THEN
+				uiSeq[3] := 1;
+			END_IF
+		1:
+			bEnable_Red := FALSE;
+			IF tonFreq[3].Q THEN
+				uiSeq[3] := 0;
+			END_IF
+	END_CASE
+END_IF
+
+IF bEnable_Red THEN
+  itfLightRed.M_Set();
+ELSE
+  itfLightRed.M_Reset();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_m_Seq040_Beep" Id="{a272c5e7-eb08-451d-8929-07bdabee2c34}" FolderPath="SEQ\">
+      <Declaration><![CDATA[METHOD PRIVATE _m_Seq040_Beep
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[bEnable_Beep := uiBlinkFrequency[4] <= 0 
+				 AND bTrigger_Beep;
+bBlink_Beep := uiBlinkFrequency[4] > 0 
+				AND bTrigger_Beep;
+
+tFreq[4] := TO_TIME(uiBlinkFrequency[4] * 1000);
+tonFreq[4](IN:= NOT tonFreq[4].Q, PT:= tFreq[4]);
+IF bBlink_Beep THEN
+	CASE uiSeq[4] OF
+		0:
+			bEnable_Beep := TRUE;
+			IF tonFreq[4].Q THEN
+				uiSeq[4] := 1;
+			END_IF
+		1:
+			bEnable_Beep := FALSE;
+			IF tonFreq[4].Q THEN
+				uiSeq[4] := 0;
+			END_IF
+	END_CASE
+END_IF
+
+IF bEnable_Beep THEN
+  itfBeep.M_Set();
+ELSE
+  itfBeep.M_Reset();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{68133ff3-9cef-4c4e-8a59-fdc02b72d555}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains:           BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode:            BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	
+	itfLightGreen:			    I_BINARY_OUTPUT;
+	itfLightYellow:			    I_BINARY_OUTPUT;
+	itfLightRed:			      I_BINARY_OUTPUT;
+	itfBeep:				        I_BINARY_OUTPUT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.itfLightGreen := itfLightGreen;
+THIS^.itfLightYellow := itfLightYellow;
+THIS^.itfLightRed := itfLightRed;
+THIS^.itfBeep := itfBeep;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Beep" Id="{95c0b56c-0a21-4103-a674-44ec6952d87a}">
+      <Declaration><![CDATA[METHOD M_Beep : BOOL
+VAR_INPUT
+	(* On/Off signal*)
+	bEnable	: BOOL;
+	(* Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)*)
+	uiBlinkFrequency	: UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Beep := THIS^.bTrigger_Beep = bEnable;
+
+// Assign input
+THIS^.bTrigger_Beep := bEnable;
+THIS^.uiBlinkFrequency[4] := uiBlinkFrequency;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Green" Id="{7156d208-30c7-418b-9e21-5eee4954bfec}">
+      <Declaration><![CDATA[METHOD M_Green : BOOL
+VAR_INPUT
+	(* On/Off light*)
+	bEnable: 				BOOL;
+	(* Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)*)
+	uiBlinkFrequency: 		UINT;
+	(* Reset all colors, before set this color*)
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Green := THIS^.bTrigger_Green = bEnable;
+
+// Assign input
+THIS^.bTrigger_Green := bEnable;
+THIS^.uiBlinkFrequency[1] := uiBlinkFrequency;
+THIS^.bResetOther[1] := bResetOther;
+THIS^.bResetOther[2] := THIS^.bResetOther[3] := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Multicolor" Id="{f5ad71d0-3c61-4a9c-8f9e-36a09f03967c}">
+      <Declaration><![CDATA[METHOD M_Multicolor : BOOL
+VAR_INPUT
+	(* Enable green*)
+	bGreen	: BOOL;
+	(* Enable yellow*)
+	bYellow	: BOOL;
+	(* Enable red*)
+	bRed	: BOOL;
+	(* Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)*)
+	uiBlinkFrequency	: UINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Multicolor := THIS^.bTrigger_Red = bGreen;
+
+// Assign input
+THIS^.bTrigger_Green := bGreen;
+THIS^.bTrigger_Yellow := bYellow;
+THIS^.bTrigger_Red := bRed;
+THIS^.uiBlinkFrequency[1] := THIS^.uiBlinkFrequency[2] := THIS^.uiBlinkFrequency[3] := uiBlinkFrequency;
+THIS^.bResetOther[1] := THIS^.bResetOther[2] := THIS^.bResetOther[3] := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Red" Id="{4b4a69fd-cd43-4386-980b-e146af7dd690}">
+      <Declaration><![CDATA[METHOD M_Red : BOOL
+VAR_INPUT
+	(* On/Off light*)
+	bEnable: 				BOOL;
+	(* Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)*)
+	uiBlinkFrequency: 		UINT;
+	(* Reset all colors, before set this color*)
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Red := THIS^.bTrigger_Red = bEnable;
+
+// Assign input
+THIS^.bTrigger_Red := bEnable;
+THIS^.uiBlinkFrequency[3] := uiBlinkFrequency;
+THIS^.bResetOther[3] := bResetOther;
+THIS^.bResetOther[1] := THIS^.bResetOther[2] := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Reset" Id="{b871435d-d667-4426-bd0a-f0dec2699bb1}">
+      <Declaration><![CDATA[{warning 'Methodenimplementierung hinzufügen'}
+METHOD M_Reset : BOOL
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Yellow" Id="{f716c8d6-5e0d-4d06-a9f4-1d4b4288f5c9}">
+      <Declaration><![CDATA[METHOD M_Yellow : BOOL
+VAR_INPUT
+	(* On/Off light*)
+	bEnable: 				BOOL;
+	(* Flashing frequency (0 = Permanently On, 1 = 1s alternately, ...)*)
+	uiBlinkFrequency: 		UINT;
+	(* Reset all colors, before set this color*)
+	bResetOther:			BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Yellow := THIS^.bTrigger_Yellow = bEnable;
+
+// Assign input
+THIS^.bTrigger_Yellow := bEnable;
+THIS^.uiBlinkFrequency[2] := uiBlinkFrequency;
+THIS^.bResetOther[2] := bResetOther;
+THIS^.bResetOther[1] := THIS^.bResetOther[3] := FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_BeepState" Id="{17cb9099-aa95-43b3-8192-c573aae29153}">
+      <Declaration><![CDATA[PROPERTY P_BeepState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{c8472f75-1b15-4b05-a66d-2aec9c9cc2a5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_BeepState := THIS^.itfBeep.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_GreenState" Id="{f918cae2-5d8c-4037-b62a-a2a41a486a08}">
+      <Declaration><![CDATA[PROPERTY P_GreenState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{7a9ab8bd-93dd-412e-a494-6dd5d6e0590e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GreenState := THIS^.itfLightGreen.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_RedState" Id="{0f2287cb-5cba-4cee-8a68-35ce082e27c2}">
+      <Declaration><![CDATA[PROPERTY P_RedState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{aa2e9f4d-1ce4-438a-9b76-fcc985f013c8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_RedState := THIS^.itfLightRed.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_YellowState" Id="{42e259da-3238-4feb-b71f-aae73e476374}">
+      <Declaration><![CDATA[PROPERTY P_YellowState : BOOL
+]]></Declaration>
+      <Get Name="Get" Id="{4b5de206-8556-4a92-b50e-ca5a71470565}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_YellowState := THIS^.itfLightYellow.P_State;
+]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_TrafficLight">
+      <LineId Id="83" Count="2" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="86" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight._m_Seq010_Green">
+      <LineId Id="40" Count="3" />
+      <LineId Id="45" Count="3" />
+      <LineId Id="50" Count="16" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="72" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight._m_Seq020_Yellow">
+      <LineId Id="43" Count="25" />
+      <LineId Id="74" Count="3" />
+      <LineId Id="72" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight._m_Seq030_Red">
+      <LineId Id="43" Count="25" />
+      <LineId Id="73" Count="3" />
+      <LineId Id="72" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight._m_Seq040_Beep">
+      <LineId Id="43" Count="0" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="50" Count="18" />
+      <LineId Id="73" Count="3" />
+      <LineId Id="72" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.FB_init">
+      <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="2" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Beep">
+      <LineId Id="11" Count="4" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Green">
+      <LineId Id="10" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="35" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Multicolor">
+      <LineId Id="15" Count="3" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Red">
+      <LineId Id="13" Count="4" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="27" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Reset">
+      <LineId Id="4" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.M_Yellow">
+      <LineId Id="13" Count="4" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="27" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.P_BeepState.Get">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.P_GreenState.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.P_RedState.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_TrafficLight.P_YellowState.Get">
+      <LineId Id="5" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
